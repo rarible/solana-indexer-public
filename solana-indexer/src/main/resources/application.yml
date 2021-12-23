@@ -1,0 +1,61 @@
+application:
+  project: protocol
+
+server:
+  shutdown: graceful
+  port: 8080
+
+spring:
+  application.name: protocol-solana-nft-listener
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+    default-property-inclusion: non_null
+  codec:
+    max-in-memory-size: 50MB
+  aop:
+    proxy-target-class: false
+  main:
+    banner-mode: log
+    web-application-type: reactive
+
+rarible:
+  core:
+    apm:
+      agent:
+        enabled: true
+        server: http://elk_apm-server:8200
+        packages: com.rarible.protocol.nft.listener
+
+blockchain:
+  scanner:
+    kafka:
+      maxPollRecords: 100
+    solana:
+      rpcApiUrl: "https://twilight-white-snow.solana-mainnet.quiknode.pro/15ca015ec39255bddd65c0d01de2d73bf1582915/"
+      scan:
+        block-publish:
+          enabled: false
+      retryPolicy:
+        scan:
+          reconnectDelay: 2s
+          reconnectAttempts: 1
+        client:
+          delay: 2s
+          attempts: 3
+      job:
+        reconciliation:
+          enabled: false
+          batchSize: 5
+      monitoring:
+        enabled: true
+        rootPath: "blockchain.scanner"
+        worker:
+          pollingPeriod: 1m
+
+
+mongock:
+  change-logs-scan-package:
+    - com.rarible.blockchain.scanner.solana.migration
