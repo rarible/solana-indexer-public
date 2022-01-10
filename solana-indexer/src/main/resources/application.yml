@@ -35,9 +35,6 @@ blockchain:
       maxPollRecords: 100
     solana:
       rpcApiUrl: "https://twilight-white-snow.solana-mainnet.quiknode.pro/15ca015ec39255bddd65c0d01de2d73bf1582915/"
-      scan:
-        block-publish:
-          enabled: false
       retryPolicy:
         scan:
           reconnectDelay: 2s

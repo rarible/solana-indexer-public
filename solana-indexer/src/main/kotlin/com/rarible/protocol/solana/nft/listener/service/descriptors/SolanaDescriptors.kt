@@ -16,13 +16,11 @@ object SolanaProgramId {
 object InitializeMintDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     "spl-token",
-    "spl-token",
     entityType = InitializeMintRecord::class.java
 )
 
 object InitializeAccountDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
-    "spl-token",
     "spl-token",
     entityType = InitializeAccountRecord::class.java
 )
@@ -30,13 +28,11 @@ object InitializeAccountDescriptor : SolanaDescriptor(
 object MintToDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     "spl-token",
-    "spl-token",
     entityType = MintToRecord::class.java
 )
 
 object BurnDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
-    "spl-token",
     "spl-token",
     entityType = BurnRecord::class.java
 )
@@ -44,13 +40,11 @@ object BurnDescriptor : SolanaDescriptor(
 object TransferDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     "spl-token",
-    "spl-token",
     entityType = TransferRecord::class.java
 )
 
 object CreateMetadataDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
-    "token-metadata",
     "token-metadata",
     entityType = CreateMetadataRecord::class.java
 )
