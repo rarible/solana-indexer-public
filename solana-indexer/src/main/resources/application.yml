@@ -34,7 +34,7 @@ blockchain:
     kafka:
       maxPollRecords: 100
     solana:
-      rpcApiUrl: "https://twilight-white-snow.solana-mainnet.quiknode.pro/15ca015ec39255bddd65c0d01de2d73bf1582915/"
+      rpcApiUrl: "https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/"
       retryPolicy:
         scan:
           reconnectDelay: 2s
