@@ -34,6 +34,8 @@ blockchain:
     kafka:
       maxPollRecords: 100
     solana:
+      batchLoad:
+        enabled: true
       rpcApiUrl: "https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/"
       retryPolicy:
         scan:
