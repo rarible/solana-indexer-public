@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: test-solana-indexer
+
+common:
+  kafka-replica-set: ${kafka.hosts}
+
+blockchain:
+  scanner:
+    kafka:
+      broker-replica-set: ${kafka.hosts}
+      maxPollRecords: 10
+    solana:
+      optimisticLockRetries: 3
+      retryPolicy:
+        scan:
+          reconnectDelay: 2s
+          reconnectAttempts: 10
+        client:
+          delay: 2s
+          attempts: 10
+      job:
+        pendingLogs:
+          interval: 1s
+          initialDelay: 1s
+      monitoring:
+        enabled: false
+        rootPath: "blockchain.scanner"
+        worker:
+          pollingPeriod: 1m
+
+testcontainers:
+  reuse:
+    enable: true

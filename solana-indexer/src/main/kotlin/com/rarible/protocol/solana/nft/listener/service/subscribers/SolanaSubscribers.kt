@@ -6,11 +6,14 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
+import com.rarible.protocol.solana.borsh.BurnChecked
 import com.rarible.protocol.solana.borsh.CreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.InitializeAccount
 import com.rarible.protocol.solana.borsh.InitializeMint
 import com.rarible.protocol.solana.borsh.MintTo
+import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
+import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseMetadataInstruction
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
 import com.rarible.protocol.solana.nft.listener.service.descriptors.BurnDescriptor
@@ -19,10 +22,13 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeAc
 import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeMintDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.MintToDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.TransferDescriptor
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.*
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeAccountRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeMintRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.TransferRecord
 import org.springframework.stereotype.Component
-import kotlin.math.min
 
 @Component
 class InitializeMintSubscriber : SolanaLogEventSubscriber {
@@ -31,11 +37,11 @@ class InitializeMintSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaLogRecord> {
+    ): List<InitializeMintRecord> {
         val initializeMintInstruction =
             log.instruction.data.parseTokenInstruction() as? InitializeMint ?: return emptyList()
         val record = InitializeMintRecord(
-            mint = log.instruction.accounts.first(),
+            mint = log.instruction.accounts[0],
             mintAuthority = initializeMintInstruction.mintAuthority,
             decimals = initializeMintInstruction.decimal.toInt(),
             log.log
@@ -52,7 +58,7 @@ class InitializeAccountSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaLogRecord> {
+    ): List<InitializeAccountRecord> {
         if (log.instruction.data.parseTokenInstruction() !is InitializeAccount) return emptyList()
 
         val record = InitializeAccountRecord(
@@ -73,14 +79,22 @@ class MintToSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaLogRecord> {
-        val mintToInstruction = log.instruction.data.parseTokenInstruction() as? MintTo ?: return emptyList()
-        val record = MintToRecord(
-            mint = log.instruction.accounts[0],
-            account = log.instruction.accounts[1],
-            amount = mintToInstruction.amount,
-            log = log.log
-        )
+    ): List<MintToRecord> {
+        val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            is MintTo -> MintToRecord(
+                mint = log.instruction.accounts[0],
+                account = log.instruction.accounts[1],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            is MintToChecked -> MintToRecord(
+                mint = log.instruction.accounts[0],
+                account = log.instruction.accounts[1],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            else -> return emptyList()
+        }
 
         return listOf(record)
     }
@@ -93,14 +107,22 @@ class BurnSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaLogRecord> {
-        val burnInstruction = log.instruction.data.parseTokenInstruction() as? Burn ?: return emptyList()
-        val record = MintToRecord(
-            mint = log.instruction.accounts[0],
-            account = log.instruction.accounts[1],
-            amount = burnInstruction.amount,
-            log = log.log
-        )
+    ): List<BurnRecord> {
+        val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            is Burn -> BurnRecord(
+                account = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            is BurnChecked -> BurnRecord(
+                account = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            else -> return emptyList()
+        }
 
         return listOf(record)
     }
@@ -113,14 +135,24 @@ class TransferSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaLogRecord> {
-        val transferInstruction = log.instruction.data.parseTokenInstruction() as? Transfer ?: return emptyList()
-        val record = TransferRecord(
-            from = log.instruction.accounts[0],
-            to = log.instruction.accounts[1],
-            amount = transferInstruction.amount,
-            log = log.log
-        )
+    ): List<TransferRecord> {
+        val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            is Transfer -> TransferRecord(
+                from = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                to = log.instruction.accounts[2],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            is TransferChecked -> TransferRecord(
+                from = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                to = log.instruction.accounts[2],
+                amount = instruction.amount.toLong(),
+                log = log.log
+            )
+            else -> return emptyList()
+        }
 
         return listOf(record)
     }

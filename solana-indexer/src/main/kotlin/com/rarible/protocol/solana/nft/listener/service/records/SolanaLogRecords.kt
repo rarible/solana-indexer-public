@@ -5,57 +5,58 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.protocol.solana.borsh.CreateMetadataAccountArgs
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SolanaProgramId
 
-sealed class SolanaLogRecordImpl(log: SolanaLog) : SolanaLogRecord(log) {
-    class InitializeMintRecord(
+sealed class SolanaLogRecordImpl : SolanaLogRecord() {
+    data class InitializeMintRecord(
         val mint: String,
         val mintAuthority: String,
         val decimals: Int,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.SPL_TOKEN_PROGRAM
     }
 
-    class InitializeAccountRecord(
+    data class InitializeAccountRecord(
         val account: String,
         val mint: String,
         val owner: String,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.SPL_TOKEN_PROGRAM
     }
 
-    class MintToRecord(
+    data class MintToRecord(
         val account: String,
-        val amount: ULong,
+        val amount: Long,
         val mint: String,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.SPL_TOKEN_PROGRAM
     }
 
-    class BurnRecord(
+    data class BurnRecord(
         val account: String,
-        val amount: ULong,
+        val amount: Long,
         val mint: String,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.SPL_TOKEN_PROGRAM
     }
 
-    class TransferRecord(
+    data class TransferRecord(
+        val mint: String,
         val from: String,
         val to: String,
-        val amount: ULong,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        val amount: Long,
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.SPL_TOKEN_PROGRAM
     }
 
-    class CreateMetadataRecord(
+    data class CreateMetadataRecord(
         val mint: String,
         val metadata: CreateMetadataAccountArgs,
-        log: SolanaLog
-    ) : SolanaLogRecordImpl(log) {
+        override val log: SolanaLog
+    ) : SolanaLogRecordImpl() {
         override fun getKey(): String = SolanaProgramId.TOKEN_METADATA_PROGRAM
     }
 }
