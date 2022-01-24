@@ -4,6 +4,7 @@ import com.rarible.blockchain.scanner.block.Block
 import com.rarible.blockchain.scanner.block.BlockRepository
 import com.rarible.blockchain.scanner.block.BlockStatus
 import com.rarible.blockchain.scanner.solana.client.SolanaClient
+import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
@@ -144,7 +145,13 @@ abstract class AbstractBlockScannerTest {
 
     companion object {
         @Container
-        val solana: GenericContainer<*> = GenericContainer(DockerImageName.parse("rarible/solana-docker-mac-m1"))
+        val solana: GenericContainer<*> = KGenericContainer(
+            if (System.getProperty("os.arch") == "x86_64") {
+                "rarible/solana-docker"
+            } else {
+                "rarible/solana-docker-mac-m1"
+            }
+        )
             .withExposedPorts(8899)
             .withCommand("solana-test-validator --limit-ledger-size=50_000_000")
             .waitingFor(Wait.defaultWaitStrategy())
@@ -157,4 +164,8 @@ abstract class AbstractBlockScannerTest {
             registry.add("blockchain.scanner.solana.rpcApiUrl") { "http://127.0.0.1:$port" }
         }
     }
+}
+
+fun main() {
+    println(System.getProperties())
 }
