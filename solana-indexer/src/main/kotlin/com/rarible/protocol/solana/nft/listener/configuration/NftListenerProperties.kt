@@ -10,5 +10,6 @@ internal const val RARIBLE_PROTOCOL_LISTENER_STORAGE = "listener"
 @ConfigurationProperties(RARIBLE_PROTOCOL_LISTENER_STORAGE)
 data class NftListenerProperties(
     val monitoringWorker: DaemonWorkerProperties = DaemonWorkerProperties(),
-    val eventConsumerWorker: DaemonWorkerProperties = DaemonWorkerProperties()
+    val eventConsumerWorker: DaemonWorkerProperties = DaemonWorkerProperties(),
+    val logConsumeWorkerCount: Int = 3
 )

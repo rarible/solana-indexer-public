@@ -11,6 +11,7 @@ const val RARIBLE_PROTOCOL_NFT_INDEXER = "common"
 data class NftIndexerProperties(
     val kafkaReplicaSet: String,
     val maxPollRecords: Int = 100,
+    val metricRootPath: String,
     val nftItemMetaExtenderWorkersCount: Int = 4,
     val daemonWorkerProperties: DaemonWorkerProperties = DaemonWorkerProperties(),
     val nftCollectionMetaExtenderWorkersCount: Int = 4,

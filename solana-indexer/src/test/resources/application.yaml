@@ -3,6 +3,7 @@ spring:
     name: test-solana-indexer
 
 common:
+  metricRootPath: nft-metrics
   kafka-replica-set: ${kafka.hosts}
 
 blockchain:

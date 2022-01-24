@@ -22,12 +22,12 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeAc
 import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeMintDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.MintToDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.TransferDescriptor
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.CreateMetadataRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeAccountRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.MintToRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.TransferRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.TransferRecord
 import org.springframework.stereotype.Component
 
 @Component
@@ -84,13 +84,13 @@ class MintToSubscriber : SolanaLogEventSubscriber {
             is MintTo -> MintToRecord(
                 mint = log.instruction.accounts[0],
                 account = log.instruction.accounts[1],
-                amount = instruction.amount.toLong(),
+                mintAmount = instruction.amount.toLong(),
                 log = log.log
             )
             is MintToChecked -> MintToRecord(
                 mint = log.instruction.accounts[0],
                 account = log.instruction.accounts[1],
-                amount = instruction.amount.toLong(),
+                mintAmount = instruction.amount.toLong(),
                 log = log.log
             )
             else -> return emptyList()
@@ -112,13 +112,13 @@ class BurnSubscriber : SolanaLogEventSubscriber {
             is Burn -> BurnRecord(
                 account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                amount = instruction.amount.toLong(),
+                burnAmount = instruction.amount.toLong(),
                 log = log.log
             )
             is BurnChecked -> BurnRecord(
                 account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                amount = instruction.amount.toLong(),
+                burnAmount = instruction.amount.toLong(),
                 log = log.log
             )
             else -> return emptyList()
@@ -137,6 +137,7 @@ class TransferSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<TransferRecord> {
         val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            // TODO we have no mint here, rewrite later
             is Transfer -> TransferRecord(
                 from = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],

@@ -32,7 +32,8 @@ class BlockchainScannerConfiguration(
             meterRegistry = meterRegistry,
             host = applicationEnvironmentInfo.host,
             environment = applicationEnvironmentInfo.name,
+            workerCount = nftListenerProperties.logConsumeWorkerCount,
             service = applicationInfo.serviceName
-        ).apply { start(entityEventListener.associateBy { it.groupId }) }
+        ).apply { start(entityEventListener) }
     }
 }

@@ -1,22 +1,17 @@
 package com.rarible.protocol.solana.nft.listener
 
-import com.rarible.blockchain.scanner.block.Block
-import com.rarible.blockchain.scanner.block.BlockRepository
-import com.rarible.blockchain.scanner.block.BlockStatus
-import com.rarible.blockchain.scanner.solana.client.SolanaClient
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeAccountRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.MintToRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaLogRecordImpl.TransferRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.TransferRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,32 +28,6 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
-
-    @Autowired
-    private lateinit var client: SolanaClient
-
-    @Autowired
-    private lateinit var repository: BlockRepository
-
-    @BeforeEach
-    fun cleanDatabase() = runBlocking<Unit> {
-        mongo.remove(Query(), "spl-token").block()
-
-        val slot = client.getLatestSlot()
-        val currentBlock = client.getBlock(slot) ?: error("Can't get latest block")
-
-        runCatching {
-            repository.save(
-                Block(
-                    id = currentBlock.number,
-                    hash = currentBlock.hash,
-                    parentHash = currentBlock.parentHash,
-                    timestamp = currentBlock.timestamp,
-                    status = BlockStatus.SUCCESS
-                )
-            )
-        }
-    }
 
     @Test
     fun initializeMint() = runBlocking {
@@ -110,7 +79,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
             val record = records.single()
 
             assertEquals(token, record.mint)
-            assertEquals(5 * 10.0.pow(decimals).toLong(), record.amount)
+            assertEquals(5 * 10.0.pow(decimals).toLong(), record.mintAmount)
             assertEquals(account, record.account)
         }
     }
@@ -131,7 +100,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
             val record = records.single()
 
             assertEquals(token, record.mint)
-            assertEquals(4 * 10.0.pow(decimals).toLong(), record.amount)
+            assertEquals(4 * 10.0.pow(decimals).toLong(), record.burnAmount)
             assertEquals(account, record.account)
         }
     }
@@ -158,7 +127,6 @@ class SplProgramTest : AbstractBlockScannerTest() {
             assertEquals(1, record.amount)
         }
     }
-
 
     private inline fun <reified T : SolanaLogRecord> findRecordByType(type: Class<T>): Flow<T> {
         val criteria = Criteria.where("_class").isEqualTo(T::class.java.name)

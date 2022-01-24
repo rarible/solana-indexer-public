@@ -34,6 +34,7 @@ blockchain:
     kafka:
       maxPollRecords: 100
     solana:
+      service: protocol-solana-nft-listener
       rpcApiUrl: "https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/"
       scan:
         batchLoad:

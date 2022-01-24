@@ -1,10 +1,19 @@
 package com.rarible.protocol.solana.nft.listener
 
+import com.rarible.blockchain.scanner.block.Block
+import com.rarible.blockchain.scanner.block.BlockRepository
+import com.rarible.blockchain.scanner.block.BlockStatus
+import com.rarible.blockchain.scanner.solana.client.SolanaClient
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -32,6 +41,35 @@ import org.testcontainers.utility.DockerImageName
 @KafkaTest
 @Testcontainers
 abstract class AbstractBlockScannerTest {
+    @Autowired
+    private lateinit var mongo: ReactiveMongoOperations
+
+    @Autowired
+    private lateinit var client: SolanaClient
+
+    @Autowired
+    private lateinit var repository: BlockRepository
+
+    @BeforeEach
+    fun cleanDatabase() = runBlocking<Unit> {
+        mongo.remove(Query(), "spl-token").block()
+
+        val slot = client.getLatestSlot()
+        val currentBlock = client.getBlock(slot) ?: error("Can't get latest block")
+
+        runCatching {
+            repository.save(
+                Block(
+                    id = currentBlock.number,
+                    hash = currentBlock.hash,
+                    parentHash = currentBlock.parentHash,
+                    timestamp = currentBlock.timestamp,
+                    status = BlockStatus.SUCCESS
+                )
+            )
+        }
+    }
+
     protected fun getWallet(config: String? = null): String {
         val args = buildList {
             add("spl-token")

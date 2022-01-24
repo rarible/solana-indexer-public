@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.rarible.core:rarible-core-entity-reducer:$raribleCommonVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
