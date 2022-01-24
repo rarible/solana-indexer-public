@@ -1,8 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.item
 
-import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
 import com.rarible.core.entity.reducer.service.EntityIdService
-import com.rarible.protocol.solana.nft.listener.model.ItemEvent
+import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.model.ItemId
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
@@ -13,8 +12,8 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRec
 import org.springframework.stereotype.Component
 
 @Component
-class ItemIdService : EntityIdService<LogRecordEvent<ItemEvent>, ItemId> {
-    override fun getEntityId(event : LogRecordEvent<ItemEvent>): ItemId {
+class ItemIdService : EntityIdService<SolanaLogRecordEvent, ItemId> {
+    override fun getEntityId(event : SolanaLogRecordEvent): ItemId {
         // todo mb exract abstract mint field?
         return when (val record = event.record) {
             is BurnRecord -> record.mint

@@ -15,13 +15,16 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import java.time.Duration
 
+data class SolanaLogRecordEvent(
+    val record: SolanaItemLogRecord,
+    val reverted: Boolean
+)
+
 class KafkaEntityEventConsumer(
     private val properties: KafkaProperties,
-    private val daemonProperties: DaemonWorkerProperties,
     private val meterRegistry: MeterRegistry,
     host: String,
     environment: String,
-    private val workerCount: Int,
     private val service: String
 ) : AutoCloseable {
 
@@ -42,7 +45,7 @@ class KafkaEntityEventConsumer(
 
     @Suppress("UNCHECKED_CAST")
     private fun consumer(listener: EntityEventListener): ConsumerWorkerHolder<SolanaLogRecordEvent> {
-        val workers = (1..workerCount).map { index ->
+        val workers = (1..properties.numberOfPartitionsPerLogGroup).map { index ->
             val consumerGroup = listener.id
             val kafkaConsumer = RaribleKafkaConsumer(
                 clientId = "$clientIdPrefix.log-event-consumer.$service.$consumerGroup-$index",
@@ -57,7 +60,6 @@ class KafkaEntityEventConsumer(
 
             ConsumerWorker(
                 consumer = kafkaConsumer,
-                properties = daemonProperties,
                 // Block consumer should NOT skip events, so there is we're using endless retry
                 retryProperties = RetryProperties(attempts = Integer.MAX_VALUE, delay = Duration.ofMillis(1000)),
                 eventHandler = BlockEventHandler(listener),
@@ -73,18 +75,8 @@ class KafkaEntityEventConsumer(
     ) : ConsumerEventHandler<SolanaLogRecordEvent> {
         override suspend fun handle(event: SolanaLogRecordEvent) {
             entityEventListener.onEntityEvents(
-                listOf(
-                    LogRecordEvent(
-                        record = event.record,
-                        reverted = event.reverted
-                    )
-                )
+                listOf(event)
             )
         }
     }
-
-    private data class SolanaLogRecordEvent(
-        val record: SolanaItemLogRecord,
-        val reverted: Boolean
-    )
 }

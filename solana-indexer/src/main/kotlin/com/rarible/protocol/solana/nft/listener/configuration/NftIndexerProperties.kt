@@ -12,9 +12,6 @@ data class NftIndexerProperties(
     val kafkaReplicaSet: String,
     val maxPollRecords: Int = 100,
     val metricRootPath: String,
-    val nftItemMetaExtenderWorkersCount: Int = 4,
     val daemonWorkerProperties: DaemonWorkerProperties = DaemonWorkerProperties(),
-    val nftCollectionMetaExtenderWorkersCount: Int = 4,
-    val confirmationBlocks: Int = 12,
-    val ownershipSaveBatch: Int = 20
+    val confirmationBlocks: Int = 100
 )

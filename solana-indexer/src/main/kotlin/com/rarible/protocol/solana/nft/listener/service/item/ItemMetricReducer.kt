@@ -1,9 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.item
 
-import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
 import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
+import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.model.Item
-import com.rarible.protocol.solana.nft.listener.model.ItemEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -17,9 +16,9 @@ import org.springframework.stereotype.Component
 class ItemMetricReducer(
     properties: NftIndexerProperties,
     meterRegistry: MeterRegistry,
-) : AbstractMetricReducer<LogRecordEvent<ItemEvent>, Item>(meterRegistry, properties, "item") {
+) : AbstractMetricReducer<SolanaLogRecordEvent, Item>(meterRegistry, properties, "item") {
 
-    override fun getMetricName(event: LogRecordEvent<ItemEvent>): String {
+    override fun getMetricName(event: SolanaLogRecordEvent): String {
         return when (event.record) {
             is BurnRecord -> "burn"
             is MintToRecord -> "mint"

@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
+import java.util.UUID
 import kotlin.math.pow
 
-@Disabled
 class ItemTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
@@ -21,7 +21,7 @@ class ItemTest : AbstractBlockScannerTest() {
     @Test
     fun `Item supply should be changed`() = runBlocking {
         val decimals = 3
-        val aliceWallet = createWallet("alice")
+        val aliceWallet = createWallet("${UUID.randomUUID()}")
         val token = createToken(decimals)
         val account = createAccount(token)
         val aliceAccount = createAccount(token, aliceWallet)
@@ -38,9 +38,8 @@ class ItemTest : AbstractBlockScannerTest() {
 
     private suspend fun checkItem(token: String, supply: Long) {
         Wait.waitAssert(timeout) {
-            val item = itemRepository.findById(token).block()
+            val item = itemRepository.findById(token).block()!!
 
-            assertNotNull(item)
             assertEquals(token, item.token)
             assertEquals(supply, item.supply)
         }

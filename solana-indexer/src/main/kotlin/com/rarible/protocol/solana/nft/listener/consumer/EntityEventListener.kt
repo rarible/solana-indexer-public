@@ -1,8 +1,5 @@
 package com.rarible.protocol.solana.nft.listener.consumer
 
-import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord
-
 typealias SubscriberGroup = String
 
 interface EntityEventListener {
@@ -10,5 +7,5 @@ interface EntityEventListener {
 
     val subscriberGroup: SubscriberGroup
 
-    suspend fun onEntityEvents(events: List<LogRecordEvent<SolanaItemLogRecord>>)
+    suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>)
 }

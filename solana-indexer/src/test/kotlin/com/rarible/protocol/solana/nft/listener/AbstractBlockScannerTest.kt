@@ -10,6 +10,7 @@ import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -144,17 +145,16 @@ abstract class AbstractBlockScannerTest {
     }
 
     companion object {
-        @Container
-        val solana: GenericContainer<*> = KGenericContainer(
-            if (System.getProperty("os.arch") == "x86_64") {
-                "rarible/solana-docker"
-            } else {
-                "rarible/solana-docker-mac-m1"
-            }
-        )
+        val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")
             .withExposedPorts(8899)
             .withCommand("solana-test-validator --limit-ledger-size=50_000_000")
             .waitingFor(Wait.defaultWaitStrategy())
+
+        @BeforeAll
+        @JvmStatic
+        fun setUp() {
+            solana.start()
+        }
 
         @JvmStatic
         @DynamicPropertySource
@@ -164,8 +164,4 @@ abstract class AbstractBlockScannerTest {
             registry.add("blockchain.scanner.solana.rpcApiUrl") { "http://127.0.0.1:$port" }
         }
     }
-}
-
-fun main() {
-    println(System.getProperties())
 }

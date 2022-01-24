@@ -20,9 +20,9 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import java.time.Duration
+import java.util.UUID
 import kotlin.math.pow
 
-@Disabled
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
@@ -107,7 +107,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun transferToken() = runBlocking {
-        val aliceWallet = createWallet("alice")
+        val aliceWallet = createWallet("${UUID.randomUUID()}")
         val token = createToken(0)
         val account = createAccount(token)
         val aliceAccount = createAccount(token, aliceWallet)

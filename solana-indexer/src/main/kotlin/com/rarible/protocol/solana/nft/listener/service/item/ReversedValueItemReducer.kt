@@ -1,9 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.item
 
-import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
 import com.rarible.core.entity.reducer.service.Reducer
+import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.model.Item
-import com.rarible.protocol.solana.nft.listener.model.ItemEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -13,10 +12,10 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRec
 import org.springframework.stereotype.Component
 
 @Component
-class ReversedValueItemReducer : Reducer<LogRecordEvent<ItemEvent>, Item> {
+class ReversedValueItemReducer : Reducer<SolanaLogRecordEvent, Item> {
     private val forwardValueItemReducer = ForwardValueItemReducer()
 
-    override suspend fun reduce(entity: Item, event: LogRecordEvent<ItemEvent>): Item {
+    override suspend fun reduce(entity: Item, event: SolanaLogRecordEvent): Item {
         return when (event.record) {
             is BurnRecord,
             is TransferRecord,
