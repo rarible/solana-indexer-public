@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.consumer
 
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
-import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.blockchain.scanner.util.getLogTopicPrefix
 import com.rarible.core.daemon.RetryProperties
 import com.rarible.core.daemon.sequential.ConsumerEventHandler
@@ -9,7 +8,6 @@ import com.rarible.core.daemon.sequential.ConsumerWorker
 import com.rarible.core.daemon.sequential.ConsumerWorkerHolder
 import com.rarible.core.kafka.RaribleKafkaConsumer
 import com.rarible.core.kafka.json.JsonDeserializer
-import com.rarible.protocol.solana.nft.listener.model.EntityEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
@@ -17,11 +15,8 @@ import java.time.Duration
 
 data class SolanaLogRecordEvent(
     val record: SolanaItemLogRecord,
-    override val reversed: Boolean
-) : EntityEvent {
-    override val log: SolanaLog
-        get() = record.log
-}
+    val reversed: Boolean
+)
 
 class KafkaEntityEventConsumer(
     private val properties: KafkaProperties,

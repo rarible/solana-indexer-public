@@ -14,7 +14,8 @@ class TokenEventReduceService(
     entityIdService: TokenIdService,
     templateProvider: TokenTemplateProvider,
     reducer: TokenReducer,
-    environmentInfo: ApplicationEnvironmentInfo
+    environmentInfo: ApplicationEnvironmentInfo,
+    private val tokenEventConverter: TokenEventConverter
 ) : EntityEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
@@ -23,6 +24,8 @@ class TokenEventReduceService(
     override val subscriberGroup: SubscriberGroup = "spl-token"
 
     override suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>) {
-        delegate.reduceAll(events)
+        val tokenEvents = events.flatMap { tokenEventConverter.convert(it) }
+
+        delegate.reduceAll(tokenEvents)
     }
 }

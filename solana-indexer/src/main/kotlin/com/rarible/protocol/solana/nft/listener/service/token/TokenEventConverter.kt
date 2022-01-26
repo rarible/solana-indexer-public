@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.balance
+package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
@@ -10,35 +10,31 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRec
 import org.springframework.stereotype.Component
 
 @Component
-class BalanceEventConverter {
-    suspend fun convert(source: SolanaLogRecordEvent): List<BalanceEvent> {
+class TokenEventConverter {
+    suspend fun convert(source: SolanaLogRecordEvent): List<TokenEvent> {
         return when (val record = source.record) {
             is MintToRecord -> listOf(
-                BalanceIncomeEvent(
+                MintEvent(
+                    token = record.mint,
                     reversed = source.reversed,
-                    account = record.account,
                     amount = record.mintAmount,
                     log = source.record.log
                 )
             )
             is BurnRecord -> listOf(
-                BalanceOutcomeEvent(
+                BurnEvent(
                     reversed = source.reversed,
-                    account = record.account,
+                    token = record.mint,
                     amount = record.burnAmount,
                     log = source.record.log
                 )
             )
             is TransferRecord -> listOf(
-                BalanceOutcomeEvent(
+                TransferEvent(
                     reversed = source.reversed,
-                    account = record.from,
-                    amount = record.amount,
-                    log = source.record.log
-                ),
-                BalanceIncomeEvent(
-                    reversed = source.reversed,
-                    account = record.to,
+                    token = record.mint,
+                    from = record.from,
+                    to = record.to,
                     amount = record.amount,
                     log = source.record.log
                 )
