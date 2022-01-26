@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class TokenEventReduceService(
-    entityService: ItemUpdateService,
+    entityService: TokenUpdateService,
     entityIdService: TokenIdService,
     templateProvider: TokenTemplateProvider,
     reducer: TokenReducer,

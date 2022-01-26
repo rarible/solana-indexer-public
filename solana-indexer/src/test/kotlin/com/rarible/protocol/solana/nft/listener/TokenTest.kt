@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceRepository
-import com.rarible.protocol.solana.nft.listener.service.token.ItemRepository
+import com.rarible.protocol.solana.nft.listener.service.token.TokenRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -15,7 +15,7 @@ class TokenTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
     @Autowired
-    private lateinit var itemRepository: ItemRepository
+    private lateinit var tokenRepository: TokenRepository
 
     @Autowired
     private lateinit var balanceRepository: BalanceRepository
@@ -29,22 +29,22 @@ class TokenTest : AbstractBlockScannerTest() {
         val aliceAccount = createAccount(token, aliceWallet)
 
         mintToken(token, amount = 5UL)
-        checkItem(token, supply = 5, decimals)
+        checkToken(token, supply = 5, decimals)
         checkBalance(account, value = 5, decimals)
 
         burnToken(account, amount = 4UL)
-        checkItem(token, supply = 1, decimals)
+        checkToken(token, supply = 1, decimals)
         checkBalance(account, value = 1, decimals)
 
         transferToken(token, amount = 1UL, aliceAccount)
-        checkItem(token, supply = 1, decimals)
+        checkToken(token, supply = 1, decimals)
         checkBalance(account, value = 0, decimals)
         checkBalance(aliceAccount, value = 1, decimals)
     }
 
-    private suspend fun checkItem(token: String, supply: Long, decimals: Int = 0) {
+    private suspend fun checkToken(token: String, supply: Long, decimals: Int = 0) {
         Wait.waitAssert(timeout) {
-            val item = itemRepository.findById(token).block()!!
+            val item = tokenRepository.findById(token).block()!!
 
             assertEquals(token, item.token)
             assertEquals(supply * 10.0.pow(decimals.toDouble()).toLong(), item.supply)

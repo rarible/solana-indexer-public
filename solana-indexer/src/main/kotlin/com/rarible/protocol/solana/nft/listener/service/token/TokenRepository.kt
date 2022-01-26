@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
-class ItemRepository(
+class TokenRepository(
     private val mongo: ReactiveMongoOperations
 ) {
     fun save(token: Token): Mono<Token> {

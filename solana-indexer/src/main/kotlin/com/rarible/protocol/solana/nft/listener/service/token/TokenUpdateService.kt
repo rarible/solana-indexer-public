@@ -9,22 +9,22 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class ItemUpdateService(
-    private val itemRepository: ItemRepository,
+class TokenUpdateService(
+    private val tokenRepository: TokenRepository,
 ) : EntityService<TokenId, Token> {
 
     override suspend fun get(id: TokenId): Token? {
-        return itemRepository.findById(id).awaitFirstOrNull()
+        return tokenRepository.findById(id).awaitFirstOrNull()
     }
 
     override suspend fun update(entity: Token): Token {
-        val savedItem = itemRepository.save(entity).awaitFirst()
+        val savedItem = tokenRepository.save(entity).awaitFirst()
 
         logger.info("Updated item: $entity")
         return savedItem
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(ItemUpdateService::class.java)
+        private val logger = LoggerFactory.getLogger(TokenUpdateService::class.java)
     }
 }
