@@ -1,8 +1,8 @@
-package com.rarible.protocol.solana.nft.listener.service.item
+package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.model.Item
+import com.rarible.protocol.solana.nft.listener.model.Token
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -13,10 +13,10 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Component
 
 @Component
-class ItemMetricReducer(
+class TokenMetricReducer(
     properties: NftIndexerProperties,
     meterRegistry: MeterRegistry,
-) : AbstractMetricReducer<SolanaLogRecordEvent, Item>(meterRegistry, properties, "item") {
+) : AbstractMetricReducer<SolanaLogRecordEvent, Token>(meterRegistry, properties, "item") {
 
     override fun getMetricName(event: SolanaLogRecordEvent): String {
         return when (event.record) {

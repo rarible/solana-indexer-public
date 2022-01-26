@@ -2,34 +2,32 @@ package com.rarible.protocol.solana.nft.listener.model
 
 import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord
 import org.springframework.data.annotation.AccessType
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
-typealias ItemEvent = SolanaItemLogRecord
-typealias ItemId = String
+typealias TokenId = String
 
 @Document("item")
-data class Item(
+data class Token(
     val token: String,
     val collection: String? = null,
     val supply: Long,
     override val revertableEvents: List<SolanaLogRecordEvent> = emptyList(),
-) : Entity<ItemId, SolanaLogRecordEvent, Item> {
+) : Entity<TokenId, SolanaLogRecordEvent, Token> {
     @get:Id
     @get:AccessType(AccessType.Type.PROPERTY)
-    override var id: ItemId
+    override var id: TokenId
         get() = token
         set(_) {}
 
-    override fun withRevertableEvents(events: List<SolanaLogRecordEvent>): Item {
+    override fun withRevertableEvents(events: List<SolanaLogRecordEvent>): Token {
         return copy(revertableEvents = events)
     }
 
     companion object {
-        fun empty(token: String): Item {
-            return Item(
+        fun empty(token: String): Token {
+            return Token(
                 token = token,
                 collection = null,
                 supply = 0L,

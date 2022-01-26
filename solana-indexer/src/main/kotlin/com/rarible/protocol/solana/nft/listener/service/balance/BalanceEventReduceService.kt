@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.item
+package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
@@ -6,24 +6,32 @@ import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.model.EntityEventListeners
-import com.rarible.protocol.solana.nft.listener.service.ItemUpdateService
 import org.springframework.stereotype.Component
 
 @Component
-class ItemEventReduceService(
-    entityService: ItemUpdateService,
-    entityIdService: ItemIdService,
-    templateProvider: ItemTemplateProvider,
-    reducer: ItemReducer,
-    environmentInfo: ApplicationEnvironmentInfo
+class BalanceEventReduceService(
+    entityService: BalanceUpdateService,
+    entityIdService: BalanceIdService,
+    templateProvider: BalanceTemplateProvider,
+    reducer: BalanceReducer,
+    environmentInfo: ApplicationEnvironmentInfo,
+    val converter: BalanceEventConverter
 ) : EntityEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
-    override val id: String = EntityEventListeners.itemHistoryListenerId(environmentInfo.name)
+    override val id: String = EntityEventListeners.balanceHistoryListenerId(environmentInfo.name)
 
     override val subscriberGroup: SubscriberGroup = "spl-token"
 
+    suspend fun reduce(events: List<SolanaLogRecordEvent>) {
+        val balanceEvents = events.flatMap { converter.convert(it) }
+
+        delegate.reduceAll(balanceEvents)
+    }
+
     override suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>) {
-        delegate.reduceAll(events)
+        val balanceEvents = events.flatMap { converter.convert(it) }
+
+        delegate.reduceAll(balanceEvents)
     }
 }

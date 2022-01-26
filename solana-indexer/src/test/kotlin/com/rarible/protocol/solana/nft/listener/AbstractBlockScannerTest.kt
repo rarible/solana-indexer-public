@@ -10,6 +10,7 @@ import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -130,7 +131,7 @@ abstract class AbstractBlockScannerTest {
     private fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
         val exec = solana.execInContainer(*args.toTypedArray())
 
-        Assertions.assertEquals(0, exec.exitCode, exec.stderr)
+        assertEquals(0, exec.exitCode, exec.stderr)
 
         return parser(exec.stdout)
     }

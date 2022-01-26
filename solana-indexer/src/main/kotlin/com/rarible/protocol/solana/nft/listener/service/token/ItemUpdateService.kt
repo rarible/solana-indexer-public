@@ -1,8 +1,8 @@
-package com.rarible.protocol.solana.nft.listener.service
+package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.core.entity.reducer.service.EntityService
-import com.rarible.protocol.solana.nft.listener.model.Item
-import com.rarible.protocol.solana.nft.listener.model.ItemId
+import com.rarible.protocol.solana.nft.listener.model.Token
+import com.rarible.protocol.solana.nft.listener.model.TokenId
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component
 @Component
 class ItemUpdateService(
     private val itemRepository: ItemRepository,
-) : EntityService<ItemId, Item> {
+) : EntityService<TokenId, Token> {
 
-    override suspend fun get(id: ItemId): Item? {
+    override suspend fun get(id: TokenId): Token? {
         return itemRepository.findById(id).awaitFirstOrNull()
     }
 
-    override suspend fun update(entity: Item): Item {
+    override suspend fun update(entity: Token): Token {
         val savedItem = itemRepository.save(entity).awaitFirst()
 
         logger.info("Updated item: $entity")

@@ -1,13 +1,13 @@
-package com.rarible.protocol.solana.nft.listener.service.item
+package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.core.entity.reducer.service.Reducer
-import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
+import com.rarible.protocol.solana.nft.listener.model.EntityEvent
 import org.slf4j.LoggerFactory
 
-class LoggingReducer<Id, E : Entity<Id, SolanaLogRecordEvent, E>> : Reducer<SolanaLogRecordEvent, E> {
-    override suspend fun reduce(entity: E, event: SolanaLogRecordEvent): E {
-        val log = event.record.log
+class LoggingReducer<Id, Event : EntityEvent, E : Entity<Id, Event, E>> : Reducer<Event, E> {
+    override suspend fun reduce(entity: E, event: Event): E {
+        val log = event.log
 
         logger.info(
             "event: {}, block: {}, instructionIndex: {}, innerInstructionIndex: {}, id: {}",

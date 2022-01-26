@@ -1,7 +1,7 @@
-package com.rarible.protocol.solana.nft.listener.service
+package com.rarible.protocol.solana.nft.listener.service.token
 
-import com.rarible.protocol.solana.nft.listener.model.Item
-import com.rarible.protocol.solana.nft.listener.model.ItemId
+import com.rarible.protocol.solana.nft.listener.model.Token
+import com.rarible.protocol.solana.nft.listener.model.TokenId
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.findById
@@ -14,16 +14,16 @@ import reactor.core.publisher.Mono
 class ItemRepository(
     private val mongo: ReactiveMongoOperations
 ) {
-    fun save(item: Item): Mono<Item> {
-        return mongo.save(item)
+    fun save(token: Token): Mono<Token> {
+        return mongo.save(token)
     }
 
-    fun findById(id: ItemId): Mono<Item> {
+    fun findById(id: TokenId): Mono<Token> {
         return mongo.findById(id)
     }
 
-    suspend fun search(query: Query): List<Item> {
-        return mongo.query<Item>().matching(query)
+    suspend fun search(query: Query): List<Token> {
+        return mongo.query<Token>().matching(query)
             .all()
             .collectList()
             .awaitFirst()

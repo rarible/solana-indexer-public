@@ -1,8 +1,8 @@
-package com.rarible.protocol.solana.nft.listener.service.item
+package com.rarible.protocol.solana.nft.listener.service.token
 
-import com.rarible.core.entity.reducer.service.Reducer
+import com.rarible.core.entity.reducer.service.EntityIdService
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.model.Item
+import com.rarible.protocol.solana.nft.listener.model.TokenId
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -12,12 +12,16 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRec
 import org.springframework.stereotype.Component
 
 @Component
-class ForwardValueItemReducer : Reducer<SolanaLogRecordEvent, Item> {
-    override suspend fun reduce(entity: Item, event: SolanaLogRecordEvent): Item {
+class TokenIdService : EntityIdService<SolanaLogRecordEvent, TokenId> {
+    override fun getEntityId(event : SolanaLogRecordEvent): TokenId {
+        // todo mb exract abstract mint field?
         return when (val record = event.record) {
-            is MintToRecord -> entity.copy(supply = entity.supply + record.mintAmount)
-            is BurnRecord -> entity.copy(supply = entity.supply - record.burnAmount)
-            is CreateMetadataRecord, is InitializeAccountRecord, is InitializeMintRecord, is TransferRecord -> entity
+            is BurnRecord -> record.mint
+            is CreateMetadataRecord -> record.mint
+            is InitializeAccountRecord -> record.mint
+            is InitializeMintRecord -> record.mint
+            is MintToRecord -> record.mint
+            is TransferRecord -> record.mint
         }
     }
 }

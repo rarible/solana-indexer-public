@@ -1,8 +1,8 @@
-package com.rarible.protocol.solana.nft.listener.service.item
+package com.rarible.protocol.solana.nft.listener.service.token
 
-import com.rarible.core.entity.reducer.service.EntityIdService
+import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.model.ItemId
+import com.rarible.protocol.solana.nft.listener.model.Token
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -12,16 +12,17 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRec
 import org.springframework.stereotype.Component
 
 @Component
-class ItemIdService : EntityIdService<SolanaLogRecordEvent, ItemId> {
-    override fun getEntityId(event : SolanaLogRecordEvent): ItemId {
-        // todo mb exract abstract mint field?
-        return when (val record = event.record) {
-            is BurnRecord -> record.mint
-            is CreateMetadataRecord -> record.mint
-            is InitializeAccountRecord -> record.mint
-            is InitializeMintRecord -> record.mint
-            is MintToRecord -> record.mint
-            is TransferRecord -> record.mint
+class ReversedValueTokenReducer : Reducer<SolanaLogRecordEvent, Token> {
+    private val forwardValueTokenReducer = ForwardValueTokenReducer()
+
+    override suspend fun reduce(entity: Token, event: SolanaLogRecordEvent): Token {
+        return when (event.record) {
+            is BurnRecord,
+            is TransferRecord,
+            is MintToRecord,
+            is CreateMetadataRecord -> forwardValueTokenReducer.reduce(entity, event.copy(record = event.record.invert()))
+            is InitializeAccountRecord, is InitializeMintRecord -> TODO()
         }
     }
 }
+
