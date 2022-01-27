@@ -1,6 +1,8 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.TokenRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -42,7 +44,7 @@ class TokenTest : AbstractBlockScannerTest() {
 
     private suspend fun checkToken(token: String, supply: Long, decimals: Int = 0) {
         Wait.waitAssert(timeout) {
-            val item = tokenRepository.findById(token).block()!!
+            val item = tokenRepository.findById(token)!!
 
             assertEquals(token, item.token)
             assertEquals(supply * 10.0.pow(decimals.toDouble()).toLong(), item.supply)
@@ -51,7 +53,7 @@ class TokenTest : AbstractBlockScannerTest() {
 
     private suspend fun checkBalance(account: String, value: Long, decimals: Int = 0) {
         Wait.waitAssert(timeout) {
-            val balance = balanceRepository.findById(account).block()!!
+            val balance = balanceRepository.findById(account)!!
 
             assertEquals(value * 10.0.pow(decimals.toDouble()).toLong(), balance.value)
         }

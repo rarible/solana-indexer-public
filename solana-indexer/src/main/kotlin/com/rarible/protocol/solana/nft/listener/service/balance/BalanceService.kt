@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 class BalanceService(
     private val balanceRepository: BalanceRepository
 ) {
-    fun get(id: BalanceId): Mono<Balance> = balanceRepository.findById(id)
+    suspend fun get(id: BalanceId): Balance? = balanceRepository.findById(id)
 
     suspend fun getAll(ids: Collection<BalanceId>): List<Balance> = balanceRepository.findAll(ids)
 

@@ -14,9 +14,8 @@ class BalanceUpdateService(
     private val balanceRepository: BalanceRepository,
 ) : EntityService<BalanceId, Balance> {
 
-    override suspend fun get(id: BalanceId): Balance? {
-        return balanceRepository.findById(id).awaitFirstOrNull()
-    }
+    override suspend fun get(id: BalanceId): Balance? =
+        balanceRepository.findById(id)
 
     override suspend fun update(entity: Balance): Balance {
         val savedItem = balanceRepository.save(entity).awaitFirst()

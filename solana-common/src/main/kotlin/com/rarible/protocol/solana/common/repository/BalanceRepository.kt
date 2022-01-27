@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.common.repository
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.find
@@ -34,9 +35,8 @@ class BalanceRepository(
         return mongo.findAllAndRemove<Balance>(Query.query(criteria)).collectList().awaitFirst()
     }
 
-    fun findById(id: BalanceId): Mono<Balance> {
-        return mongo.findById(id)
-    }
+    suspend fun findById(id: BalanceId): Balance? =
+        mongo.findById<Balance>(id).awaitFirstOrNull()
 
     suspend fun findAll(ids: Collection<BalanceId>): List<Balance> {
         val criteria = Criteria.where("_id").inValues(ids)
