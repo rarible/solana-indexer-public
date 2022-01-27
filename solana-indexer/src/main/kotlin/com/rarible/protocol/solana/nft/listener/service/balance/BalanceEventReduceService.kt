@@ -5,7 +5,7 @@ import com.rarible.core.entity.reducer.service.EventReduceService
 import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SubscriberGroup
-import com.rarible.protocol.solana.nft.listener.model.EntityEventListeners
+import com.rarible.protocol.solana.common.model.EntityEventListeners
 import org.springframework.stereotype.Component
 
 @Component

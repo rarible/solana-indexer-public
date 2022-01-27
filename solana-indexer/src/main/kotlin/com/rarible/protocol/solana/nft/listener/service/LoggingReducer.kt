@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service
 
 import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.core.entity.reducer.service.Reducer
-import com.rarible.protocol.solana.nft.listener.model.EntityEvent
+import com.rarible.protocol.solana.common.model.EntityEvent
 import org.slf4j.LoggerFactory
 
 class LoggingReducer<Id, Event : EntityEvent, E : Entity<Id, Event, E>> : Reducer<Event, E> {

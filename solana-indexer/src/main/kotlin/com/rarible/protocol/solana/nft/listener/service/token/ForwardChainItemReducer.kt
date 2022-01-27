@@ -1,7 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
-import com.rarible.protocol.solana.nft.listener.model.Token
-import com.rarible.protocol.solana.nft.listener.model.TokenId
+import com.rarible.protocol.solana.common.event.TokenEvent
+import com.rarible.protocol.solana.common.model.Token
+import com.rarible.protocol.solana.common.model.TokenId
 import org.springframework.stereotype.Component
 
 @Component

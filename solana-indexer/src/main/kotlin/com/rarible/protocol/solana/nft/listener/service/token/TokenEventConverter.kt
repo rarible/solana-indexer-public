@@ -1,5 +1,9 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
+import com.rarible.protocol.solana.common.event.BurnEvent
+import com.rarible.protocol.solana.common.event.MintEvent
+import com.rarible.protocol.solana.common.event.TokenEvent
+import com.rarible.protocol.solana.common.event.TransferEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord

@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.core.entity.reducer.service.EventApplyPolicy
-import com.rarible.protocol.solana.nft.listener.model.EntityEvent
+import com.rarible.protocol.solana.common.model.EntityEvent
 
 open class RevertEventApplyPolicy<T : EntityEvent> : EventApplyPolicy<T> {
     override fun reduce(

@@ -2,8 +2,8 @@ package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.repository.BalanceRepository
-import com.rarible.protocol.solana.nft.listener.model.Balance
-import com.rarible.protocol.solana.nft.listener.model.BalanceId
+import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.BalanceId
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
