@@ -1,8 +1,6 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.nft.listener.service.balance.BalanceRepository
-import com.rarible.protocol.solana.nft.listener.service.token.TokenRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

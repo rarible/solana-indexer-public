@@ -1,7 +1,8 @@
 rootProject.name = "solana-indexer"
 
 include(
-    "solana-block-scanner",
+    "solana-common",
+    "solana-api",
     "solana-indexer",
     "util-borsh"
 )

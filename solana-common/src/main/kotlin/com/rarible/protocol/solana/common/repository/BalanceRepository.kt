@@ -1,7 +1,7 @@
-package com.rarible.protocol.solana.nft.listener.service.balance
+package com.rarible.protocol.solana.common.repository
 
-import com.rarible.protocol.solana.nft.listener.model.Balance
-import com.rarible.protocol.solana.nft.listener.model.BalanceId
+import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.BalanceId
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations

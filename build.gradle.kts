@@ -35,5 +35,4 @@ subprojects {
 }
 
 tasks.register<TestReport>("coverage") {
-    // dummy
 }
