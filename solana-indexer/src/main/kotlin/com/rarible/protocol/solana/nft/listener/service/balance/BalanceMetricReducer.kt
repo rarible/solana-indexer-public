@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
 import com.rarible.protocol.solana.nft.listener.model.Balance
-import com.rarible.protocol.solana.nft.listener.service.token.AbstractMetricReducer
+import com.rarible.protocol.solana.nft.listener.service.AbstractMetricReducer
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.stereotype.Component
 

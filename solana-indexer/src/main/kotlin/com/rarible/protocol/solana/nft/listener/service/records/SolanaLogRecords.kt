@@ -7,10 +7,6 @@ import com.rarible.protocol.solana.borsh.CreateMetadataAccountArgs
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 sealed class SolanaItemLogRecord : SolanaLogRecord() {
-    open fun invert(): SolanaItemLogRecord {
-        throw IllegalArgumentException("${this.javaClass} event can't be inverted")
-    }
-
     data class InitializeMintRecord(
         val mint: String,
         val mintAuthority: String,
@@ -35,13 +31,6 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val mint: String,
         override val log: SolanaLog
     ) : SolanaItemLogRecord() {
-        override fun invert() = BurnRecord(
-            account = account,
-            burnAmount = mintAmount,
-            mint = mint,
-            log
-        )
-
         override fun getKey(): String = mint
     }
 
@@ -51,13 +40,6 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val mint: String,
         override val log: SolanaLog
     ) : SolanaItemLogRecord() {
-        override fun invert() = MintToRecord(
-            account = account,
-            mintAmount = burnAmount,
-            mint = mint,
-            log
-        )
-
         override fun getKey(): String = mint
     }
 
@@ -68,14 +50,6 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val amount: Long,
         override val log: SolanaLog
     ) : SolanaItemLogRecord() {
-        override fun invert() = TransferRecord(
-            mint = mint,
-            from = to,
-            to = from,
-            amount = amount,
-            log
-        )
-
         override fun getKey(): String = mint
     }
 

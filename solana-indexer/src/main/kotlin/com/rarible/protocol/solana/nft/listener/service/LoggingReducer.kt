@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.token
+package com.rarible.protocol.solana.nft.listener.service
 
 import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.core.entity.reducer.service.Reducer
