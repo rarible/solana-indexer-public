@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.core.entity.reducer.service.EntityService
+import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.model.Token
 import com.rarible.protocol.solana.nft.listener.model.TokenId
 import kotlinx.coroutines.reactive.awaitFirst

@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.balance
 
+import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.nft.listener.model.Balance
 import com.rarible.protocol.solana.nft.listener.model.BalanceId
 import org.slf4j.Logger

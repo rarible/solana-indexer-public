@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 val solanaOpenapiVersion: String by project
 
 plugins {
@@ -5,6 +7,10 @@ plugins {
 
     kotlin("jvm")
     kotlin("plugin.spring")
+}
+
+tasks.withType<BootJar> {
+    enabled = false
 }
 
 dependencies {

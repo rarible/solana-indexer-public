@@ -12,7 +12,7 @@ buildscript {
 }
 
 allprojects {
-    group = "com.rarible.protocol"
+    group = "com.rarible.protocol.solana"
     version = "1.0"
 
     tasks.withType<KotlinCompile> {
@@ -24,9 +24,7 @@ allprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-}
 
-subprojects {
     repositories {
         mavenCentral()
         maven(url = "http://nexus-ext.rarible.int/repository/maven-public/") { isAllowInsecureProtocol = true }
