@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.api.exceptions
 
-import com.rarible.protocol.solana.dto.SolanaApiErrorBadRequestDto
-import com.rarible.protocol.solana.dto.SolanaApiErrorEntityNotFoundDto
+import com.rarible.solana.protocol.dto.SolanaApiErrorBadRequestDto
+import com.rarible.solana.protocol.dto.SolanaApiErrorEntityNotFoundDto
 import org.springframework.http.HttpStatus
 
 sealed class NftIndexerApiException(

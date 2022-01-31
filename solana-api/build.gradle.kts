@@ -3,5 +3,6 @@ val solanaOpenapiVersion: String by project
 dependencies {
     implementation(project(":solana-common"))
 
-    implementation("com.rarible.protocol.solana:solana-protocol-api:$solanaOpenapiVersion")
+    implementation("com.rarible.solana.protocol:solana-protocol-api:$solanaOpenapiVersion")
+    testImplementation("com.rarible.solana.protocol:solana-protocol-client:$solanaOpenapiVersion")
 }

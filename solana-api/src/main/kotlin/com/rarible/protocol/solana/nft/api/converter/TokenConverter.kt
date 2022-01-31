@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.api.converter
 
 import com.rarible.protocol.solana.common.model.Token
-import com.rarible.protocol.solana.dto.TokenDto
+import com.rarible.solana.protocol.dto.TokenDto
 
 object TokenConverter {
     fun convert(token: Token): TokenDto = TokenDto(

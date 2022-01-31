@@ -1,0 +1,11 @@
+spring:
+  application.name: protocol-solana-indexer-api
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
+    deserialization:
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+    default-property-inclusion: non_null
+  main:
+    banner-mode: log
+    web-application-type: reactive

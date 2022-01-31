@@ -1,9 +1,9 @@
 package com.rarible.protocol.solana.nft.api.controller.advice
 
-import com.rarible.protocol.solana.dto.SolanaApiErrorBadRequestDto
-import com.rarible.protocol.solana.dto.SolanaApiErrorServerErrorDto
 import com.rarible.protocol.solana.nft.api.controller.TokenController
 import com.rarible.protocol.solana.nft.api.exceptions.NftIndexerApiException
+import com.rarible.solana.protocol.dto.SolanaApiErrorBadRequestDto
+import com.rarible.solana.protocol.dto.SolanaApiErrorServerErrorDto
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
 import org.springframework.core.convert.ConversionFailedException

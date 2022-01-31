@@ -1,0 +1,13 @@
+package com.rarible.protocol.solana.nft.api.data
+
+import com.rarible.core.test.data.randomBoolean
+import com.rarible.core.test.data.randomLong
+import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.model.Token
+
+fun createRandomToken(): Token = Token(
+    mint = randomString(),
+    collection = if (randomBoolean()) randomString() else null,
+    supply = randomLong(),
+    revertableEvents = emptyList()
+)

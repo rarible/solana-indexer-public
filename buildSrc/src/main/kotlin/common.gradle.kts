@@ -8,6 +8,7 @@ val springBootVersion: String by project
 val coroutinesVersion: String by project
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven(url = "http://nexus-ext.rarible.int/repository/maven-public/") { isAllowInsecureProtocol = true }
     maven(url = "https://repo.rarible.org/repository/maven-public/")
