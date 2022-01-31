@@ -32,6 +32,7 @@ class BalanceRepository(
 
     suspend fun removeAll(ids: Collection<BalanceId>): List<Balance> {
         val criteria = Criteria.where("_id").inValues(ids)
+
         return mongo.findAllAndRemove<Balance>(Query.query(criteria)).collectList().awaitFirst()
     }
 
@@ -40,19 +41,8 @@ class BalanceRepository(
 
     suspend fun findAll(ids: Collection<BalanceId>): List<Balance> {
         val criteria = Criteria.where("_id").inValues(ids)
+
         return mongo.find<Balance>(Query.query(criteria)).collectList().awaitFirst()
-    }
-
-    suspend fun search(criteria: Criteria?, size: Int, sort: Sort?): List<Balance> {
-        return query(criteria, size, sort)
-    }
-
-    suspend fun search(query: Query?): List<Balance> {
-        return mongo.query<Balance>()
-            .matching(query ?: Query())
-            .all()
-            .collectList()
-            .awaitFirst()
     }
 
     fun deleteById(id: BalanceId): Mono<Balance> {

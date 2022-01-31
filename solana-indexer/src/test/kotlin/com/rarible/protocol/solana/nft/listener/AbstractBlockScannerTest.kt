@@ -8,6 +8,7 @@ import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
@@ -52,7 +53,7 @@ abstract class AbstractBlockScannerTest {
 
     @BeforeEach
     fun cleanDatabase() = runBlocking<Unit> {
-        mongo.remove(Query(), "spl-token").block()
+        mongo.remove(Query(), "spl-token").awaitSingle()
 
         val slot = client.getLatestSlot()
         val currentBlock = client.getBlock(slot) ?: error("Can't get latest block")

@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.common.model
+package com.rarible.protocol.solana.common.event
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 
