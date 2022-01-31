@@ -19,7 +19,7 @@ class TokenEventReduceService(
 ) : EntityEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
-    override val id: String = EntityEventListeners.itemHistoryListenerId(environmentInfo.name)
+    override val id: String = EntityEventListeners.tokenHistoryListenerId(environmentInfo.name)
 
     override val subscriberGroup: SubscriberGroup = "spl-token"
 

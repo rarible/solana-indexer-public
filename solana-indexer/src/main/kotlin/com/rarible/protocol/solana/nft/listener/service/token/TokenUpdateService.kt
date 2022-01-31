@@ -4,8 +4,6 @@ import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -19,10 +17,10 @@ class TokenUpdateService(
     }
 
     override suspend fun update(entity: Token): Token {
-        val savedItem = tokenRepository.save(entity)
+        val token = tokenRepository.save(entity)
 
-        logger.info("Updated item: $entity")
-        return savedItem
+        logger.info("Updated token: $entity")
+        return token
     }
 
     companion object {

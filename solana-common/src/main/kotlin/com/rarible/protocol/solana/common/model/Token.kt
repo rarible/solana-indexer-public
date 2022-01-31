@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 typealias TokenId = String
 
-@Document("item")
+@Document("token")
 data class Token(
-    val token: String,
+    val mint: String,
     val collection: String? = null,
     val supply: Long, // TODO: change to BigInteger.
     override val revertableEvents: List<TokenEvent> = emptyList(),
@@ -18,7 +18,7 @@ data class Token(
     @get:Id
     @get:AccessType(AccessType.Type.PROPERTY)
     override var id: TokenId
-        get() = token
+        get() = mint
         set(_) {}
 
     override fun withRevertableEvents(events: List<TokenEvent>): Token {
@@ -28,7 +28,7 @@ data class Token(
     companion object {
         fun empty(token: String): Token {
             return Token(
-                token = token,
+                mint = token,
                 collection = null,
                 supply = 0L,
                 revertableEvents = emptyList()

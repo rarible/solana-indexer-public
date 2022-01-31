@@ -6,7 +6,7 @@ import com.rarible.protocol.solana.common.model.TokenId
 import org.springframework.stereotype.Component
 
 @Component
-class ForwardChainItemReducer(
+class ForwardChainTokenReducer(
     tokenConfirmEventApplyPolicy: TokenConfirmEventApplyPolicy,
     forwardValueTokenReducer: ForwardValueTokenReducer,
 ) : EntityChainReducer<TokenId, TokenEvent, Token>(

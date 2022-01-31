@@ -13,13 +13,13 @@ class TokenReducer(
     tokenMetricReducer: TokenMetricReducer
 ) : Reducer<TokenEvent, Token> {
 
-    private val eventStatusItemReducer = combineIntoChain(
+    private val eventStatusTokenReducer = combineIntoChain(
         LoggingReducer(),
         tokenMetricReducer,
         eventStatusTokenReducer
     )
 
     override suspend fun reduce(entity: Token, event: TokenEvent): Token {
-        return eventStatusItemReducer.reduce(entity, event)
+        return eventStatusTokenReducer.reduce(entity, event)
     }
 }

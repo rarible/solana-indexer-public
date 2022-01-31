@@ -21,7 +21,7 @@ class TokenTest : AbstractBlockScannerTest() {
     private lateinit var balanceRepository: BalanceRepository
 
     @Test
-    fun `Item supply should be changed`() = runBlocking {
+    fun `Token supply should be changed`() = runBlocking {
         val decimals = 3
         val aliceWallet = createWallet("${UUID.randomUUID()}")
         val token = createToken(decimals)
@@ -42,12 +42,12 @@ class TokenTest : AbstractBlockScannerTest() {
         checkBalance(aliceAccount, value = 1, decimals)
     }
 
-    private suspend fun checkToken(token: String, supply: Long, decimals: Int = 0) {
+    private suspend fun checkToken(mint: String, supply: Long, decimals: Int = 0) {
         Wait.waitAssert(timeout) {
-            val item = tokenRepository.findById(token)!!
+            val token = tokenRepository.findById(mint)!!
 
-            assertEquals(token, item.token)
-            assertEquals(supply * 10.0.pow(decimals.toDouble()).toLong(), item.supply)
+            assertEquals(mint, token.mint)
+            assertEquals(supply * 10.0.pow(decimals.toDouble()).toLong(), token.supply)
         }
     }
 

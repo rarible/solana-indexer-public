@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component
 
 @Component
 class EventStatusTokenReducer(
-    private val forwardChainItemReducer: ForwardChainItemReducer,
+    private val forwardChainTokenReducer: ForwardChainTokenReducer,
     private val reversedChainTokenReducer: ReversedChainTokenReducer,
 ) : Reducer<TokenEvent, Token> {
     override suspend fun reduce(entity: Token, event: TokenEvent): Token {
         return if (event.reversed) {
             reversedChainTokenReducer.reduce(entity, event)
         } else {
-            forwardChainItemReducer.reduce(entity, event)
+            forwardChainTokenReducer.reduce(entity, event)
         }
     }
 }

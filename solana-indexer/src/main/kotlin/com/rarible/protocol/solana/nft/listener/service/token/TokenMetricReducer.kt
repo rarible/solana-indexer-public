@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class TokenMetricReducer(
     properties: NftIndexerProperties,
     meterRegistry: MeterRegistry,
-) : AbstractMetricReducer<TokenEvent, Token>(meterRegistry, properties, "item") {
+) : AbstractMetricReducer<TokenEvent, Token>(meterRegistry, properties, "token") {
 
     override fun getMetricName(event: TokenEvent): String {
         return when (event) {

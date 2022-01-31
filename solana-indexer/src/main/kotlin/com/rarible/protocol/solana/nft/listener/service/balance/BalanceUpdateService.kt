@@ -5,7 +5,6 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -18,10 +17,10 @@ class BalanceUpdateService(
         balanceRepository.findById(id)
 
     override suspend fun update(entity: Balance): Balance {
-        val savedItem = balanceRepository.save(entity).awaitFirst()
+        val balance = balanceRepository.save(entity).awaitFirst()
 
-        logger.info("Updated item: $entity")
-        return savedItem
+        logger.info("Updated balance: $entity")
+        return balance
     }
 
     companion object {
