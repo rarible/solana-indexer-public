@@ -160,8 +160,8 @@ class TransferSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class MetadataSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = CreateMetadataDescriptor
+class MetadataSubscriber(private val descriptor: CreateMetadataDescriptor) : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = descriptor
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,

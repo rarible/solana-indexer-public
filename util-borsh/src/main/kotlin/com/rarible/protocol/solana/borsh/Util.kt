@@ -6,6 +6,9 @@ import org.bitcoinj.core.Base58
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
+internal inline fun <reified T> ByteBuffer.readOptional(block: (ByteBuffer) -> T) : T? =
+    if (hasRemaining()) block(this) else null
+
 internal inline fun <reified T> ByteBuffer.readNullable(block: (ByteBuffer) -> T) : T? =
     if (get().toInt() == 0) null else block(this)
 

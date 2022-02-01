@@ -3,6 +3,7 @@ spring:
     name: test-solana-indexer
 
 common:
+  metadataProgramId: BczzThvqUCy8Z4kGRaJkvVtMQbG5pAQD9CyACKPiW4tf
   metricRootPath: solana-nft-metrics
   kafka-replica-set: ${kafka.hosts}
 

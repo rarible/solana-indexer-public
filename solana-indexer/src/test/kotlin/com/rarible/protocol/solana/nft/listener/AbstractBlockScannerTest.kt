@@ -71,6 +71,33 @@ abstract class AbstractBlockScannerTest {
         }
     }
 
+    protected fun mintNft(): String {
+        val args = buildList {
+            add("ts-node")
+            add("/home/rarible/metaplex/js/packages/cli/src/cli-nft.ts")
+            add("mint")
+            add("-e")
+            add("local")
+            add("-u")
+            add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
+            add("--keypair")
+            add("/root/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun deployMetadataProgram() {
+        val args = buildList {
+            add("solana")
+            add("program")
+            add("deploy")
+            add("/home/rarible/mpl_token_metadata.so")
+        }
+
+        return processOperation(args) { it.parse(0, -1) }
+    }
+
     protected fun getWallet(config: String? = null): String {
         val args = buildList {
             add("spl-token")
@@ -146,7 +173,7 @@ abstract class AbstractBlockScannerTest {
     companion object {
         val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")
             .withExposedPorts(8899)
-            .withCommand("solana-test-validator --limit-ledger-size=50_000_000")
+            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000")
             .waitingFor(Wait.defaultWaitStrategy())
 
         @BeforeAll

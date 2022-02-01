@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
@@ -12,7 +13,8 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
@@ -28,6 +30,33 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
+
+    @Test
+    fun createMetadata() = runBlocking {
+        deployMetadataProgram()
+        val wallet = getWallet()
+        val nft = mintNft()
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(CreateMetadataRecord::class.java).toList()
+
+            assertEquals(1, records.size)
+            val record = records.single()
+
+            assertEquals(nft, record.mint)
+            assertFalse(record.metadata.mutable)
+
+            val data = record.metadata.data
+            assertEquals("My NFT #1", data.name)
+            assertEquals("MY_SYMBOL", data.symbol)
+            assertEquals(420, data.sellerFeeBasisPoints)
+
+            val creator = data.creators!!.single()
+            assertEquals(wallet, creator.address)
+            assertEquals(100, creator.share)
+            assertTrue(creator.verified)
+        }
+    }
 
     @Test
     fun initializeMint() = runBlocking {

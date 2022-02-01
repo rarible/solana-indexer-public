@@ -15,6 +15,11 @@ data class Creator(
     val share: Byte,
 )
 
+data class Collection(
+    val key: Pubkey,
+    val verified: Boolean
+)
+
 data class Data(
     val name: String,
     /// The symbol for the asset
@@ -25,6 +30,7 @@ data class Data(
     val sellerFeeBasisPoints: Short,
     /// Array of creators, optional
     val creators: List<Creator>?,
+    val collection: Collection?
 )
 
 data class CreateMetadataAccountArgs(
@@ -37,8 +43,9 @@ internal fun ByteBuffer.parseCreateMetadataAccountArgs(): CreateMetadataAccountA
     val symbol = readString()
     val uri = readString()
     val sellerFeeBasisPoints = getShort()
-    val creators = readNullable { List(getInt()) { parseCreator() } }
+    val creators = readNullable { List(getInt()) { readCreator() } }
     val mutable = readBoolean()
+    val collection = readOptional { readNullable { readCollection() } }
 
     return CreateMetadataAccountArgs(
         Data(
@@ -46,13 +53,21 @@ internal fun ByteBuffer.parseCreateMetadataAccountArgs(): CreateMetadataAccountA
             symbol = symbol,
             uri = uri,
             sellerFeeBasisPoints = sellerFeeBasisPoints,
-            creators = creators
+            creators = creators,
+            collection = collection
         ),
         mutable
     )
 }
 
-private fun ByteBuffer.parseCreator(): Creator {
+private fun ByteBuffer.readCollection(): Collection {
+    val verified = readBoolean()
+    val key = readPubkey()
+
+    return Collection(key = key, verified = verified)
+}
+
+private fun ByteBuffer.readCreator(): Creator {
     val address = readPubkey()
     val verified = readBoolean()
     val share = get()
@@ -65,7 +80,7 @@ fun String.parseMetadataInstruction(): MetadataInstruction? {
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
 
     val decoder = when (buffer.get().toInt()) {
-        0 -> ByteBuffer::parseCreateMetadataAccountArgs
+        0, 16 -> ByteBuffer::parseCreateMetadataAccountArgs
         else -> return null
     }
 

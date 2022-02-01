@@ -13,5 +13,6 @@ data class NftIndexerProperties(
     val maxPollRecords: Int = 100,
     val metricRootPath: String,
     val daemonWorkerProperties: DaemonWorkerProperties = DaemonWorkerProperties(),
-    val confirmationBlocks: Int = 100
+    val confirmationBlocks: Int = 100,
+    val metadataProgramId: String = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 )
