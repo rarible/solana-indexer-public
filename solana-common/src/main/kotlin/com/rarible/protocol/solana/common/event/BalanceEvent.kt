@@ -9,7 +9,7 @@ sealed class BalanceEvent : EntityEvent {
     abstract override fun invert(): BalanceEvent
 }
 
-class BalanceIncomeEvent(
+data class BalanceIncomeEvent(
     override val account: String,
     override val reversed: Boolean,
     val amount: Long,
@@ -18,7 +18,7 @@ class BalanceIncomeEvent(
     override fun invert() = BalanceOutcomeEvent(account, reversed, amount, log)
 }
 
-class BalanceOutcomeEvent(
+data class BalanceOutcomeEvent(
     override val account: String,
     override val reversed: Boolean,
     val amount: Long,

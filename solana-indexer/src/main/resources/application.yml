@@ -6,7 +6,8 @@ server:
   port: 8080
 
 spring:
-  application.name: protocol-solana-nft-listener
+  application:
+    name: protocol-solana-nft-indexer
   jackson:
     mapper:
       ACCEPT_CASE_INSENSITIVE_ENUMS: true
@@ -20,6 +21,9 @@ spring:
   main:
     banner-mode: log
     web-application-type: reactive
+
+common:
+  metricRootPath: solana-nft-metrics
 
 rarible:
   core:
@@ -56,8 +60,3 @@ blockchain:
         rootPath: "blockchain.scanner"
         worker:
           pollingPeriod: 1m
-
-
-mongock:
-  change-logs-scan-package:
-    - com.rarible.blockchain.scanner.solana.migration

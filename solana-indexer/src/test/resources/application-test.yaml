@@ -1,0 +1,19 @@
+common:
+  kafka-replica-set: ${kafka.hosts}
+
+solana:
+  protocol:
+    subscriber:
+      broker-replica-set: ${kafka.hosts}
+
+blockchain:
+  scanner:
+    kafka:
+      broker-replica-set: ${kafka.hosts}
+    solana:
+      monitoring:
+        enabled: false
+
+testcontainers:
+  reuse:
+    enable: true

@@ -7,7 +7,7 @@ sealed class TokenEvent : EntityEvent {
     abstract override fun invert(): TokenEvent
 }
 
-class MintEvent(
+data class MintEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val token: String,
@@ -21,7 +21,7 @@ class MintEvent(
     )
 }
 
-class BurnEvent(
+data class BurnEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val token: String,
@@ -35,7 +35,7 @@ class BurnEvent(
     )
 }
 
-class TransferEvent(
+data class TransferEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val token: String,

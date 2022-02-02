@@ -22,9 +22,8 @@ class BalanceRepository(
     private val mongo: ReactiveMongoOperations
 ) {
 
-    fun save(balance: Balance): Mono<Balance> {
-        return mongo.save(balance)
-    }
+    suspend fun save(balance: Balance): Balance =
+        mongo.save(balance).awaitFirst()
 
     suspend fun saveAll(balances: Collection<Balance>): List<Balance> {
         return mongo.insertAll(balances).collectList().awaitFirst()

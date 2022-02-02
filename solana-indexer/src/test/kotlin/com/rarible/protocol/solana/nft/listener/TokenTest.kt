@@ -1,21 +1,21 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.converter.BalanceConverter
+import com.rarible.protocol.solana.common.converter.TokenConverter
+import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
+import com.rarible.solana.protocol.dto.TokenUpdateEventDto
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Duration
-import java.util.UUID
-import kotlin.math.pow
+import java.util.*
 
-@Disabled
-class TokenTest : AbstractBlockScannerTest() {
-    private val timeout = Duration.ofSeconds(5)
-
+class TokenTest : EventAwareBlockScannerTest() {
     @Autowired
     private lateinit var tokenRepository: TokenRepository
 
@@ -23,41 +23,99 @@ class TokenTest : AbstractBlockScannerTest() {
     private lateinit var balanceRepository: BalanceRepository
 
     @Test
-    fun `Token supply should be changed`() = runBlocking {
+    fun `mint, burn, transfer token`() = runBlocking {
         val decimals = 3
         val aliceWallet = createWallet("${UUID.randomUUID()}")
-        val token = createToken(decimals)
-        val account = createAccount(token)
-        val aliceAccount = createAccount(token, aliceWallet)
+        val tokenAddress = createToken(decimals)
+        val account = createAccount(tokenAddress)
+        val aliceAccount = createAccount(tokenAddress, aliceWallet)
 
-        mintToken(token, amount = 5UL)
-        checkToken(token, supply = 5, decimals)
-        checkBalance(account, value = 5, decimals)
+        mintToken(tokenAddress, amount = 5UL)
+        val token = Token(
+            mint = tokenAddress,
+            collection = null,
+            supply = 5.scaleSupply(decimals),
+            isDeleted = false,
+            revertableEvents = emptyList()
+        )
+        val fromBalance = Balance(
+            account = account,
+            value = 5.scaleSupply(decimals),
+            revertableEvents = emptyList()
+        )
+        val aliceBalance = Balance(
+            account = aliceAccount,
+            value = 0,
+            revertableEvents = emptyList()
+        )
+
+        Wait.waitAssert {
+            assertToken(token)
+            assertUpdateTokenEvent(token)
+            assertUpdateBalanceEvent(fromBalance)
+            assertBalance(fromBalance)
+        }
 
         burnToken(account, amount = 4UL)
-        checkToken(token, supply = 1, decimals)
-        checkBalance(account, value = 1, decimals)
+        Wait.waitAssert {
+            val partlyBurnedToken = token.copy(supply = 1.scaleSupply(decimals))
+            assertToken(partlyBurnedToken)
+            assertUpdateTokenEvent(partlyBurnedToken)
 
-        transferToken(token, amount = 1UL, aliceAccount)
-        checkToken(token, supply = 1, decimals)
-        checkBalance(account, value = 0, decimals)
-        checkBalance(aliceAccount, value = 1, decimals)
-    }
+            val partlyBurnedBalance = fromBalance.copy(value = 1.scaleSupply(decimals))
+            assertBalance(partlyBurnedBalance)
+            assertUpdateBalanceEvent(partlyBurnedBalance)
+        }
 
-    private suspend fun checkToken(mint: String, supply: Long, decimals: Int = 0) {
-        Wait.waitAssert(timeout) {
-            val token = tokenRepository.findById(mint)!!
+        transferToken(tokenAddress, amount = 1UL, aliceAccount)
+        Wait.waitAssert {
+            val finalToken = token.copy(supply = 1.scaleSupply(decimals))
+            assertToken(finalToken)
+            assertUpdateTokenEvent(finalToken)
 
-            assertEquals(mint, token.mint)
-            assertEquals(supply * 10.0.pow(decimals.toDouble()).toLong(), token.supply)
+            val finalFromBalance = fromBalance.copy(value = 0.scaleSupply(decimals))
+            assertBalance(finalFromBalance)
+            assertUpdateBalanceEvent(finalFromBalance)
+
+            val finalAliceBalance = aliceBalance.copy(value = 1.scaleSupply(decimals))
+            assertBalance(finalAliceBalance)
+            assertUpdateBalanceEvent(finalAliceBalance)
         }
     }
 
-    private suspend fun checkBalance(account: String, value: Long, decimals: Int = 0) {
-        Wait.waitAssert(timeout) {
-            val balance = balanceRepository.findById(account)!!
-
-            assertEquals(value * 10.0.pow(decimals.toDouble()).toLong(), balance.value)
+    private fun assertUpdateTokenEvent(token: Token) {
+        assertThat(tokenEvents).anySatisfy { event ->
+            assertThat(event).isInstanceOfSatisfying(TokenUpdateEventDto::class.java) {
+                assertThat(it.address).isEqualTo(token.mint)
+                assertThat(it.token).isEqualTo(TokenConverter.convert(token))
+            }
         }
     }
+
+    private fun assertUpdateBalanceEvent(balance: Balance) {
+        assertThat(balanceEvents).anySatisfy { event ->
+            assertThat(event).isInstanceOfSatisfying(BalanceUpdateEventDto::class.java) {
+                assertThat(it.account).isEqualTo(balance.account)
+                assertThat(it.balance).isEqualTo(BalanceConverter.convert(balance))
+            }
+        }
+    }
+
+    private suspend fun assertToken(expectedToken: Token) {
+        val actualToken = tokenRepository.findById(expectedToken.mint)
+        assertTokensEqual(actualToken, expectedToken)
+    }
+
+    private fun assertTokensEqual(actualToken: Token?, expectedToken: Token) {
+        // Ignore [revertableEvents] because they are minor and hard to get (transaction hashes change all the time)
+        assertThat(actualToken?.copy(revertableEvents = emptyList()))
+            .isEqualTo(expectedToken.copy(revertableEvents = emptyList()))
+    }
+
+    private suspend fun assertBalance(balance: Balance) {
+        // Ignore [revertableEvents] because they are minor and hard to get (transaction hashes change all the time)
+        assertThat(balanceRepository.findById(balance.account)?.copy(revertableEvents = emptyList()))
+            .isEqualTo(balance.copy(revertableEvents = emptyList()))
+    }
+
 }

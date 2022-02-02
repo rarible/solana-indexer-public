@@ -1,7 +1,9 @@
 package com.rarible.protocol.solana.nft.listener.consumer
 
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
+import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.blockchain.scanner.util.getLogTopicPrefix
+import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.daemon.RetryProperties
 import com.rarible.core.daemon.sequential.ConsumerEventHandler
 import com.rarible.core.daemon.sequential.ConsumerWorker
@@ -21,14 +23,17 @@ data class SolanaLogRecordEvent(
 class KafkaEntityEventConsumer(
     private val properties: KafkaProperties,
     private val meterRegistry: MeterRegistry,
-    host: String,
-    environment: String,
-    private val service: String
+    solanaBlockchainScannerProperties: SolanaBlockchainScannerProperties,
+    applicationEnvironmentInfo: ApplicationEnvironmentInfo
 ) : AutoCloseable {
 
-    private val blockchain = "solana"
-    private val topicPrefix = getLogTopicPrefix(environment, service, blockchain)
-    private val clientIdPrefix = "$environment.$host.${java.util.UUID.randomUUID()}.$blockchain"
+    private val topicPrefix = getLogTopicPrefix(
+        environment = applicationEnvironmentInfo.name,
+        service = solanaBlockchainScannerProperties.service,
+        blockchain = solanaBlockchainScannerProperties.blockchain
+    )
+    private val clientIdPrefix =
+        "${applicationEnvironmentInfo.name}.${applicationEnvironmentInfo.host}.${java.util.UUID.randomUUID()}.solana"
     private val batchedConsumerWorkers = arrayListOf<ConsumerWorkerHolder<*>>()
 
     fun start(entityEventListeners: List<EntityEventListener>) {
@@ -46,7 +51,7 @@ class KafkaEntityEventConsumer(
         val workers = (1..properties.numberOfPartitionsPerLogGroup).map { index ->
             val consumerGroup = listener.id
             val kafkaConsumer = RaribleKafkaConsumer(
-                clientId = "$clientIdPrefix.log-event-consumer.$service.$consumerGroup-$index",
+                clientId = "$clientIdPrefix.log-records-consumer.$consumerGroup-$index",
                 valueDeserializerClass = JsonDeserializer::class.java,
                 valueClass = SolanaLogRecordEvent::class.java,
                 consumerGroup = consumerGroup,

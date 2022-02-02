@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.descriptors
 
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
-import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -46,7 +46,7 @@ object TransferDescriptor : SolanaDescriptor(
 )
 
 @Component
-class CreateMetadataDescriptor(properties: NftIndexerProperties) : SolanaDescriptor(
+class CreateMetadataDescriptor(properties: SolanaIndexerProperties) : SolanaDescriptor(
     properties.metadataProgramId,
     "spl-token",
     entityType = CreateMetadataRecord::class.java

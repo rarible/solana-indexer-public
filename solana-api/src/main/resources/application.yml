@@ -9,3 +9,6 @@ spring:
   main:
     banner-mode: log
     web-application-type: reactive
+
+common:
+  metricRootPath: solana-nft-metrics

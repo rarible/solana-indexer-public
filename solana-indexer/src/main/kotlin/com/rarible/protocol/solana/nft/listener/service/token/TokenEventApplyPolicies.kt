@@ -1,11 +1,11 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.TokenEvent
-import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
 import org.springframework.stereotype.Component
 
 @Component
-class TokenConfirmEventApplyPolicy(properties: NftIndexerProperties) :
+class TokenConfirmEventApplyPolicy(properties: SolanaIndexerProperties) :
     ConfirmEventApplyPolicy<TokenEvent>(properties.confirmationBlocks)
 
 @Component

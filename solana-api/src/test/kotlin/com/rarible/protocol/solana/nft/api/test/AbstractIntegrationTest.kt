@@ -1,7 +1,9 @@
 package com.rarible.protocol.solana.nft.api.test
 
+import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import com.rarible.solana.protocol.api.client.BalanceControllerApi
 import com.rarible.solana.protocol.api.client.FixedSolanaApiServiceUriProvider
 import com.rarible.solana.protocol.api.client.NoopWebClientCustomizer
 import com.rarible.solana.protocol.api.client.SolanaNftIndexerApiClientFactory
@@ -17,6 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.net.URI
 import javax.annotation.PostConstruct
 
+@KafkaTest
 @MongoTest
 @MongoCleanup
 @Testcontainers
@@ -42,6 +45,8 @@ abstract class AbstractIntegrationTest {
 
     protected lateinit var tokenControllerApi: TokenControllerApi
 
+    protected lateinit var balanceControllerApi: BalanceControllerApi
+
     @Autowired
     protected lateinit var mongo: ReactiveMongoOperations
 
@@ -53,5 +58,6 @@ abstract class AbstractIntegrationTest {
         val urlProvider = FixedSolanaApiServiceUriProvider(URI.create("http://127.0.0.1:$port"))
         val clientFactory = SolanaNftIndexerApiClientFactory(urlProvider, NoopWebClientCustomizer())
         tokenControllerApi = clientFactory.createTokenControllerApiClient()
+        balanceControllerApi = clientFactory.createBalanceControllerApiClient()
     }
 }

@@ -13,7 +13,8 @@ data class Token(
     val mint: String,
     val collection: String? = null,
     val supply: Long, // TODO: change to BigInteger.
-    override val revertableEvents: List<TokenEvent> = emptyList(),
+    val isDeleted: Boolean,
+    override val revertableEvents: List<TokenEvent>
 ) : Entity<TokenId, TokenEvent, Token> {
     @get:Id
     @get:AccessType(AccessType.Type.PROPERTY)
@@ -31,7 +32,8 @@ data class Token(
                 mint = token,
                 collection = null,
                 supply = 0L,
-                revertableEvents = emptyList()
+                revertableEvents = emptyList(),
+                isDeleted = false
             )
         }
     }

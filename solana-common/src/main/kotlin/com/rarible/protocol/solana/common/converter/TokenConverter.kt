@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.api.converter
+package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.solana.protocol.dto.TokenDto

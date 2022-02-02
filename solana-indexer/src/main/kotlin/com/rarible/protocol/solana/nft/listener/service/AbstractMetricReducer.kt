@@ -1,14 +1,14 @@
 package com.rarible.protocol.solana.nft.listener.service
 
 import com.rarible.core.entity.reducer.service.Reducer
-import com.rarible.protocol.solana.nft.listener.configuration.NftIndexerProperties
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class AbstractMetricReducer<Event, E>(
     private val meterRegistry: MeterRegistry,
-    properties: NftIndexerProperties,
+    properties: SolanaIndexerProperties,
     prefix: String
 ) : Reducer<Event, E> {
 

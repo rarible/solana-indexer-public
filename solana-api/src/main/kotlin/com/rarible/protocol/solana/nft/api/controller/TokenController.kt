@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.controller
 
-import com.rarible.protocol.solana.nft.api.converter.TokenConverter
+import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.nft.api.service.TokenService
 import com.rarible.solana.protocol.api.controller.TokenControllerApi
 import com.rarible.solana.protocol.dto.TokenDto

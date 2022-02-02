@@ -13,7 +13,7 @@ typealias BalanceId = String
 data class Balance(
     val account: String,
     val value: Long,
-    override val revertableEvents: List<BalanceEvent> = emptyList()
+    override val revertableEvents: List<BalanceEvent>
 ) : Entity<BalanceId, BalanceEvent, Balance> {
 
     @Transient
@@ -30,11 +30,10 @@ data class Balance(
     }
 
     companion object {
-        fun empty(owner: String): Balance {
-            return Balance(
-                account = owner,
-                value = 0L
-            )
-        }
+        fun empty(owner: String): Balance = Balance(
+            account = owner,
+            value = 0L,
+            revertableEvents = emptyList()
+        )
     }
 }
