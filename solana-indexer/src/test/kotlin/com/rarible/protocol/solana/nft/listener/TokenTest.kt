@@ -5,12 +5,14 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.util.UUID
 import kotlin.math.pow
 
+@Disabled
 class TokenTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 

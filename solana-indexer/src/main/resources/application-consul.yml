@@ -10,4 +10,5 @@ blockchain:
       broker-replica-set: ${kafka.hosts}
 
 common:
+  metricRootPath: solana-nft-metrics
   kafka-replica-set: ${kafka.hosts}

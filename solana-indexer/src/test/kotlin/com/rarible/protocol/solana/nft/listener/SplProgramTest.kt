@@ -15,6 +15,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
@@ -25,6 +26,7 @@ import java.time.Duration
 import java.util.UUID
 import kotlin.math.pow
 
+@Disabled
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
