@@ -1,3 +1,5 @@
+apply(plugin = "server")
+
 val solanaOpenapiVersion: String by project
 
 dependencies {
