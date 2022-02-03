@@ -1,13 +1,16 @@
 package com.rarible.protocol.solana.nft.listener.configuration
 
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
+import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import io.micrometer.core.instrument.MeterRegistry
+import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -21,8 +24,13 @@ class BlockchainScannerConfiguration(
     @Bean
     fun entityEventConsumer(
         entityEventListener: List<EntityEventListener>,
-        solanaBlockchainScannerProperties: SolanaBlockchainScannerProperties
+        solanaBlockchainScannerProperties: SolanaBlockchainScannerProperties,
+        publisher: LogRecordEventPublisher
     ): KafkaEntityEventConsumer {
+        // TODO: will be reworked on blockchain scanner side.
+        runBlocking {
+            publisher.prepareGroup(SubscriberGroups.SPL_TOKEN)
+        }
         return KafkaEntityEventConsumer(
             properties = KafkaProperties(
                 brokerReplicaSet = solanaIndexerProperties.kafkaReplicaSet,

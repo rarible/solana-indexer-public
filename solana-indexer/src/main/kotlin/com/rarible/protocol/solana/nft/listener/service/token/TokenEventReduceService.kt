@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SubscriberGroup
 import com.rarible.protocol.solana.common.model.EntityEventListeners
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import org.springframework.stereotype.Component
 
 @Component
@@ -21,7 +22,7 @@ class TokenEventReduceService(
 
     override val id: String = EntityEventListeners.tokenHistoryListenerId(environmentInfo.name)
 
-    override val subscriberGroup: SubscriberGroup = "spl-token"
+    override val subscriberGroup: SubscriberGroup = SubscriberGroups.SPL_TOKEN
 
     override suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>) {
         val tokenEvents = events.flatMap { tokenEventConverter.convert(it) }

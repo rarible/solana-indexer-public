@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
@@ -162,6 +163,6 @@ class SplProgramTest : AbstractBlockScannerTest() {
     private inline fun <reified T : SolanaLogRecord> findRecordByType(type: Class<T>): Flow<T> {
         val criteria = Criteria.where("_class").isEqualTo(T::class.java.name)
 
-        return mongo.find(Query(criteria), type, "spl-token").asFlow()
+        return mongo.find(Query(criteria), type, SubscriberGroups.SPL_TOKEN).asFlow()
     }
 }
