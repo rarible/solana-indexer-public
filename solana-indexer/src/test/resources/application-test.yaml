@@ -14,6 +14,12 @@ blockchain:
       monitoring:
         enabled: false
 
+rarible:
+  core:
+    apm:
+      agent:
+        enabled: false
+
 testcontainers:
   reuse:
     enable: true

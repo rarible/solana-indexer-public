@@ -31,7 +31,12 @@ rarible:
       agent:
         enabled: true
         server: http://elk_apm-server:8200
-        packages: com.rarible.protocol.nft.listener
+        packages: com.rarible.protocol.solana.nft.listener
+      web:
+        filter:
+          enabled: true
+      annotation:
+        enabled: true
 
 blockchain:
   scanner:
@@ -42,7 +47,7 @@ blockchain:
       rpcApiUrl: "https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/"
       scan:
         batchLoad:
-          batchSize: 500
+          batchSize: 1000
           enabled: true
       retryPolicy:
         scan:

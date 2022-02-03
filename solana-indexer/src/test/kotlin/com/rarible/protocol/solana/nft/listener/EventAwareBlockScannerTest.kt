@@ -24,11 +24,10 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
     protected val tokenEvents = CopyOnWriteArrayList<TokenEventDto>()
     protected val balanceEvents = CopyOnWriteArrayList<BalanceEventDto>()
 
-    private val eventsConsumingScope = CoroutineScope(SupervisorJob() + Executors.newSingleThreadExecutor { r ->
-        val thread = Thread(r)
-        thread.isDaemon = true
-        thread
-    }.asCoroutineDispatcher())
+    private val eventsConsumingScope = CoroutineScope(
+        SupervisorJob() +
+                Executors.newSingleThreadExecutor { Thread(it).apply { isDaemon = true } }.asCoroutineDispatcher()
+    )
 
     @BeforeEach
     fun setUpEventConsumers() {
