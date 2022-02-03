@@ -47,7 +47,7 @@ blockchain:
       rpcApiUrl: "https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/"
       scan:
         batchLoad:
-          batchSize: 500
+          batchSize: 1250
           enabled: true
       retryPolicy:
         scan:
