@@ -3,7 +3,8 @@
 def pipelineConfig = [
     "stackName": "protocol-solana",
     "services": [
-        [name: 'solana-indexer', path: './solana-indexer']
+        [name: 'solana-indexer', path: './solana-indexer'],
+        [name: 'solana-api', path: './solana-api']
     ],
     "slackChannel": "#protocol-duty"
 ]
