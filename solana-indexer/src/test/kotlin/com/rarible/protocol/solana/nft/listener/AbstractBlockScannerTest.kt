@@ -8,6 +8,8 @@ import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SolanaProgramId
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import kotlinx.coroutines.reactor.awaitSingle
@@ -50,6 +52,12 @@ abstract class AbstractBlockScannerTest {
 
     @Autowired
     private lateinit var client: SolanaClient
+
+    @Autowired
+    protected lateinit var tokenRepository: TokenRepository
+
+    @Autowired
+    protected lateinit var balanceRepository: BalanceRepository
 
     @Autowired
     private lateinit var repository: BlockRepository

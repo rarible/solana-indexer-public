@@ -18,12 +18,6 @@ import java.util.*
 
 @Disabled
 class TokenTest : EventAwareBlockScannerTest() {
-    @Autowired
-    private lateinit var tokenRepository: TokenRepository
-
-    @Autowired
-    private lateinit var balanceRepository: BalanceRepository
-
     @Test
     fun `mint, burn, transfer token`() = runBlocking {
         val decimals = 3
@@ -38,7 +32,8 @@ class TokenTest : EventAwareBlockScannerTest() {
             collection = null,
             supply = 5.scaleSupply(decimals),
             isDeleted = false,
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            metadataUrl = null
         )
         val fromBalance = Balance(
             account = account,

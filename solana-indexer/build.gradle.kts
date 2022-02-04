@@ -9,4 +9,5 @@ dependencies {
     implementation("com.rarible.core:rarible-core-apm-starter:$raribleCommonVersion")
 
     testImplementation("com.rarible.solana.protocol:solana-protocol-subscriber-starter:$solanaOpenapiVersion")
+    testImplementation(project(":solana-test-common"))
 }

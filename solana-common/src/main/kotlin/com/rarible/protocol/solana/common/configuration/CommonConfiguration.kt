@@ -7,7 +7,8 @@ import org.springframework.context.annotation.Import
 @Configuration
 @Import(
     RepositoryConfiguration::class,
-    EventProducerConfiguration::class
+    EventProducerConfiguration::class,
+    SolanaMetaConfiguration::class
 )
 @EnableConfigurationProperties(SolanaIndexerProperties::class)
 class CommonConfiguration

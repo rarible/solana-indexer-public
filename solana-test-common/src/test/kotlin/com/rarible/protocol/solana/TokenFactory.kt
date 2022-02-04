@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.api.data
+package com.rarible.protocol.solana
 
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomLong
@@ -11,7 +11,8 @@ fun createRandomToken(): Token = Token(
     collection = if (randomBoolean()) randomString() else null,
     supply = randomLong(),
     revertableEvents = emptyList(),
-    isDeleted = false
+    isDeleted = false,
+    metadataUrl = randomString()
 )
 
 fun createRandomBalance(): Balance = Balance(

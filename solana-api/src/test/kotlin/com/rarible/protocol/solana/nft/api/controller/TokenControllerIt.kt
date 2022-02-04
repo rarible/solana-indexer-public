@@ -1,8 +1,8 @@
 package com.rarible.protocol.solana.nft.api.controller
 
-import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.common.converter.TokenConverter
-import com.rarible.protocol.solana.nft.api.data.createRandomToken
+import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.test.createRandomToken
 import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking

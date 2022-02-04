@@ -13,7 +13,8 @@ data class Token(
     val mint: String,
     val collection: String? = null,
     val supply: Long, // TODO: change to BigInteger.
-    val isDeleted: Boolean,
+    val isDeleted: Boolean, // TODO: probably, can be calculated based on supply = 0
+    val metadataUrl: String?,
     override val revertableEvents: List<TokenEvent>
 ) : Entity<TokenId, TokenEvent, Token> {
     @get:Id
@@ -33,7 +34,8 @@ data class Token(
                 collection = null,
                 supply = 0L,
                 revertableEvents = emptyList(),
-                isDeleted = false
+                isDeleted = false,
+                metadataUrl = null
             )
         }
     }

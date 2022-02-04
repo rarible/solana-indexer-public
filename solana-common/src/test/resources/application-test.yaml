@@ -1,0 +1,6 @@
+common:
+  kafka-replica-set: ${kafka.hosts}
+
+testcontainers:
+  reuse:
+    enable: true

@@ -19,6 +19,11 @@ rarible:
     apm:
       agent:
         enabled: false
+  loader:
+    retry:
+      job:
+        runner:
+          period: 100000000000000 # Disabled in the tests, run the RetryTasksService manually.
 
 testcontainers:
   reuse:
