@@ -8,6 +8,7 @@ import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SolanaProgramId
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.runBlocking
@@ -89,17 +90,6 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun deployMetadataProgram() {
-        val args = buildList {
-            add("solana")
-            add("program")
-            add("deploy")
-            add("/home/rarible/mpl_token_metadata.so")
-        }
-
-        return processOperation(args) { it.parse(0, -1) }
-    }
-
     protected fun getWallet(config: String? = null): String {
         val args = buildList {
             add("spl-token")
@@ -177,7 +167,7 @@ abstract class AbstractBlockScannerTest {
     companion object {
         val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")
             .withExposedPorts(8899)
-            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000")
+            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/rarible/mpl_token_metadata.so")
             .waitingFor(Wait.defaultWaitStrategy())
 
         @BeforeAll

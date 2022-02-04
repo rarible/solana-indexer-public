@@ -36,7 +36,6 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun createMetadata() = runBlocking {
-        deployMetadataProgram()
         val wallet = getWallet()
         val nft = mintNft()
 
