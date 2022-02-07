@@ -28,6 +28,8 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.MountableFile
+import java.net.URL
 import kotlin.math.pow
 
 @MongoTest
@@ -90,7 +92,7 @@ abstract class AbstractBlockScannerTest {
             add("-e")
             add("local")
             add("-u")
-            add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
+            add(getFileUrlInContainer("meta/meta1.json").toExternalForm())
             add("--keypair")
             add("/root/.config/solana/id.json")
         }
@@ -153,7 +155,7 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(0, -1) }
     }
 
-    private fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
+    protected fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
         val exec = solana.execInContainer(*args.toTypedArray())
 
         assertEquals(0, exec.exitCode, exec.stderr)
@@ -173,10 +175,29 @@ abstract class AbstractBlockScannerTest {
     protected fun Int.scaleSupply(decimals: Int) = this * 10.0.pow(decimals.toDouble()).toLong()
 
     companion object {
+
+        private const val TEST_DATA_FILE_IN_CONTAINER_PREFIX = "/tmp"
+
+        private val testDataFiles = listOf("meta/meta1.json")
+
         val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")
             .withExposedPorts(8899)
+            .apply {
+                testDataFiles.forEach { testDataFile ->
+                    withCopyFileToContainer(
+                        MountableFile.forClasspathResource(testDataFile),
+                        getFilePathInContainer(testDataFile)
+                    )
+                }
+            }
             .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/rarible/mpl_token_metadata.so")
             .waitingFor(Wait.defaultWaitStrategy())
+
+        fun getFilePathInContainer(testDataFile: String): String =
+            "$TEST_DATA_FILE_IN_CONTAINER_PREFIX/$testDataFile"
+
+        fun getFileUrlInContainer(testDataFile: String): URL =
+            URL("file://$TEST_DATA_FILE_IN_CONTAINER_PREFIX/$testDataFile")
 
         @BeforeAll
         @JvmStatic
