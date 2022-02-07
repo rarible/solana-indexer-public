@@ -10,14 +10,11 @@ import com.rarible.protocol.solana.test.randomUrl
 import io.mockk.coEvery
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
 import java.net.URL
 
-//@Disabled
 class SolanaMetaServiceTest : AbstractBlockScannerTest() {
 
     @Autowired

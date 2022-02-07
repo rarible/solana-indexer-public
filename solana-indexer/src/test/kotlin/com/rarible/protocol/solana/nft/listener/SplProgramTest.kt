@@ -27,7 +27,6 @@ import java.time.Duration
 import java.util.UUID
 import kotlin.math.pow
 
-@Disabled
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 

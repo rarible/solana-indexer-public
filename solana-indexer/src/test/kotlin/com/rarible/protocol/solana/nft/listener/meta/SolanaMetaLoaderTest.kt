@@ -6,11 +6,9 @@ import com.rarible.protocol.solana.common.meta.SolanaMeta
 import com.rarible.protocol.solana.common.meta.SolanaMetaLoader
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.net.URL
 
-@Disabled
 class SolanaMetaLoaderTest {
 
     private val externalHttpClient = ExternalHttpClient()
