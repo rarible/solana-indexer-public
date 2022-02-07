@@ -5,16 +5,21 @@ import com.rarible.protocol.solana.common.converter.BalanceConverter
 import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.Token
+import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
 import com.rarible.solana.protocol.dto.TokenUpdateEventDto
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
+@Disabled
 class TokenTest : EventAwareBlockScannerTest() {
     @Test
-    fun `mint, burn, transfer token`() = runBlocking<Unit> {
+    fun `mint, burn, transfer token`() = runBlocking {
         val decimals = 3
         val aliceWallet = createWallet("${UUID.randomUUID()}")
         val tokenAddress = createToken(decimals)
