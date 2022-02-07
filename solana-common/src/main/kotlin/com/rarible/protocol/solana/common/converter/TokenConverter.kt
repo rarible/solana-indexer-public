@@ -7,6 +7,6 @@ object TokenConverter {
     fun convert(token: Token): TokenDto = TokenDto(
         address = token.id,
         supply = token.supply.toBigInteger(),
-        collection = token.collection
+        collection = token.collection?.let { CollectionConverter.convert(it) }
     )
 }

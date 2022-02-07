@@ -11,7 +11,7 @@ typealias TokenId = String
 @Document("token")
 data class Token(
     val mint: String,
-    val collection: String? = null,
+    val collection: Collection? = null,
     val supply: Long, // TODO: change to BigInteger.
     val isDeleted: Boolean, // TODO: probably, can be calculated based on supply = 0
     val metadataUrl: String?,

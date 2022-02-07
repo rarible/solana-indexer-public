@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.net.URL
 
-@Disabled
+//@Disabled
 class SolanaMetaServiceTest : AbstractBlockScannerTest() {
 
     @Autowired
