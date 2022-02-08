@@ -53,7 +53,7 @@ blockchain:
       maxPollRecords: 100
     solana:
       service: protocol-solana-nft-listener
-      rpcApiUrls: https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/,https://polished-damp-star.solana-testnet.quiknode.pro/bfbb57092af237d1267b80780d95a44defc51fa0/
+      rpcApiUrls: https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/
       scan:
         batchLoad:
           batchSize: 100
