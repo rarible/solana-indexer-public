@@ -61,7 +61,7 @@ blockchain:
       retryPolicy:
         scan:
           reconnectDelay: 2s
-          reconnectAttempts: 1
+          reconnectAttempts: 10
         client:
           delay: 2s
           attempts: 3
