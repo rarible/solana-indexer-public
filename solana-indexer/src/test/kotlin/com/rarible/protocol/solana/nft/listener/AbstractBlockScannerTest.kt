@@ -189,7 +189,7 @@ abstract class AbstractBlockScannerTest {
         fun properties(registry: DynamicPropertyRegistry) {
             val port = solana.getMappedPort(8899)
 
-            registry.add("blockchain.scanner.solana.rpcApiUrl") { "http://127.0.0.1:$port" }
+            registry.add("blockchain.scanner.solana.rpcApiUrls") { "http://127.0.0.1:$port" }
         }
     }
 }
