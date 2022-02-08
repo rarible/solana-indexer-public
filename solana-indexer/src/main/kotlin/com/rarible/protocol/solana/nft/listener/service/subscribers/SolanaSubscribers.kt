@@ -7,14 +7,14 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
-import com.rarible.protocol.solana.borsh.CreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.InitializeAccount
 import com.rarible.protocol.solana.borsh.InitializeMint
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountInstruction
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
-import com.rarible.protocol.solana.borsh.parseMetadataInstruction
+import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
 import com.rarible.protocol.solana.nft.listener.service.descriptors.BurnDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.CreateMetadataDescriptor
@@ -23,12 +23,13 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeMi
 import com.rarible.protocol.solana.nft.listener.service.descriptors.MintToDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.TransferDescriptor
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.TransferRecord
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class InitializeMintSubscriber : SolanaLogEventSubscriber {
@@ -44,7 +45,8 @@ class InitializeMintSubscriber : SolanaLogEventSubscriber {
             mint = log.instruction.accounts[0],
             mintAuthority = initializeMintInstruction.mintAuthority,
             decimals = initializeMintInstruction.decimal.toInt(),
-            log.log
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
         )
 
         return listOf(record)
@@ -65,7 +67,8 @@ class InitializeAccountSubscriber : SolanaLogEventSubscriber {
             account = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
             owner = log.instruction.accounts[2],
-            log.log
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
         )
 
         return listOf(record)
@@ -85,13 +88,15 @@ class MintToSubscriber : SolanaLogEventSubscriber {
                 mint = log.instruction.accounts[0],
                 account = log.instruction.accounts[1],
                 mintAmount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is MintToChecked -> MintToRecord(
                 mint = log.instruction.accounts[0],
                 account = log.instruction.accounts[1],
                 mintAmount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             else -> return emptyList()
         }
@@ -113,13 +118,15 @@ class BurnSubscriber : SolanaLogEventSubscriber {
                 account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 burnAmount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is BurnChecked -> BurnRecord(
                 account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 burnAmount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             else -> return emptyList()
         }
@@ -143,14 +150,16 @@ class TransferSubscriber : SolanaLogEventSubscriber {
                 mint = log.instruction.accounts[1],
                 to = log.instruction.accounts[2],
                 amount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is TransferChecked -> TransferRecord(
                 from = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 to = log.instruction.accounts[2],
                 amount = instruction.amount.toLong(),
-                log = log.log
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             else -> return emptyList()
         }
@@ -168,12 +177,13 @@ class MetadataSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaLogRecord> {
         val data = log.instruction.data
-        val createMetadataAccountArgs =
-            data.parseMetadataInstruction() as? CreateMetadataAccountArgs ?: return emptyList()
-        val record = CreateMetadataRecord(
+        val metaplexCreateMetadataAccountInstruction =
+            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccountInstruction ?: return emptyList()
+        val record = MetaplexCreateMetadataRecord(
             mint = log.instruction.accounts[1],
-            metadata = createMetadataAccountArgs,
-            log = log.log
+            data = metaplexCreateMetadataAccountInstruction.metadata,
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
         )
 
         return listOf(record)

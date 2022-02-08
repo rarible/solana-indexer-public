@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.core.kafka.RaribleKafkaConsumer
-import com.rarible.protocol.solana.common.meta.SolanaMetaLoader
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataLoader
 import com.rarible.protocol.union.subscriber.SolanaEventsConsumerFactory
 import com.rarible.solana.protocol.dto.BalanceEventDto
 import com.rarible.solana.protocol.dto.TokenEventDto
@@ -33,5 +33,5 @@ class TestSolanaScannerConfiguration {
     @Bean
     @Primary
     @Qualifier("test.solana.meta.loader")
-    fun testSolanaMetaLoader(): SolanaMetaLoader = mockk()
+    fun testSolanaMetaLoader(): MetaplexOffChainMetadataLoader = mockk()
 }

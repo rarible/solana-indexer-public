@@ -5,18 +5,15 @@ import com.rarible.protocol.solana.common.converter.BalanceConverter
 import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.Token
-import com.rarible.protocol.solana.common.repository.BalanceRepository
-import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
+import com.rarible.solana.protocol.dto.TokenDto
 import com.rarible.solana.protocol.dto.TokenUpdateEventDto
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+import java.time.Instant
 import java.util.*
 
-@Disabled
 class TokenTest : EventAwareBlockScannerTest() {
     @Test
     fun `mint, burn, transfer token`() = runBlocking {
@@ -29,11 +26,13 @@ class TokenTest : EventAwareBlockScannerTest() {
         mintToken(tokenAddress, amount = 5UL)
         val token = Token(
             mint = tokenAddress,
-            collection = null,
             supply = 5.scaleSupply(decimals),
             isDeleted = false,
             revertableEvents = emptyList(),
-            metadataUrl = null
+            createdAt = Instant.EPOCH, // TODO[tests]: consider fetching from the blockchain.
+            updatedAt = Instant.EPOCH,
+            metaplexMeta = null,
+            metaplexMetaHistory = emptyList()
         )
         val fromBalance = Balance(
             account = account,
@@ -84,7 +83,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         assertThat(tokenEvents).anySatisfy { event ->
             assertThat(event).isInstanceOfSatisfying(TokenUpdateEventDto::class.java) {
                 assertThat(it.address).isEqualTo(token.mint)
-                assertThat(it.token).isEqualTo(TokenConverter.convert(token))
+                assertTokenDtoEqual(it.token, TokenConverter.convert(token))
             }
         }
     }
@@ -103,14 +102,25 @@ class TokenTest : EventAwareBlockScannerTest() {
         assertTokensEqual(actualToken, expectedToken)
     }
 
+    private fun assertTokenDtoEqual(actualToken: TokenDto?, expectedToken: TokenDto) {
+        // Ignore some fields because they are minor and hard to get.
+        fun TokenDto.ignore() = this
+            .copy(createdAt = Instant.EPOCH)
+            .copy(updatedAt = Instant.EPOCH)
+        assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
+    }
+
     private fun assertTokensEqual(actualToken: Token?, expectedToken: Token) {
-        // Ignore [revertableEvents] because they are minor and hard to get (transaction hashes change all the time)
-        assertThat(actualToken?.copy(revertableEvents = emptyList()))
-            .isEqualTo(expectedToken.copy(revertableEvents = emptyList()))
+        // Ignore some fields because they are minor and hard to get.
+        fun Token.ignore() = this
+            .copy(createdAt = Instant.EPOCH)
+            .copy(updatedAt = Instant.EPOCH)
+            .copy(revertableEvents = emptyList())
+        assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
     }
 
     private suspend fun assertBalance(balance: Balance) {
-        // Ignore [revertableEvents] because they are minor and hard to get (transaction hashes change all the time)
+        // Ignore [revertableEvents] because they are minor and hard to get.
         assertThat(balanceRepository.findById(balance.account)?.copy(revertableEvents = emptyList()))
             .isEqualTo(balance.copy(revertableEvents = emptyList()))
     }

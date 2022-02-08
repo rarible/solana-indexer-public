@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.descriptors
 
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
@@ -46,5 +46,5 @@ object TransferDescriptor : SolanaDescriptor(
 object CreateMetadataDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = CreateMetadataRecord::class.java
+    entityType = MetaplexCreateMetadataRecord::class.java
 )

@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
@@ -46,7 +46,7 @@ class BalanceEventConverter {
                     log = source.record.log
                 )
             )
-            is CreateMetadataRecord, is InitializeAccountRecord, is InitializeMintRecord -> emptyList()
+            is MetaplexCreateMetadataRecord, is InitializeAccountRecord, is InitializeMintRecord -> emptyList()
         }
     }
 }

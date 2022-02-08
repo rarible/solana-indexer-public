@@ -2,11 +2,13 @@ package com.rarible.protocol.solana.common.meta
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
+// TODO[meta]: consider renaming fields without _
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class SolanaMetaJsonSchema(
+data class MetaplexOffChainMetadataJsonSchema(
     val name: String,
     val symbol: String,
     val description: String,
+    val collection: Collection?,
     val seller_fee_basis_points: Int,
     val external_url: String,
     val edition: String,
@@ -15,6 +17,11 @@ data class SolanaMetaJsonSchema(
     val properties: Properties,
     val image: String
 ) {
+    data class Collection(
+        val name: String,
+        val family: String
+    )
+
     data class Attribute(
         val trait_type: String,
         val value: String

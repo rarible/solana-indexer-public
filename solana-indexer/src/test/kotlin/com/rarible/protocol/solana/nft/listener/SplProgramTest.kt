@@ -4,7 +4,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.CreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
@@ -16,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
@@ -27,6 +26,7 @@ import java.time.Duration
 import java.util.UUID
 import kotlin.math.pow
 
+// TODO[tests]: compare the whole Record objects.
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
@@ -39,15 +39,15 @@ class SplProgramTest : AbstractBlockScannerTest() {
         val nft = mintNft()
 
         Wait.waitAssert(timeout) {
-            val records = findRecordByType(CreateMetadataRecord::class.java).toList()
+            val records = findRecordByType(MetaplexCreateMetadataRecord::class.java).toList()
 
             assertEquals(1, records.size)
             val record = records.single()
 
             assertEquals(nft, record.mint)
-            assertFalse(record.metadata.mutable)
+            assertFalse(record.data.mutable)
 
-            val data = record.metadata.data
+            val data = record.data
             assertEquals("My NFT #1", data.name)
             assertEquals("MY_SYMBOL", data.symbol)
             assertEquals(420, data.sellerFeeBasisPoints)

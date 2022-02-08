@@ -11,25 +11,17 @@ import com.rarible.protocol.solana.common.model.Token
 import org.springframework.stereotype.Component
 
 @Component
-class ForwardValueTokenReducer : Reducer<TokenEvent, Token> {
+class ForwardMetaplexTokenMetaReducer : Reducer<TokenEvent, Token> {
     override suspend fun reduce(entity: Token, event: TokenEvent): Token {
         return when (event) {
-            is MintEvent -> entity.copy(
-                supply = entity.supply + event.amount,
-                updatedAt = entity.updatedAt
+            is MetaplexCreateMetadataEvent -> entity.copy(
+                metaplexMeta = event.metadata,
+                metaplexMetaHistory = entity.metaplexMetaHistory + event.metadata
             )
-            is BurnEvent -> entity.copy(
-                supply = entity.supply - event.amount,
-                updatedAt = entity.updatedAt
-            )
-            is TransferEvent -> entity.copy(
-                updatedAt = entity.updatedAt
-            )
-            is InitializeMintEvent -> entity.copy(
-                createdAt = event.timestamp,
-                updatedAt = entity.updatedAt
-            )
-            is MetaplexCreateMetadataEvent -> entity
+            is MintEvent,
+            is BurnEvent,
+            is TransferEvent,
+            is InitializeMintEvent -> entity
         }
     }
 }

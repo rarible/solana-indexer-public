@@ -5,16 +5,25 @@ import com.rarible.protocol.solana.common.event.TokenEvent
 import org.springframework.data.annotation.AccessType
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.Instant
 
 typealias TokenId = String
 
 @Document("token")
 data class Token(
     val mint: String,
-    val collection: Collection? = null,
-    val supply: Long, // TODO: change to BigInteger.
-    val isDeleted: Boolean, // TODO: probably, can be calculated based on supply = 0
-    val metadataUrl: String?,
+    // TODO: change to BigInteger.
+    val supply: Long,
+    // TODO: probably, can be calculated based on supply = 0
+    // TODO: rename to 'closed'?
+    val isDeleted: Boolean,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+    val metaplexMeta: MetaplexTokenMeta?,
+    /**
+     * Historical states of [metaplexMeta] values used to revert to a previous state.
+     */
+    val metaplexMetaHistory: List<MetaplexTokenMeta>,
     override val revertableEvents: List<TokenEvent>
 ) : Entity<TokenId, TokenEvent, Token> {
     @get:Id
@@ -23,20 +32,19 @@ data class Token(
         get() = mint
         set(_) {}
 
-    override fun withRevertableEvents(events: List<TokenEvent>): Token {
-        return copy(revertableEvents = events)
-    }
+    override fun withRevertableEvents(events: List<TokenEvent>): Token =
+        copy(revertableEvents = events)
 
     companion object {
-        fun empty(token: String): Token {
-            return Token(
-                mint = token,
-                collection = null,
-                supply = 0L,
-                revertableEvents = emptyList(),
-                isDeleted = false,
-                metadataUrl = null
-            )
-        }
+        fun empty(mint: String): Token = Token(
+            mint = mint,
+            supply = 0L,
+            revertableEvents = emptyList(),
+            isDeleted = false,
+            metaplexMeta = null,
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
+            metaplexMetaHistory = emptyList()
+        )
     }
 }

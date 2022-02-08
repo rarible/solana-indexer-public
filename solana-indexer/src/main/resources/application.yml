@@ -37,15 +37,6 @@ rarible:
           enabled: true
       annotation:
         enabled: true
-  loader:
-    broker-replica-set: ${kafka.hosts}
-    workers: 4
-    retry:
-      # Retry after 30s, 5m, 1h, 6h, 24h
-      backoffDelaysMillis: [ 30000, 300000, 3600000, 21600000, 86400000 ]
-      job:
-        runner:
-          period: 30000 # Schedule retry tasks every 30s
 
 blockchain:
   scanner:

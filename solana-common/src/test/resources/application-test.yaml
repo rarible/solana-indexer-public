@@ -1,5 +1,6 @@
 common:
   kafka-replica-set: ${kafka.hosts}
+  metricRootPath: solana-common-test
 
 testcontainers:
   reuse:
