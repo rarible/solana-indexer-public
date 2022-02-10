@@ -6,3 +6,7 @@ dependencies:
   alias: solana-indexer
   repository: file://../resources/helm/rarible
   version: 0.1.0
+- name: rarible-helm-chart
+  alias: solana-api
+  repository: file://../resources/helm/rarible
+  version: 0.1.0
