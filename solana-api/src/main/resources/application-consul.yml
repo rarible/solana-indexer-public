@@ -1,0 +1,7 @@
+blockchain:
+  scanner:
+    kafka:
+      broker-replica-set: ${kafka.hosts}
+
+common:
+  kafka-replica-set: ${kafka.hosts}
