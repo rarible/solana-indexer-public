@@ -39,3 +39,4 @@ solana-api:
   networks:
     common:
       - '{{ include "service.appEnv" $ }}-backend'
+      - proxy-staging
