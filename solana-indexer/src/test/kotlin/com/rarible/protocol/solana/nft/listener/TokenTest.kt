@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.converter.BalanceConverter
 import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.Token
+import com.rarible.solana.protocol.dto.BalanceDto
 import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
 import com.rarible.solana.protocol.dto.TokenDto
 import com.rarible.solana.protocol.dto.TokenUpdateEventDto
@@ -37,12 +38,16 @@ class TokenTest : EventAwareBlockScannerTest() {
         val fromBalance = Balance(
             account = account,
             value = 5.scaleSupply(decimals),
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
         )
         val aliceBalance = Balance(
             account = aliceAccount,
             value = 0,
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
         )
 
         Wait.waitAssert {
@@ -92,7 +97,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         assertThat(balanceEvents).anySatisfy { event ->
             assertThat(event).isInstanceOfSatisfying(BalanceUpdateEventDto::class.java) {
                 assertThat(it.account).isEqualTo(balance.account)
-                assertThat(it.balance).isEqualTo(BalanceConverter.convert(balance))
+                assertBalanceDtoEqual(it.balance, BalanceConverter.convert(balance))
             }
         }
     }
@@ -108,6 +113,9 @@ class TokenTest : EventAwareBlockScannerTest() {
             .copy(createdAt = Instant.EPOCH)
             .copy(updatedAt = Instant.EPOCH)
         assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
+
+        assertThat(actualToken?.createdAt).isNotEqualTo(Instant.EPOCH)
+        assertThat(actualToken?.updatedAt).isNotEqualTo(Instant.EPOCH)
     }
 
     private fun assertTokensEqual(actualToken: Token?, expectedToken: Token) {
@@ -117,12 +125,42 @@ class TokenTest : EventAwareBlockScannerTest() {
             .copy(updatedAt = Instant.EPOCH)
             .copy(revertableEvents = emptyList())
         assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
+
+        assertThat(actualToken?.createdAt).isNotEqualTo(Instant.EPOCH)
+        assertThat(actualToken?.updatedAt).isNotEqualTo(Instant.EPOCH)
     }
 
-    private suspend fun assertBalance(balance: Balance) {
+    private suspend fun assertBalance(expectedBalance: Balance) {
+        val actualBalance = balanceRepository.findById(expectedBalance.account)
+        assertBalancesEqual(actualBalance, expectedBalance)
+    }
+
+    private fun assertBalanceDtoEqual(actualBalance: BalanceDto?, expectedBalance: BalanceDto) {
+        // Ignore some fields because they are minor and hard to get.
+        fun BalanceDto.ignore() = this
+            .copy(createdAt = Instant.EPOCH)
+            .copy(updatedAt = Instant.EPOCH)
+        assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
+
+        // TODO: consider comparing these fields (get from the blockchain)?
+        assertThat(actualBalance?.createdAt).isNotEqualTo(Instant.EPOCH)
+        assertThat(actualBalance?.updatedAt).isNotEqualTo(Instant.EPOCH)
+    }
+
+    private fun assertBalancesEqual(
+        actualBalance: Balance?,
+        expectedBalance: Balance
+    ) {
         // Ignore [revertableEvents] because they are minor and hard to get.
-        assertThat(balanceRepository.findById(balance.account)?.copy(revertableEvents = emptyList()))
-            .isEqualTo(balance.copy(revertableEvents = emptyList()))
+        fun Balance.ignore() = this
+            .copy(createdAt = Instant.EPOCH)
+            .copy(updatedAt = Instant.EPOCH)
+            .copy(revertableEvents = emptyList())
+        assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
+
+        // TODO: consider comparing these fields (get from the blockchain)?
+        assertThat(actualBalance?.createdAt).isNotEqualTo(Instant.EPOCH)
+        assertThat(actualBalance?.updatedAt).isNotEqualTo(Instant.EPOCH)
     }
 
 }

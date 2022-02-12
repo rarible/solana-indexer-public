@@ -21,7 +21,8 @@ class BalanceEventConverter {
                     reversed = source.reversed,
                     account = record.account,
                     amount = record.mintAmount,
-                    log = source.record.log
+                    log = source.record.log,
+                    timestamp = source.record.timestamp
                 )
             )
             is BurnRecord -> listOf(
@@ -29,7 +30,8 @@ class BalanceEventConverter {
                     reversed = source.reversed,
                     account = record.account,
                     amount = record.burnAmount,
-                    log = source.record.log
+                    log = source.record.log,
+                    timestamp = source.record.timestamp
                 )
             )
             is TransferRecord -> listOf(
@@ -37,13 +39,15 @@ class BalanceEventConverter {
                     reversed = source.reversed,
                     account = record.from,
                     amount = record.amount,
-                    log = source.record.log
+                    log = source.record.log,
+                    timestamp = source.record.timestamp
                 ),
                 BalanceIncomeEvent(
                     reversed = source.reversed,
                     account = record.to,
                     amount = record.amount,
-                    log = source.record.log
+                    log = source.record.log,
+                    timestamp = source.record.timestamp
                 )
             )
             is MetaplexCreateMetadataRecord, is InitializeAccountRecord, is InitializeMintRecord -> emptyList()

@@ -6,6 +6,8 @@ import com.rarible.solana.protocol.dto.BalanceDto
 object BalanceConverter {
     fun convert(balance: Balance): BalanceDto = BalanceDto(
         account = balance.account,
-        value = balance.value.toBigInteger()
+        value = balance.value.toBigInteger(),
+        createdAt = balance.createdAt,
+        updatedAt = balance.updatedAt
     )
 }

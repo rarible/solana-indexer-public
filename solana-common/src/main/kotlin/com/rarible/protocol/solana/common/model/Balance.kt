@@ -6,6 +6,7 @@ import org.springframework.data.annotation.AccessType
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.Instant
 
 typealias BalanceId = String
 
@@ -13,6 +14,8 @@ typealias BalanceId = String
 data class Balance(
     val account: String,
     val value: Long,
+    val createdAt: Instant,
+    val updatedAt: Instant,
     override val revertableEvents: List<BalanceEvent>
 ) : Entity<BalanceId, BalanceEvent, Balance> {
 
@@ -33,6 +36,8 @@ data class Balance(
         fun empty(owner: String): Balance = Balance(
             account = owner,
             value = 0L,
+            createdAt = Instant.EPOCH,
+            updatedAt = Instant.EPOCH,
             revertableEvents = emptyList()
         )
     }

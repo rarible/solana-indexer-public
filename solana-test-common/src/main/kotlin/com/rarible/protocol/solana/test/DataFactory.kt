@@ -72,7 +72,9 @@ fun createRandomTokenCreator(): MetaplexTokenCreator =
 fun createRandomBalance(): Balance = Balance(
     account = randomString(),
     value = randomLong(),
-    revertableEvents = emptyList()
+    revertableEvents = emptyList(),
+    createdAt = nowMillis(),
+    updatedAt = nowMillis()
 )
 
 fun randomUrl(): String = "https://test.com/" + randomString()

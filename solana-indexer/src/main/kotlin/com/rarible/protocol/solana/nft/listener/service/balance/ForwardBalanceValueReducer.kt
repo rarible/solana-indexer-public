@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.common.model.Balance
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class ForwardBalanceValueReducer : Reducer<BalanceEvent, Balance> {
@@ -15,7 +16,16 @@ class ForwardBalanceValueReducer : Reducer<BalanceEvent, Balance> {
             is BalanceOutcomeEvent -> entity.value - event.amount
         }
 
-        return entity.copy(value = value)
+        val createdAt = if (entity.createdAt == Instant.EPOCH) {
+            event.timestamp
+        } else {
+            entity.createdAt
+        }
+
+        return entity.copy(
+            value = value,
+            createdAt = createdAt,
+            updatedAt = event.timestamp
+        )
     }
 }
-
