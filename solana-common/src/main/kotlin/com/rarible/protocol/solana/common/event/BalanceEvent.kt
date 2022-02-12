@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.common.event
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 
 sealed class BalanceEvent : EntityEvent {
+    // TODO: add timestamp and "updatedAt"/"createdAt" fields for Balance and reduce them.
     abstract val account: String
     abstract override val reversed: Boolean
     abstract override val log: SolanaLog

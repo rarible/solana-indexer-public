@@ -16,18 +16,18 @@ class ForwardValueTokenReducer : Reducer<TokenEvent, Token> {
         return when (event) {
             is MintEvent -> entity.copy(
                 supply = entity.supply + event.amount,
-                updatedAt = entity.updatedAt
+                updatedAt = event.timestamp
             )
             is BurnEvent -> entity.copy(
                 supply = entity.supply - event.amount,
-                updatedAt = entity.updatedAt
+                updatedAt = event.timestamp
             )
             is TransferEvent -> entity.copy(
-                updatedAt = entity.updatedAt
+                updatedAt = event.timestamp
             )
             is InitializeMintEvent -> entity.copy(
                 createdAt = event.timestamp,
-                updatedAt = entity.updatedAt
+                updatedAt = event.timestamp
             )
             is MetaplexCreateMetadataEvent -> entity
         }

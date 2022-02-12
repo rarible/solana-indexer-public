@@ -16,7 +16,8 @@ class ForwardMetaplexTokenMetaReducer : Reducer<TokenEvent, Token> {
         return when (event) {
             is MetaplexCreateMetadataEvent -> entity.copy(
                 metaplexMeta = event.metadata,
-                metaplexMetaHistory = entity.metaplexMetaHistory + event.metadata
+                metaplexMetaHistory = entity.metaplexMetaHistory + event.metadata,
+                updatedAt = event.timestamp
             )
             is MintEvent,
             is BurnEvent,
