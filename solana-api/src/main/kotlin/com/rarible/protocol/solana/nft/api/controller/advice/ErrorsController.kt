@@ -34,23 +34,15 @@ class ErrorsController {
         ResponseEntity.status(ex.status).body(error)
     }
 
-    @ExceptionHandler(ConversionFailedException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handlerConversionFailedException(ex: ConversionFailedException) = mono {
-        when (ex.cause) {
-            else -> logUnexpectedError(ex)
-        }
-    }
-
     @ExceptionHandler(Throwable::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handlerException(ex: Throwable) = mono {
         logUnexpectedError(ex)
     }
 
-    private fun logUnexpectedError(ex: Throwable) {
+    private fun logUnexpectedError(ex: Throwable): SolanaApiErrorServerErrorDto {
         logger.error("System error while handling request", ex)
-        SolanaApiErrorServerErrorDto(
+        return SolanaApiErrorServerErrorDto(
             code = SolanaApiErrorServerErrorDto.Code.UNKNOWN,
             message = ex.message ?: "Something went wrong"
         )
