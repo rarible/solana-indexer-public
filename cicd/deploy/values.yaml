@@ -23,6 +23,8 @@ solana-api:
   image:
     repository: solana-indexer-solana-api
   blockchain: solana
+  service:
+    enabled: true
   environments:
     APPLICATION_ENVIRONMENT: '{{ include "service.appEnv" $ }}'
     CONSUL_ROOT_PATH: '{{ include "service.appEnv" $ }}/protocol/{{ .Values.blockchain }}/nft'
