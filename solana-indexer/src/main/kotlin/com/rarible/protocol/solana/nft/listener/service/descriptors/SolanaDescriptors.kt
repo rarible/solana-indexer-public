@@ -1,12 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.descriptors
 
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeAccountRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MetaplexCreateMetadataRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MintToRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.TransferRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.*
 
 object SolanaProgramId {
     const val SPL_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -47,4 +42,16 @@ object CreateMetadataDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
     SubscriberGroups.METAPLEX_META,
     entityType = MetaplexCreateMetadataRecord::class.java
+)
+
+object UpdateMetadataDescriptor : SolanaDescriptor(
+    SolanaProgramId.TOKEN_METADATA_PROGRAM,
+    SubscriberGroups.METAPLEX_META,
+    entityType = MetaplexUpdateMetadataRecord::class.java
+)
+
+object VerifyCollectionDescriptor : SolanaDescriptor(
+    SolanaProgramId.TOKEN_METADATA_PROGRAM,
+    SubscriberGroups.METAPLEX_META,
+    entityType = MetaplexVerifyCollectionRecord::class.java
 )

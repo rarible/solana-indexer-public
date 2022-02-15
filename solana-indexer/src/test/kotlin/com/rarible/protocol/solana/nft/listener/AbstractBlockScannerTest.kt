@@ -9,6 +9,7 @@ import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.MetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SolanaProgramId
 import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
@@ -54,6 +55,9 @@ abstract class AbstractBlockScannerTest {
     private lateinit var client: SolanaClient
 
     @Autowired
+    protected lateinit var metaRepository: MetaRepository
+
+    @Autowired
     protected lateinit var tokenRepository: TokenRepository
 
     @Autowired
@@ -82,13 +86,35 @@ abstract class AbstractBlockScannerTest {
         }
     }
 
-    protected fun mintNft(): String {
+    protected fun verifyCollection(mint: String, collection: String): String {
+        val args = buildList {
+            add("ts-node")
+            add("/home/rarible/metaplex/js/packages/cli/src/cli-nft.ts")
+            add("verify-collection")
+            add("-e")
+            add("local")
+            add("-m")
+            add(mint)
+            add("-c")
+            add(collection)
+            add("--keypair")
+            add("/root/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun mintNft(collection: String? = null): String {
         val args = buildList {
             add("ts-node")
             add("/home/rarible/metaplex/js/packages/cli/src/cli-nft.ts")
             add("mint")
             add("-e")
             add("local")
+            collection?.let {
+                add("-c")
+                add(it)
+            }
             add("-u")
             add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
             add("--keypair")

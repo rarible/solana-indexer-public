@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
@@ -48,6 +49,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
             val record = records.single()
 
             assertEquals(nft, record.mint)
+            assertEquals(record.data.mutable, false)
             assertEquals(
                 record.data, MetaplexMetadataProgram.Data(
                     name = "My NFT #1",
@@ -55,10 +57,29 @@ class SplProgramTest : AbstractBlockScannerTest() {
                     symbol = "MY_SYMBOL",
                     sellerFeeBasisPoints = 420,
                     creators = listOf(MetaplexMetadataProgram.Creator(address = wallet, share = 100, verified = true)),
-                    collection = null,
-                    mutable = false
+                    collection = null
                 )
             )
+        }
+    }
+
+    @Test
+    fun verifyMetadata() = runBlocking {
+        val collection = mintNft()
+        val nft = mintNft(collection)
+
+        Wait.waitAssert(timeout) {
+            val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
+
+            assertFalse(meta.verified)
+        }
+
+        verifyCollection(nft, collection)
+
+        Wait.waitAssert(timeout) {
+            val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
+
+            assertTrue(meta.verified)
         }
     }
 

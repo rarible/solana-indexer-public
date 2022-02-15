@@ -6,7 +6,6 @@ import com.rarible.protocol.solana.common.model.TokenId
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
-import org.springframework.data.mongodb.core.find
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -18,8 +17,8 @@ import org.springframework.stereotype.Component
 class MetaRepository(
     private val mongo: ReactiveMongoOperations
 ) {
-    suspend fun save(token: MetaplexMeta): MetaplexMeta =
-        mongo.save(token).awaitFirst()
+    suspend fun save(metaplexMeta: MetaplexMeta): MetaplexMeta =
+         mongo.save(metaplexMeta).awaitFirst()
 
     suspend fun findById(metaAddress: MetaId): MetaplexMeta? =
         mongo.findById<MetaplexMeta>(metaAddress).awaitFirstOrNull()
@@ -27,6 +26,6 @@ class MetaRepository(
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexMeta? {
         val criteria = Criteria.where("tokenAddress").isEqualTo(tokenAddress)
 
-        return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirst()
+        return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 }

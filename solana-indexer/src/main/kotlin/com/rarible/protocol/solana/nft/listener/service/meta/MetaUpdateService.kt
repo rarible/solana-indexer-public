@@ -16,9 +16,9 @@ class MetaUpdateService(
         metaRepository.findById(id)
 
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
-        val balance = metaRepository.save(entity)
+        val meta = metaRepository.save(entity)
         logger.info("Updated balance: $entity")
-        return balance
+        return meta
     }
 
     companion object {

@@ -3,6 +3,7 @@
 package com.rarible.protocol.solana.borsh
 
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseMetaplexCreateMetadataInstruction
+import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseUpdateMetadataAccountArgs
 import org.bitcoinj.core.Base58
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -30,28 +31,48 @@ object MetaplexMetadataProgram {
         val sellerFeeBasisPoints: Short,
         /// Array of creators, optional
         val creators: List<Creator>?,
-        val collection: Collection?,
-        val mutable: Boolean
+        val collection: Collection?
     )
 
+    internal fun ByteBuffer.parseUpdateMetadataAccountArgs(): MetaplexUpdateMetadataAccountArgs {
+        val data = readNullable { readData() }
+        val updateAuthority = readNullable { readPubkey() }
+        val primarySaleHappened = readNullable { readBoolean() }
+        val mutable = readOptional { readNullable { readBoolean() } }
+
+        return MetaplexUpdateMetadataAccountArgs(
+            data,
+            updateAuthority,
+            primarySaleHappened,
+            mutable
+        )
+    }
+
     internal fun ByteBuffer.parseMetaplexCreateMetadataInstruction(): MetaplexMetadataInstruction {
+        val data = readData()
+        val mutable = readBoolean()
+
+        return MetaplexCreateMetadataAccount(
+            data,
+            mutable
+        )
+    }
+
+    private fun ByteBuffer.readData(): Data {
         val name = readString()
         val symbol = readString()
         val uri = readString()
         val sellerFeeBasisPoints = getShort()
         val creators = readNullable { List(getInt()) { readCreator() } }
-        val mutable = readBoolean()
         val collection = readOptional { readNullable { readCollection() } }
-        return MetaplexCreateMetadataAccountInstruction(
-            metadata = Data(
-                name = name,
-                symbol = symbol,
-                uri = uri,
-                sellerFeeBasisPoints = sellerFeeBasisPoints,
-                creators = creators,
-                collection = collection,
-                mutable = mutable
-            )
+
+        return Data(
+            name = name,
+            symbol = symbol,
+            uri = uri,
+            sellerFeeBasisPoints = sellerFeeBasisPoints,
+            creators = creators,
+            collection = collection
         )
     }
 
@@ -76,12 +97,24 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
     return when (buffer.get().toInt()) {
         0, 16 -> buffer.parseMetaplexCreateMetadataInstruction()
+        1, 15 -> buffer.parseUpdateMetadataAccountArgs()
+        18 -> VerifyCollection
         else -> null
     }
 }
 
 sealed class MetaplexMetadataInstruction
 
-data class MetaplexCreateMetadataAccountInstruction(
-    val metadata: MetaplexMetadataProgram.Data
+data class MetaplexCreateMetadataAccount(
+    val metadata: MetaplexMetadataProgram.Data,
+    val mutable: Boolean
 ) : MetaplexMetadataInstruction()
+
+data class MetaplexUpdateMetadataAccountArgs(
+    val metadata: MetaplexMetadataProgram.Data?,
+    val updateAuthority: Pubkey?,
+    val primarySaleHappened: Boolean?,
+    val mutable: Boolean?
+) : MetaplexMetadataInstruction()
+
+object VerifyCollection : MetaplexMetadataInstruction()

@@ -6,7 +6,7 @@ import java.time.Instant
 sealed class TokenEvent : EntityEvent {
     abstract val timestamp: Instant
     abstract val token: String
-    abstract override fun invert(): TokenEvent
+    abstract fun invert(): TokenEvent
 }
 
 data class InitializeMintEvent(

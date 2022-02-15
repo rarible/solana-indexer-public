@@ -8,7 +8,7 @@ sealed class BalanceEvent : EntityEvent {
     abstract val account: String
     abstract override val reversed: Boolean
     abstract override val log: SolanaLog
-    abstract override fun invert(): BalanceEvent
+    abstract fun invert(): BalanceEvent
 }
 
 data class BalanceIncomeEvent(

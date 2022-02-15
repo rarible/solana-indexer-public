@@ -11,10 +11,11 @@ typealias MetaId = String
 
 @Document("metaplex-meta")
 data class MetaplexMeta(
-    val tokenAddress: String,
     val metaAddress: MetaId,
+    val tokenAddress: String,
     val meta: MetaplexTokenMeta,
     val updatedAt: Instant,
+    val verified: Boolean,
     override val revertableEvents: List<MetaplexMetaEvent>
 ) : Entity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
     @get:Id
@@ -27,11 +28,12 @@ data class MetaplexMeta(
 
     companion object {
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
-            "",
-            metaAddress,
-            MetaplexTokenMeta("", "", "", 0, emptyList(), false, MetaplexTokenMeta.Collection("", false)),
-            Instant.EPOCH,
-            emptyList()
+            tokenAddress = "",
+            metaAddress = metaAddress,
+            meta = MetaplexTokenMeta("", "", "", 0, emptyList(), false, MetaplexTokenMeta.Collection("", false)),
+            updatedAt = Instant.EPOCH,
+            verified = false,
+            revertableEvents = emptyList()
         )
     }
 }

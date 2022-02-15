@@ -3,7 +3,8 @@ package com.rarible.protocol.solana.nft.listener.service.records
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
-import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
+import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
 import java.time.Instant
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
@@ -64,10 +65,28 @@ sealed class SolanaBaseLogRecord : SolanaLogRecord() {
     data class MetaplexCreateMetadataRecord(
         val account: String,
         val mint: String,
-        val data: MetaplexMetadataProgram.Data,
+        val data: MetaplexCreateMetadataAccount,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBaseLogRecord() {
         override fun getKey(): String = account
+    }
+
+    data class MetaplexUpdateMetadataRecord(
+        val account: String,
+        val mint: String,
+        val newData: MetaplexUpdateMetadataAccountArgs,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBaseLogRecord() {
+        override fun getKey(): String = account
+    }
+
+    data class MetaplexVerifyCollectionRecord(
+        val verifiedAccount: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBaseLogRecord() {
+        override fun getKey(): String = verifiedAccount
     }
 }

@@ -9,11 +9,13 @@ import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
 import com.rarible.protocol.solana.borsh.InitializeAccount
 import com.rarible.protocol.solana.borsh.InitializeMint
-import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountInstruction
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
+import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
+import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
 import com.rarible.protocol.solana.nft.listener.service.descriptors.BurnDescriptor
@@ -22,10 +24,14 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeAc
 import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeMintDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.MintToDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.TransferDescriptor
+import com.rarible.protocol.solana.nft.listener.service.descriptors.UpdateMetadataDescriptor
+import com.rarible.protocol.solana.nft.listener.service.descriptors.VerifyCollectionDescriptor
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.BurnRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeMintRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MetaplexCreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MetaplexUpdateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MetaplexVerifyCollectionRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MintToRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.TransferRecord
 import org.springframework.stereotype.Component
@@ -177,16 +183,60 @@ class MetadataSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaLogRecord> {
         val data = log.instruction.data
-        val metaplexCreateMetadataAccountInstruction =
-            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccountInstruction ?: return emptyList()
+        val metaplexCreateMetadataAccount =
+            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccount ?: return emptyList()
         val record = MetaplexCreateMetadataRecord(
             account = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            data = metaplexCreateMetadataAccountInstruction.metadata,
+            data = metaplexCreateMetadataAccount,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
 
+        return listOf(record)
+    }
+}
+
+@Component
+class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = UpdateMetadataDescriptor
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaLogRecord> {
+        val data = log.instruction.data
+        val metaplexUpdateMetadataAccountArgs =
+            data.parseMetaplexMetadataInstruction() as? MetaplexUpdateMetadataAccountArgs ?: return emptyList()
+        val record = MetaplexUpdateMetadataRecord(
+            account = log.instruction.accounts[0],
+            mint = log.instruction.accounts[1],
+            newData = metaplexUpdateMetadataAccountArgs,
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
+        )
+
+        return listOf(record)
+    }
+}
+
+@Component
+class VerifyCollectionSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = VerifyCollectionDescriptor
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaLogRecord> {
+        val instruction = log.instruction
+
+        if (instruction.data.parseMetaplexMetadataInstruction() !is VerifyCollection) return emptyList()
+
+        val record = MetaplexVerifyCollectionRecord(
+            verifiedAccount = instruction.accounts[0],
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
+        )
         return listOf(record)
     }
 }
