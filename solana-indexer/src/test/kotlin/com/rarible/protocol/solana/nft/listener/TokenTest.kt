@@ -31,9 +31,7 @@ class TokenTest : EventAwareBlockScannerTest() {
             isDeleted = false,
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH, // TODO[tests]: consider fetching from the blockchain.
-            updatedAt = Instant.EPOCH,
-            metaplexMeta = null,
-            metaplexMetaHistory = emptyList()
+            updatedAt = Instant.EPOCH
         )
         val fromBalance = Balance(
             account = account,

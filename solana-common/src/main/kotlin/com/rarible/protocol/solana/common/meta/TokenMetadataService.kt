@@ -3,30 +3,30 @@ package com.rarible.protocol.solana.common.meta
 import com.rarible.protocol.solana.common.model.MetaplexTokenMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.TokenId
-import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.repository.MetaRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class TokenMetadataService(
-    private val tokenRepository: TokenRepository,
+    private val metaRepository: MetaRepository,
     private val metaplexOffChainMetadataLoader: MetaplexOffChainMetadataLoader
 ) {
     private val logger = LoggerFactory.getLogger(TokenMetadataService::class.java)
 
     suspend fun getTokenMetadata(tokenAddress: TokenId): TokenMetadata? {
-        val token = tokenRepository.findById(tokenAddress) ?: return null
-        val metaplexMeta = token.metaplexMeta
-        val metadataUrl = metaplexMeta?.uri?.let { url(it) } ?: return null
+        val metaplexMeta = metaRepository.findByTokenAddress(tokenAddress) ?: return null
+        val meta = metaplexMeta.meta
+        val metadataUrl = url(meta.uri)
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
         val offChainMetadataJson = metaplexOffChainMetadataLoader.loadOffChainMetadataJson(metadataUrl)
         return TokenMetadata(
-            name = metaplexMeta.name,
-            symbol = metaplexMeta.symbol,
+            name = meta.name,
+            symbol = meta.symbol,
             description = offChainMetadataJson.description,
-            creators = getCreators(metaplexMeta, offChainMetadataJson),
-            collection = getCollection(metaplexMeta, offChainMetadataJson),
-            url = metaplexMeta.uri
+            creators = getCreators(meta, offChainMetadataJson),
+            collection = getCollection(meta, offChainMetadataJson),
+            url = meta.uri
         )
     }
 

@@ -4,12 +4,9 @@ import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.TransferRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.TransferRecord
 import org.springframework.stereotype.Component
 
 @Component
@@ -50,7 +47,7 @@ class BalanceEventConverter {
                     timestamp = source.record.timestamp
                 )
             )
-            is MetaplexCreateMetadataRecord, is InitializeAccountRecord, is InitializeMintRecord -> emptyList()
+            else -> emptyList()
         }
     }
 }

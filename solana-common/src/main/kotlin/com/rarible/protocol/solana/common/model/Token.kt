@@ -19,11 +19,6 @@ data class Token(
     val isDeleted: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val metaplexMeta: MetaplexTokenMeta?,
-    /**
-     * Historical states of [metaplexMeta] values used to revert to a previous state.
-     */
-    val metaplexMetaHistory: List<MetaplexTokenMeta>,
     override val revertableEvents: List<TokenEvent>
 ) : Entity<TokenId, TokenEvent, Token> {
     @get:Id
@@ -41,10 +36,8 @@ data class Token(
             supply = 0L,
             revertableEvents = emptyList(),
             isDeleted = false,
-            metaplexMeta = null,
             createdAt = Instant.EPOCH,
-            updatedAt = Instant.EPOCH,
-            metaplexMetaHistory = emptyList()
+            updatedAt = Instant.EPOCH
         )
     }
 }

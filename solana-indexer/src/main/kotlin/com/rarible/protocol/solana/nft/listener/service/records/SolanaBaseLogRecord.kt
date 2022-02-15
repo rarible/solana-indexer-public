@@ -7,7 +7,7 @@ import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
 import java.time.Instant
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-sealed class SolanaItemLogRecord : SolanaLogRecord() {
+sealed class SolanaBaseLogRecord : SolanaLogRecord() {
     abstract val timestamp: Instant
 
     data class InitializeMintRecord(
@@ -16,7 +16,7 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val decimals: Int,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
+    ) : SolanaBaseLogRecord() {
         override fun getKey(): String = mint
     }
 
@@ -26,7 +26,7 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val owner: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
+    ) : SolanaBaseLogRecord() {
         override fun getKey(): String = mint
     }
 
@@ -36,7 +36,7 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
+    ) : SolanaBaseLogRecord() {
         override fun getKey(): String = mint
     }
 
@@ -46,7 +46,7 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
+    ) : SolanaBaseLogRecord() {
         override fun getKey(): String = mint
     }
 
@@ -57,16 +57,17 @@ sealed class SolanaItemLogRecord : SolanaLogRecord() {
         val amount: Long,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
+    ) : SolanaBaseLogRecord() {
         override fun getKey(): String = mint
     }
 
     data class MetaplexCreateMetadataRecord(
+        val account: String,
         val mint: String,
         val data: MetaplexMetadataProgram.Data,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaItemLogRecord() {
-        override fun getKey(): String = mint
+    ) : SolanaBaseLogRecord() {
+        override fun getKey(): String = account
     }
 }

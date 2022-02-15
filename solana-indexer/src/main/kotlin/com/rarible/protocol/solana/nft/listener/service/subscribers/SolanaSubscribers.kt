@@ -22,12 +22,12 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeAc
 import com.rarible.protocol.solana.nft.listener.service.descriptors.InitializeMintDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.MintToDescriptor
 import com.rarible.protocol.solana.nft.listener.service.descriptors.TransferDescriptor
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MetaplexCreateMetadataRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeAccountRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.MintToRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaItemLogRecord.TransferRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.BurnRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeAccountRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeMintRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MetaplexCreateMetadataRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.TransferRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -180,6 +180,7 @@ class MetadataSubscriber : SolanaLogEventSubscriber {
         val metaplexCreateMetadataAccountInstruction =
             data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccountInstruction ?: return emptyList()
         val record = MetaplexCreateMetadataRecord(
+            account = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
             data = metaplexCreateMetadataAccountInstruction.metadata,
             log = log.log,

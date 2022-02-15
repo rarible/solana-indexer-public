@@ -6,7 +6,6 @@ import com.rarible.protocol.solana.common.event.InitializeMintEvent
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
-import com.rarible.protocol.solana.common.event.TransferEvent
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.nft.listener.service.AbstractMetricReducer
 import io.micrometer.core.instrument.MeterRegistry
@@ -22,9 +21,7 @@ class TokenMetricReducer(
         return when (event) {
             is BurnEvent -> "burn"
             is MintEvent -> "mint"
-            is TransferEvent -> "transfer"
             is InitializeMintEvent -> "initialize-mint"
-            is MetaplexCreateMetadataEvent -> "create-metadata"
         }
     }
 }

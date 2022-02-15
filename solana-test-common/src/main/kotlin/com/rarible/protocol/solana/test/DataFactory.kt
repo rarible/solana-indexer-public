@@ -16,10 +16,8 @@ fun createRandomToken(): Token = Token(
     supply = randomLong(),
     revertableEvents = emptyList(),
     isDeleted = false,
-    metaplexMeta = createRandomMetaplexTokenMeta(),
     createdAt = nowMillis(),
     updatedAt = nowMillis(),
-    metaplexMetaHistory = emptyList()
 )
 
 fun createRandomTokenMetadata(): TokenMetadata =
