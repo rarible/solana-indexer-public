@@ -9,7 +9,7 @@ import java.time.Instant
 
 typealias MetaId = String
 
-@Document("metaplex-meta")
+@Document(MetaplexMeta.COLLECTION)
 data class MetaplexMeta(
     val metaAddress: MetaId,
     val tokenAddress: String,
@@ -27,6 +27,8 @@ data class MetaplexMeta(
     override fun withRevertableEvents(events: List<MetaplexMetaEvent>): MetaplexMeta = copy(revertableEvents = events)
 
     companion object {
+        const val COLLECTION = "metaplex-meta"
+
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
             tokenAddress = "",
             metaAddress = metaAddress,
