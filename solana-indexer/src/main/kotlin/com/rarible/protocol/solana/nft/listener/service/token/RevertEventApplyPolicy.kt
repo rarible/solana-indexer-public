@@ -8,6 +8,8 @@ open class RevertEventApplyPolicy<T : EntityEvent> : EventApplyPolicy<T> {
         events: List<T>,
         event: T
     ): List<T> {
+        // TODO[reducers]: assert that we do no get a too old revert event.
+        // TODO[reducers]: assert that we get the last confirmed event with reverted status.
         val confirmedEvent = findConfirmedEvent(events, event)
 
         return if (confirmedEvent != null) events - confirmedEvent else events

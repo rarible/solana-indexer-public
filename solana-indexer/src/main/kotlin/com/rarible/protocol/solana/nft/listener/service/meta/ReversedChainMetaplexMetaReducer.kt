@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component
 @Component
 class ReversedChainMetaplexMetaReducer(
     eventApplyPolicy: MetaplexMetaRevertEventApplyPolicy,
-    reversedBalanceValueReducer: ReversedMetaplexMetaReducer,
+    reversedMetaReducer: ReversedMetaplexMetaReducer,
 ) : RevertedEntityChainReducer<MetaId, MetaplexMetaEvent, MetaplexMeta>(
     eventApplyPolicy,
-    reversedBalanceValueReducer
+    reversedMetaReducer
 )
