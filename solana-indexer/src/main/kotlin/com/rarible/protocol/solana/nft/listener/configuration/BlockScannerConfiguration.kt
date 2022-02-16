@@ -30,6 +30,7 @@ class BlockchainScannerConfiguration(
         // TODO: will be reworked on blockchain scanner side.
         runBlocking {
             publisher.prepareGroup(SubscriberGroups.SPL_TOKEN)
+            publisher.prepareGroup(SubscriberGroups.METAPLEX_META)
         }
         return KafkaEntityEventConsumer(
             properties = KafkaProperties(
