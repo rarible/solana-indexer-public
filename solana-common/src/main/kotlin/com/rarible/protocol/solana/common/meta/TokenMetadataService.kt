@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.common.meta
 
-import com.rarible.protocol.solana.common.model.MetaplexTokenMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaData
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaRepository
@@ -16,7 +16,7 @@ class TokenMetadataService(
 
     suspend fun getTokenMetadata(tokenAddress: TokenId): TokenMetadata? {
         val metaplexMeta = metaRepository.findByTokenAddress(tokenAddress) ?: return null
-        val meta = metaplexMeta.meta
+        val meta = metaplexMeta.metaData
         val metadataUrl = url(meta.uri)
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
         val offChainMetadataJson = metaplexOffChainMetadataLoader.loadOffChainMetadataJson(metadataUrl)
@@ -31,7 +31,7 @@ class TokenMetadataService(
     }
 
     private fun getCollection(
-        metaplexMeta: MetaplexTokenMeta,
+        metaplexMeta: MetaplexMetaData,
         offChainMetadataJson: MetaplexOffChainMetadataJsonSchema
     ): TokenMetadata.Collection? {
         val onChainCollection = metaplexMeta.collection
@@ -54,7 +54,7 @@ class TokenMetadataService(
     }
 
     private fun getCreators(
-        metaplexMeta: MetaplexTokenMeta,
+        metaplexMeta: MetaplexMetaData,
         offChainMetadataJson: MetaplexOffChainMetadataJsonSchema
     ): List<MetaplexTokenCreator> =
         metaplexMeta.creators?.takeIf { it.isNotEmpty() }

@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.protocol.solana.common.model.MetaplexTokenMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaData
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import org.springframework.stereotype.Component
@@ -41,7 +41,7 @@ class MetaEventConverter {
         }
     }
 
-    private fun MetaplexMetadataProgram.Data.convert(mutable: Boolean) = MetaplexTokenMeta(
+    private fun MetaplexMetadataProgram.Data.convert(mutable: Boolean) = MetaplexMetaData(
         name = name,
         symbol = symbol,
         uri = uri,
@@ -53,7 +53,7 @@ class MetaEventConverter {
             )
         },
         collection = collection?.let {
-            MetaplexTokenMeta.Collection(
+            MetaplexMetaData.Collection(
                 address = it.key,
                 verified = it.verified
             )

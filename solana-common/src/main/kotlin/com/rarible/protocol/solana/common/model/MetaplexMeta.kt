@@ -13,7 +13,7 @@ typealias MetaId = String
 data class MetaplexMeta(
     val metaAddress: MetaId,
     val tokenAddress: String,
-    val meta: MetaplexTokenMeta,
+    val metaData: MetaplexMetaData,
     val updatedAt: Instant,
     val verified: Boolean,
     override val revertableEvents: List<MetaplexMetaEvent>
@@ -30,9 +30,17 @@ data class MetaplexMeta(
         const val COLLECTION = "metaplex-meta"
 
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
-            tokenAddress = "",
             metaAddress = metaAddress,
-            meta = MetaplexTokenMeta("", "", "", 0, emptyList(), false, MetaplexTokenMeta.Collection("", false)),
+            tokenAddress = "",
+            metaData = MetaplexMetaData(
+                name = "",
+                symbol = "",
+                uri = "",
+                sellerFeeBasisPoints = 0,
+                creators = emptyList(),
+                mutable = false,
+                collection = MetaplexMetaData.Collection("", false)
+            ),
             updatedAt = Instant.EPOCH,
             verified = false,
             revertableEvents = emptyList()

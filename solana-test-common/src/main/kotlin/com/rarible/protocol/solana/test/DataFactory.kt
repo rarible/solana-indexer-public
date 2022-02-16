@@ -7,7 +7,7 @@ import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.TokenMetadata
 import com.rarible.protocol.solana.common.model.Balance
-import com.rarible.protocol.solana.common.model.MetaplexTokenMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaData
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 
@@ -30,8 +30,8 @@ fun createRandomTokenMetadata(): TokenMetadata =
         collection = createRandomTokenMetadataCollection()
     )
 
-fun createRandomMetaplexTokenMeta(): MetaplexTokenMeta =
-    MetaplexTokenMeta(
+fun createRandomMetaplexTokenMeta(): MetaplexMetaData =
+    MetaplexMetaData(
         name = randomString(),
         symbol = randomString(),
         uri = randomUrl(),
@@ -55,8 +55,8 @@ fun createRandomTokenMetadataCollection(): TokenMetadata.Collection =
         )
     }
 
-fun createRandomMetaplexTokenCollection(): MetaplexTokenMeta.Collection =
-    MetaplexTokenMeta.Collection(
+fun createRandomMetaplexTokenCollection(): MetaplexMetaData.Collection =
+    MetaplexMetaData.Collection(
         address = randomString(),
         verified = randomBoolean()
     )

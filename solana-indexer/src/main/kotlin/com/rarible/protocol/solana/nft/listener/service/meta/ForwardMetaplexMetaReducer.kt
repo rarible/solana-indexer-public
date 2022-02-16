@@ -13,7 +13,7 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
         return when (event) {
             is MetaplexCreateMetadataEvent -> entity.copy(
                 tokenAddress = event.token,
-                meta = event.metadata,
+                metaData = event.metadata,
                 updatedAt = event.timestamp
             )
             is MetaplexVerifyMetadataEvent -> entity.copy(
