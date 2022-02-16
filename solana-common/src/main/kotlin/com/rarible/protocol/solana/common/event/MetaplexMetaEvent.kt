@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.common.event
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
-import com.rarible.protocol.solana.common.model.MetaplexMetaData
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import java.time.Instant
 
 sealed class MetaplexMetaEvent : EntityEvent {
@@ -15,7 +15,7 @@ data class MetaplexCreateMetadataEvent(
     override val metaAddress: String,
     override val timestamp: Instant,
     val token: String,
-    val metadata: MetaplexMetaData
+    val metadata: MetaplexMetaFields
 ) : MetaplexMetaEvent()
 
 data class MetaplexVerifyMetadataEvent(
