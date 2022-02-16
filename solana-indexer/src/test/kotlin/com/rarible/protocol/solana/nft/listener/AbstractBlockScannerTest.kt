@@ -68,8 +68,6 @@ abstract class AbstractBlockScannerTest {
 
     @BeforeEach
     fun cleanDatabase() = runBlocking<Unit> {
-        mongo.remove(Query(), SubscriberGroups.SPL_TOKEN).awaitSingle()
-
         val slot = client.getLatestSlot()
         val currentBlock = client.getBlock(slot) ?: error("Can't get latest block")
 

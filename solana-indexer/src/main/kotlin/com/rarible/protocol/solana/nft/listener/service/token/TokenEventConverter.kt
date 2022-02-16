@@ -5,9 +5,7 @@ import com.rarible.protocol.solana.common.event.InitializeMintEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.BurnRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.InitializeMintRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.MintToRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,7 +13,7 @@ class TokenEventConverter {
     suspend fun convert(source: SolanaLogRecordEvent): List<TokenEvent> {
         val timestamp = source.record.timestamp
         return when (val record = source.record) {
-            is MintToRecord -> listOf(
+            is SolanaTokenRecord.MintToRecord -> listOf(
                 MintEvent(
                     token = record.mint,
                     reversed = source.reversed,
@@ -24,7 +22,7 @@ class TokenEventConverter {
                     timestamp = timestamp
                 )
             )
-            is BurnRecord -> listOf(
+            is SolanaTokenRecord.BurnRecord -> listOf(
                 BurnEvent(
                     reversed = source.reversed,
                     token = record.mint,
@@ -33,7 +31,7 @@ class TokenEventConverter {
                     timestamp = timestamp
                 )
             )
-            is InitializeMintRecord -> listOf(
+            is SolanaTokenRecord.InitializeMintRecord -> listOf(
                 InitializeMintEvent(
                     log = source.record.log,
                     reversed = source.reversed,

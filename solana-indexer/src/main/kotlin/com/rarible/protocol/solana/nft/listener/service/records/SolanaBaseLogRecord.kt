@@ -10,83 +10,115 @@ import java.time.Instant
 @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 sealed class SolanaBaseLogRecord : SolanaLogRecord() {
     abstract val timestamp: Instant
+}
+
+sealed class SolanaTokenRecord : SolanaBaseLogRecord() {
+    abstract val mint: String
+
+    override fun getKey(): String = mint
 
     data class InitializeMintRecord(
-        val mint: String,
         val mintAuthority: String,
         val decimals: Int,
+        override val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = mint
-    }
+    ) : SolanaTokenRecord()
 
     data class InitializeAccountRecord(
         val account: String,
-        val mint: String,
         val owner: String,
+        override val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = mint
-    }
+    ) : SolanaTokenRecord()
 
     data class MintToRecord(
-        val account: String,
+        val tokenAccount: String,
         val mintAmount: Long,
-        val mint: String,
+        override val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = mint
-    }
+    ) : SolanaTokenRecord()
 
     data class BurnRecord(
-        val account: String,
+        val tokenAccount: String,
         val burnAmount: Long,
-        val mint: String,
+        override val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = mint
-    }
+    ) : SolanaTokenRecord()
+}
 
-    data class TransferRecord(
+sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
+    abstract val account: String
+
+    override fun getKey(): String = account
+
+    data class MintToRecord(
+        val mintAmount: Long,
         val mint: String,
+        override val account: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBalanceRecord()
+
+    data class BurnRecord(
+        val mint: String,
+        val burnAmount: Long,
+        override val account: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBalanceRecord()
+
+    data class TransferIncomeRecord(
         val from: String,
         val to: String,
-        val amount: Long,
+        val incomeAmount: Long,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = mint
+    ) : SolanaBalanceRecord() {
+        override val account: String
+            get() = to
     }
+
+    data class TransferOutcomeRecord(
+        val from: String,
+        val to: String,
+        val outcomeAmount: Long,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBalanceRecord() {
+        override val account: String
+            get() = from
+    }
+}
+
+sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
+    abstract val metaAccount: String
+
+    override fun getKey(): String = metaAccount
 
     data class MetaplexCreateMetadataRecord(
-        val account: String,
         val mint: String,
         val data: MetaplexCreateMetadataAccount,
+        override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = account
-    }
+    ) : SolanaMetaRecord()
 
     data class MetaplexUpdateMetadataRecord(
-        val account: String,
         val mint: String,
         val newData: MetaplexUpdateMetadataAccountArgs,
+        override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = account
-    }
+    ) : SolanaMetaRecord()
 
     data class MetaplexVerifyCollectionRecord(
-        val verifiedAccount: String,
+        val collectionAccount: String,
+        override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBaseLogRecord() {
-        override fun getKey(): String = verifiedAccount
-    }
+    ) : SolanaMetaRecord()
 }

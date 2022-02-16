@@ -1,7 +1,9 @@
 package com.rarible.protocol.solana.nft.listener.service.descriptors
 
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord.*
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 
 object SolanaProgramId {
     const val SPL_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -11,47 +13,65 @@ object SolanaProgramId {
 object InitializeMintDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = InitializeMintRecord::class.java
+    entityType = SolanaTokenRecord.InitializeMintRecord::class.java
 )
 
 object InitializeAccountDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = InitializeAccountRecord::class.java
+    entityType = SolanaTokenRecord.InitializeAccountRecord::class.java
 )
 
-object MintToDescriptor : SolanaDescriptor(
+object MintToTokenDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = MintToRecord::class.java
+    entityType = SolanaTokenRecord.MintToRecord::class.java
 )
 
-object BurnDescriptor : SolanaDescriptor(
+object MintToBalanceDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = BurnRecord::class.java
+    entityType = SolanaBalanceRecord.MintToRecord::class.java
 )
 
-object TransferDescriptor : SolanaDescriptor(
+object BurnTokenDescriptor : SolanaDescriptor(
     SolanaProgramId.SPL_TOKEN_PROGRAM,
     SubscriberGroups.SPL_TOKEN,
-    entityType = TransferRecord::class.java
+    entityType = SolanaTokenRecord.BurnRecord::class.java
+)
+
+object BurnBalanceDescriptor : SolanaDescriptor(
+    SolanaProgramId.SPL_TOKEN_PROGRAM,
+    SubscriberGroups.SPL_TOKEN,
+    entityType = SolanaBalanceRecord.BurnRecord::class.java
+)
+
+object TransferIncomeBalanceDescriptor : SolanaDescriptor(
+    SolanaProgramId.SPL_TOKEN_PROGRAM,
+    SubscriberGroups.SPL_TOKEN,
+    entityType = SolanaBalanceRecord.TransferIncomeRecord::class.java
+)
+
+object TransferOutcomeBalanceDescriptor : SolanaDescriptor(
+    SolanaProgramId.SPL_TOKEN_PROGRAM,
+    SubscriberGroups.SPL_TOKEN,
+    entityType = SolanaBalanceRecord.TransferOutcomeRecord::class.java
 )
 
 object CreateMetadataDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
     SubscriberGroups.METAPLEX_META,
-    entityType = MetaplexCreateMetadataRecord::class.java
+    entityType = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java
 )
 
 object UpdateMetadataDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
     SubscriberGroups.METAPLEX_META,
-    entityType = MetaplexUpdateMetadataRecord::class.java
+    entityType = SolanaMetaRecord.MetaplexUpdateMetadataRecord::class.java
 )
 
 object VerifyCollectionDescriptor : SolanaDescriptor(
     SolanaProgramId.TOKEN_METADATA_PROGRAM,
     SubscriberGroups.METAPLEX_META,
-    entityType = MetaplexVerifyCollectionRecord::class.java
+    entityType = SolanaMetaRecord.MetaplexVerifyCollectionRecord::class.java
 )
