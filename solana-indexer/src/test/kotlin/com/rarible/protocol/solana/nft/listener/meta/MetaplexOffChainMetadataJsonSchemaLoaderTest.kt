@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.meta
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.rarible.protocol.solana.common.meta.ExternalHttpClient
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataJsonSchema
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataLoader
@@ -18,7 +19,8 @@ class MetaplexOffChainMetadataJsonSchemaLoaderTest {
         val url = URL(
             "https://gist.githubusercontent.com/serejke/6e5c9e1cad75956f17d6059e3b1eaf98/raw/c85ac6ab1431e2fde06bc25954c79cc91445a3f8/meta-with-collection.json"
         )
-        val tokenMeta = metaplexOffChainMetadataLoader.loadOffChainMetadataJson(url)
+        val tokenMeta = jacksonObjectMapper()
+            .readValue(metaplexOffChainMetadataLoader.loadOffChainMetadataJson(url), MetaplexOffChainMetadataJsonSchema::class.java)
         assertThat(tokenMeta).isEqualTo(
             MetaplexOffChainMetadataJsonSchema(
                 name = "My NFT #1",
