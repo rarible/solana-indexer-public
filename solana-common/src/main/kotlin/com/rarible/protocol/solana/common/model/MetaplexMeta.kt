@@ -27,7 +27,7 @@ data class MetaplexMeta(
     override fun withRevertableEvents(events: List<MetaplexMetaEvent>): MetaplexMeta = copy(revertableEvents = events)
 
     companion object {
-        const val COLLECTION = "metaplex-meta"
+        const val COLLECTION = "meta"
 
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
             metaAddress = metaAddress,
