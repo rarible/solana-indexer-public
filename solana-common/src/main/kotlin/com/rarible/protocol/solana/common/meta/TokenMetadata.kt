@@ -11,8 +11,34 @@ data class TokenMetadata(
     val description: String,
     val creators: List<MetaplexTokenCreator>,
     val collection: Collection?,
-    val url: String
+    val url: String,
+    val attributes: List<Attribute>,
+    val contents: List<Content>,
+    val externalUrl: String?
 ) {
+    sealed class Content {
+        abstract val url: String
+        abstract val mimeType: String?
+
+        data class ImageContent(
+            override val url: String,
+            override val mimeType: String?
+        ) : Content()
+
+        data class VideoContent(
+            override val url: String,
+            override val mimeType: String?
+        ) : Content()
+    }
+
+    data class Attribute(
+        val key: String,
+        val value: String,
+        // TODO[meta]: these are not used yet.
+        val type: String?,
+        val format: String?
+    )
+
     sealed class Collection {
         data class OnChain(
             val address: String,

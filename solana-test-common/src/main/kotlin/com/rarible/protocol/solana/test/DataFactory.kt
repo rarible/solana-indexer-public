@@ -27,7 +27,31 @@ fun createRandomTokenMetadata(): TokenMetadata =
         symbol = randomString(),
         url = randomUrl(),
         creators = listOf(createRandomTokenCreator()),
-        collection = createRandomTokenMetadataCollection()
+        collection = createRandomTokenMetadataCollection(),
+        attributes = listOf(createRandomTokenMetaAttribute()),
+        contents = listOf(createRandomTokenMetaContent()),
+        externalUrl = randomUrl()
+    )
+
+fun createRandomTokenMetaContent(): TokenMetadata.Content =
+    if (randomBoolean()) {
+        TokenMetadata.Content.ImageContent(
+            url = randomUrl(),
+            mimeType = null
+        )
+    } else {
+        TokenMetadata.Content.VideoContent(
+            url = randomUrl(),
+            mimeType = null
+        )
+    }
+
+fun createRandomTokenMetaAttribute(): TokenMetadata.Attribute =
+    TokenMetadata.Attribute(
+        key = randomString(),
+        value = randomString(),
+        type = null,
+        format = null
     )
 
 fun createRandomMetaplexTokenMeta(): MetaplexMetaFields =

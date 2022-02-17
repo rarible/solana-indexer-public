@@ -12,10 +12,23 @@ class MetaMetrics(
 
     private val logger = LoggerFactory.getLogger(MetaMetrics::class.java)
 
-    private val metaParsingErrorCounter = Counter
+    private val metaLoadingErrorCounter = Counter
         .builder(META_PARSING_ERROR)
         .tag("sync", "true")
         .register(meterRegistry)
+
+    private val metaParsingErrorCounter = Counter
+        .builder(META_PARSING_ERROR)
+        .register(meterRegistry)
+
+    fun onMetaLoadingError(
+        tokenAddress: String,
+        metadataUrl: String,
+        exception: Exception
+    ) {
+        logger.error("Failed to load metadata for token $tokenAddress by URL", exception)
+        metaLoadingErrorCounter.increment()
+    }
 
     fun onMetaParsingError(
         tokenAddress: String,
@@ -31,6 +44,7 @@ class MetaMetrics(
     }
 
     private companion object {
+        const val META_LOADING_ERROR = "meta_loading_error"
         const val META_PARSING_ERROR = "meta_parsing_error"
     }
 }

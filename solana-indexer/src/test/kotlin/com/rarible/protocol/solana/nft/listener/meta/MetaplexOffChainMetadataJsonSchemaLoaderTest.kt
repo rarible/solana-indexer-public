@@ -1,9 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.meta
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.ExternalHttpClient
-import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataLoader
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataJsonSchema
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetadataLoader
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -13,9 +12,9 @@ class MetaplexOffChainMetadataJsonSchemaLoaderTest {
 
     private val externalHttpClient = ExternalHttpClient()
     private val metaplexOffChainMetadataLoader = MetaplexOffChainMetadataLoader(externalHttpClient)
+
     @Test
     fun `load meta`() = runBlocking<Unit> {
-        val tokenAddress = randomString()
         val url = URL(
             "https://gist.githubusercontent.com/serejke/6e5c9e1cad75956f17d6059e3b1eaf98/raw/c85ac6ab1431e2fde06bc25954c79cc91445a3f8/meta-with-collection.json"
         )
@@ -54,7 +53,8 @@ class MetaplexOffChainMetadataJsonSchemaLoaderTest {
                         )
                     ),
                 ),
-                image = "https://arweave.net/fRfJ7WvuCxmSub9uD41hU8_WOAaJRzLUpepmp7KUirk"
+                image = "https://arweave.net/fRfJ7WvuCxmSub9uD41hU8_WOAaJRzLUpepmp7KUirk",
+                animation_url = null
             )
         )
     }

@@ -1,8 +1,5 @@
 package com.rarible.protocol.solana.common.meta
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.rarible.protocol.solana.common.model.TokenId
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -16,17 +13,13 @@ class MetaplexOffChainMetadataLoader(
     private companion object {
         // TODO[meta]: add a configuration for this field.
         private val metadataRequestTimeout = Duration.ofSeconds(10)
-
-        private val jacksonMapper = jacksonObjectMapper()
     }
 
-    suspend fun loadOffChainMetadataJson(metadataUrl: URL): MetaplexOffChainMetadataJsonSchema {
-        val jsonContent = externalHttpClient
+    suspend fun loadOffChainMetadataJson(metadataUrl: URL): String =
+        externalHttpClient
             .get(metadataUrl)
             .bodyToMono<String>()
             // TODO[meta]: limit the size of the loaded JSON.
             .timeout(metadataRequestTimeout)
             .awaitFirst()
-        return jacksonMapper.readValue(jsonContent)
-    }
 }
