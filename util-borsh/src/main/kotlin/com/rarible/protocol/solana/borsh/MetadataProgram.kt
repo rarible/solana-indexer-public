@@ -9,6 +9,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 object MetaplexMetadataProgram {
+    enum class DataVersion {
+        V1, V2
+    }
+
     data class Creator(
         val address: Pubkey,
         val verified: Boolean,
@@ -34,11 +38,17 @@ object MetaplexMetadataProgram {
         val collection: Collection?
     )
 
-    internal fun ByteBuffer.parseUpdateMetadataAccountArgs(): MetaplexUpdateMetadataAccountArgs {
-        val data = readNullable { readData() }
+    internal fun ByteBuffer.parseUpdateMetadataAccountArgs(
+        version: DataVersion
+    ): MetaplexUpdateMetadataAccountArgs {
+        val data = readNullable { readData(version) }
         val updateAuthority = readNullable { readPubkey() }
         val primarySaleHappened = readNullable { readBoolean() }
-        val mutable = readOptional { readNullable { readBoolean() } }
+        val mutable = if (version == DataVersion.V2) {
+            readNullable { readBoolean() }
+        } else {
+            null
+        }
 
         return MetaplexUpdateMetadataAccountArgs(
             data,
@@ -48,8 +58,10 @@ object MetaplexMetadataProgram {
         )
     }
 
-    internal fun ByteBuffer.parseMetaplexCreateMetadataInstruction(): MetaplexMetadataInstruction {
-        val data = readData()
+    internal fun ByteBuffer.parseMetaplexCreateMetadataInstruction(
+        version: DataVersion
+    ): MetaplexMetadataInstruction {
+        val data = readData(version)
         val mutable = readBoolean()
 
         return MetaplexCreateMetadataAccount(
@@ -58,13 +70,20 @@ object MetaplexMetadataProgram {
         )
     }
 
-    private fun ByteBuffer.readData(): Data {
+    // TODO add Uses under version flag
+    private fun ByteBuffer.readData(
+        version: DataVersion
+    ): Data {
         val name = readString()
         val symbol = readString()
         val uri = readString()
         val sellerFeeBasisPoints = getShort()
         val creators = readNullable { List(getInt()) { readCreator() } }
-        val collection = readOptional { readNullable { readCollection() } }
+        val collection = if (version == DataVersion.V2) {
+            readNullable { readCollection() }
+        } else {
+            null
+        }
 
         return Data(
             name = name,
@@ -96,8 +115,10 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
     val bytes = Base58.decode(this)
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
     return when (buffer.get().toInt()) {
-        0, 16 -> buffer.parseMetaplexCreateMetadataInstruction()
-        1, 15 -> buffer.parseUpdateMetadataAccountArgs()
+        0 -> buffer.parseMetaplexCreateMetadataInstruction(MetaplexMetadataProgram.DataVersion.V1)
+        16 -> buffer.parseMetaplexCreateMetadataInstruction(MetaplexMetadataProgram.DataVersion.V2)
+        1 -> buffer.parseUpdateMetadataAccountArgs(MetaplexMetadataProgram.DataVersion.V1)
+        15 -> buffer.parseUpdateMetadataAccountArgs(MetaplexMetadataProgram.DataVersion.V2)
         18 -> VerifyCollection
         else -> null
     }
