@@ -38,11 +38,16 @@ class TokenMetadataParser(
             collection = getCollection(meta, offChainMetadataJson),
             url = meta.uri,
             attributes = offChainMetadataJson.attributes.orEmpty().mapNotNull { it.getAttribute() },
-            contents = listOfNotNull(offChainMetadataJson.parseImage(), offChainMetadataJson.parseAnimation()) +
-                    offChainMetadataJson.parseFiles(),
+            contents = parseContents(offChainMetadataJson),
             externalUrl = offChainMetadataJson.external_url
         )
     }
+
+    private fun parseContents(offChainMetadataJson: MetaplexOffChainMetadataJsonSchema) =
+        (offChainMetadataJson.parseFiles() + listOfNotNull(
+            offChainMetadataJson.parseImage(),
+            offChainMetadataJson.parseAnimation()
+        )).distinctBy { it.url }
 
     private fun MetaplexOffChainMetadataJsonSchema.parseImage(): TokenMetadata.Content.ImageContent? =
         if (image == null) null else TokenMetadata.Content.ImageContent(image, null)
