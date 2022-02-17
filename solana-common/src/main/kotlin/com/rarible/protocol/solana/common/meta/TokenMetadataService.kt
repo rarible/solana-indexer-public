@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 @Component
 class TokenMetadataService(
     private val metaRepository: MetaRepository,
+    private val metaMetrics: MetaMetrics,
     private val metaplexOffChainMetadataLoader: MetaplexOffChainMetadataLoader
 ) {
     private val logger = LoggerFactory.getLogger(TokenMetadataService::class.java)
@@ -19,7 +20,12 @@ class TokenMetadataService(
         val meta = metaplexMeta.metaFields
         val metadataUrl = url(meta.uri)
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
-        val offChainMetadataJson = metaplexOffChainMetadataLoader.loadOffChainMetadataJson(metadataUrl)
+        val offChainMetadataJson = try {
+            metaplexOffChainMetadataLoader.loadOffChainMetadataJson(metadataUrl)
+        } catch (e: Exception) {
+            metaMetrics.onMetaParsingError(tokenAddress, meta.uri, e)
+            return null
+        }
         return TokenMetadata(
             name = meta.name,
             symbol = meta.symbol,
