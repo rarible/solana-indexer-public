@@ -11,7 +11,7 @@ sealed class TokenInstruction
 
 typealias Pubkey = String
 
-data class InitializeMint(
+data class InitializeMint1and2(
     val decimal: UByte,
     val mintAuthority: Pubkey,
     val freezeAuthority: Pubkey?
@@ -70,7 +70,7 @@ data class BurnChecked(
     val decimals: UByte
 ) : TokenInstruction()
 
-data class InitializeAccount2(
+data class InitializeAccount2and3(
     val owner: Pubkey
 ) : TokenInstruction()
 
@@ -83,12 +83,20 @@ enum class AuthorityType {
     CloseAccount,
 }
 
-internal fun ByteBuffer.parseInitializeMint(): InitializeMint {
+internal fun ByteBuffer.parseInitializeMint(): InitializeMint1and2 {
     val decimals = get().toUByte()
     val mintAuthority = readPubkey()
     val freezeAuthority = readNullable { readPubkey() }
 
-    return InitializeMint(decimals, mintAuthority, freezeAuthority)
+    return InitializeMint1and2(decimals, mintAuthority, freezeAuthority)
+}
+
+internal fun ByteBuffer.parseInitializeMint2(): InitializeMint1and2 {
+    val decimals = get().toUByte()
+    val mintAuthority = readPubkey()
+    val freezeAuthority = readNullable { readPubkey() }
+
+    return InitializeMint1and2(decimals, mintAuthority, freezeAuthority)
 }
 
 internal fun ByteBuffer.parseInitializeMultisig(): InitializeMultisig {
@@ -162,10 +170,14 @@ internal fun ByteBuffer.parseBurnChecked(): BurnChecked {
     return BurnChecked(amount, decimals)
 }
 
-internal fun ByteBuffer.parseInitializeAccount2(): InitializeAccount2 {
+internal fun ByteBuffer.parseInitializeAccount2(): InitializeAccount2and3 {
     val owner = readPubkey()
+    return InitializeAccount2and3(owner)
+}
 
-    return InitializeAccount2(owner)
+internal fun ByteBuffer.parseInitializeAccount3(): InitializeAccount2and3 {
+    val owner = readPubkey()
+    return InitializeAccount2and3(owner)
 }
 
 fun String.parseTokenInstruction(): TokenInstruction? {
@@ -191,8 +203,114 @@ fun String.parseTokenInstruction(): TokenInstruction? {
         15 -> ByteBuffer::parseBurnChecked
         16 -> ByteBuffer::parseInitializeAccount2
         17 -> { _ -> SyncNative }
+        18 -> ByteBuffer::parseInitializeAccount3
+        19 -> return null // InitializeMultisig2
+        20 -> ByteBuffer::parseInitializeMint2 // InitializeMint2
+        21 -> return null // GetAccountDataSize
+        22 -> return null // InitializeImmutableOwner
+        23 -> return null // AmountToUiAmount
+        24 -> return null // UiAmountToAmount
         else -> return null
     }
 
     return decoder(buffer)
 }
+
+/*
+pub enum TokenInstruction<'a> {
+    // 0
+    InitializeMint {
+        decimals: u8,
+        mint_authority: Pubkey,
+        freeze_authority: COption<Pubkey>,
+    },
+    // 1
+    InitializeAccount,
+    // 2
+    InitializeMultisig {
+        m: u8,
+    },
+    // 3
+    Transfer {
+        amount: u64,
+    },
+    // 4
+    Approve {
+        amount: u64,
+    },
+    // 5
+    Revoke,
+    // 6
+    SetAuthority {
+        authority_type: AuthorityType,
+        new_authority: COption<Pubkey>,
+    },
+    // 7
+    MintTo {
+        amount: u64,
+    },
+    // 8
+    Burn {
+        amount: u64,
+    },
+    // 9
+    CloseAccount,
+    // 10
+    FreezeAccount,
+    // 11
+    ThawAccount,
+    // 12
+    TransferChecked {
+        amount: u64,
+        decimals: u8,
+    },
+    // 13
+    ApproveChecked {
+        amount: u64,
+        decimals: u8,
+    },
+    // 14
+    MintToChecked {
+        amount: u64,
+        decimals: u8,
+    },
+    // 15
+    BurnChecked {
+        amount: u64,
+        decimals: u8,
+    },
+    // 16
+    InitializeAccount2 {
+        owner: Pubkey,
+    },
+    // 17
+    SyncNative,
+    // 18
+    InitializeAccount3 {
+        owner: Pubkey,
+    },
+    // 19
+    InitializeMultisig2 {
+        m: u8,
+    },
+    // 20
+    InitializeMint2 {
+        decimals: u8,
+        mint_authority: Pubkey,
+        freeze_authority: COption<Pubkey>,
+    },
+    // 21
+    GetAccountDataSize,
+    // 22
+    InitializeImmutableOwner,
+    // 23
+    AmountToUiAmount {
+        amount: u64,
+    },
+    // 24
+    UiAmountToAmount {
+        ui_amount: &'a str,
+    },
+}
+
+ */

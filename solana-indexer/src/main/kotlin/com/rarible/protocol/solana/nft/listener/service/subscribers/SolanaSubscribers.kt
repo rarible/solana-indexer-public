@@ -7,7 +7,8 @@ import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
 import com.rarible.protocol.solana.borsh.InitializeAccount
-import com.rarible.protocol.solana.borsh.InitializeMint
+import com.rarible.protocol.solana.borsh.InitializeAccount2and3
+import com.rarible.protocol.solana.borsh.InitializeMint1and2
 import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
 import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.MintTo
@@ -44,12 +45,12 @@ class InitializeMintSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<InitializeMintRecord> {
-        val initializeMintInstruction =
-            log.instruction.data.parseTokenInstruction() as? InitializeMint ?: return emptyList()
+        val initializeMint1and2Instruction = log.instruction.data.parseTokenInstruction() as? InitializeMint1and2
+            ?: return emptyList()
         val record = InitializeMintRecord(
             mint = log.instruction.accounts[0],
-            mintAuthority = initializeMintInstruction.mintAuthority,
-            decimals = initializeMintInstruction.decimal.toInt(),
+            mintAuthority = initializeMint1and2Instruction.mintAuthority,
+            decimals = initializeMint1and2Instruction.decimal.toInt(),
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
@@ -66,16 +67,23 @@ class InitializeAccountSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<InitializeTokenAccountRecord> {
-        if (log.instruction.data.parseTokenInstruction() !is InitializeAccount) return emptyList()
-
-        val record = InitializeTokenAccountRecord(
-            tokenAccount = log.instruction.accounts[0],
-            mint = log.instruction.accounts[1],
-            owner = log.instruction.accounts[2],
-            log = log.log,
-            timestamp = Instant.ofEpochSecond(block.timestamp)
-        )
-
+        val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            InitializeAccount -> InitializeTokenAccountRecord(
+                tokenAccount = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                owner = log.instruction.accounts[2],
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+            is InitializeAccount2and3 -> InitializeTokenAccountRecord(
+                tokenAccount = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                owner = instruction.owner,
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+            else -> return emptyList()
+        }
         return listOf(record)
     }
 }

@@ -8,7 +8,7 @@ internal class SplTokenProgramTest {
     @Test
     fun testInitializeMint() {
         val data = "11Gz3BHfDcfCv418yvTCZKQKkEKDeiUBXvsyeYf2CL7mMiKECSf3jrp6fucwFz9qpMKxTNRVe4p3R21g8mHhMuU5h2R"
-        val tokenInstruction = data.parseTokenInstruction() as InitializeMint
+        val tokenInstruction = data.parseTokenInstruction() as InitializeMint1and2
 
         assertEquals(tokenInstruction.mintAuthority, "DC2mkgwhy56w3viNtHDjJQmc7SGu2QX785bS4aexojwX")
         assertEquals(tokenInstruction.freezeAuthority, "DC2mkgwhy56w3viNtHDjJQmc7SGu2QX785bS4aexojwX")
