@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
-import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,11 +36,10 @@ class SplProgramTest : AbstractBlockScannerTest() {
         val nft = mintNft()
 
         Wait.waitAssert(timeout) {
-            val records =
-                findRecordByType(
-                    SubscriberGroups.METAPLEX_META,
-                    SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java
-                ).toList()
+            val records = findRecordByType(
+                collection = SubscriberGroup.METAPLEX_META.collectionName,
+                type = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java
+            ).toList()
 
             assertEquals(1, records.size)
             val record = records.single()
@@ -89,7 +86,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                SubscriberGroups.SPL_TOKEN,
+                SubscriberGroup.TOKEN.collectionName,
                 SolanaTokenRecord.InitializeMintRecord::class.java
             ).toList()
 
@@ -110,8 +107,8 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                SubscriberGroups.SPL_TOKEN,
-                SolanaTokenRecord.InitializeAccountRecord::class.java
+                SubscriberGroup.TOKEN.collectionName,
+                SolanaTokenRecord.InitializeTokenAccountRecord::class.java
             ).toList()
 
             assertEquals(1, records.size)
@@ -119,7 +116,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
             assertEquals(token, record.mint)
             assertEquals(wallet, record.owner)
-            assertEquals(account, record.account)
+            assertEquals(account, record.tokenAccount)
         }
     }
 
@@ -132,8 +129,10 @@ class SplProgramTest : AbstractBlockScannerTest() {
         mintToken(token, 5UL)
 
         Wait.waitAssert(timeout) {
-            val records =
-                findRecordByType(SubscriberGroups.SPL_TOKEN, SolanaTokenRecord.MintToRecord::class.java).toList()
+            val records = findRecordByType(
+                collection = SubscriberGroup.TOKEN.collectionName,
+                type = SolanaTokenRecord.MintToRecord::class.java
+            ).toList()
 
             assertEquals(1, records.size)
             val record = records.single()
@@ -154,8 +153,10 @@ class SplProgramTest : AbstractBlockScannerTest() {
         burnToken(account, 4UL)
 
         Wait.waitAssert(timeout) {
-            val records =
-                findRecordByType(SubscriberGroups.SPL_TOKEN, SolanaTokenRecord.BurnRecord::class.java).toList()
+            val records = findRecordByType(
+                collection = SubscriberGroup.TOKEN.collectionName,
+                type = SolanaTokenRecord.BurnRecord::class.java
+            ).toList()
 
             assertEquals(1, records.size)
             val record = records.single()
@@ -178,8 +179,8 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                SubscriberGroups.SPL_TOKEN,
-                SolanaBalanceRecord.TransferIncomeRecord::class.java
+                collection = SubscriberGroup.BALANCE.collectionName,
+                type = SolanaBalanceRecord.TransferIncomeRecord::class.java
             ).toList()
 
             assertEquals(1, records.size)
@@ -192,7 +193,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                SubscriberGroups.SPL_TOKEN,
+                SubscriberGroup.BALANCE.collectionName,
                 SolanaBalanceRecord.TransferOutcomeRecord::class.java
             ).toList()
 

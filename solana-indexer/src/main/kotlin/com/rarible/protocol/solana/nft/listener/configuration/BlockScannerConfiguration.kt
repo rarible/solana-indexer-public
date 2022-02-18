@@ -8,7 +8,7 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
-import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroups
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroup
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Bean
@@ -29,8 +29,9 @@ class BlockchainScannerConfiguration(
     ): KafkaEntityEventConsumer {
         // TODO: will be reworked on blockchain scanner side.
         runBlocking {
-            publisher.prepareGroup(SubscriberGroups.SPL_TOKEN)
-            publisher.prepareGroup(SubscriberGroups.METAPLEX_META)
+            SubscriberGroup.values().forEach {
+                publisher.prepareGroup(it.id)
+            }
         }
         return KafkaEntityEventConsumer(
             properties = KafkaProperties(

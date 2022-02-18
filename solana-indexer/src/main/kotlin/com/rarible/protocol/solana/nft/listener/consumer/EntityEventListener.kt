@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.consumer
 
-typealias SubscriberGroup = String
+import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroup
 
 interface EntityEventListener {
     val id: String

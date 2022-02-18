@@ -31,7 +31,7 @@ import com.rarible.protocol.solana.nft.listener.service.descriptors.VerifyCollec
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord.InitializeAccountRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord.InitializeTokenAccountRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord.InitializeMintRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -65,11 +65,11 @@ class InitializeAccountSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<InitializeAccountRecord> {
+    ): List<InitializeTokenAccountRecord> {
         if (log.instruction.data.parseTokenInstruction() !is InitializeAccount) return emptyList()
 
-        val record = InitializeAccountRecord(
-            account = log.instruction.accounts[0],
+        val record = InitializeTokenAccountRecord(
+            tokenAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
             owner = log.instruction.accounts[2],
             log = log.log,

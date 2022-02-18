@@ -55,7 +55,7 @@ class KafkaEntityEventConsumer(
                 valueDeserializerClass = JsonDeserializer::class.java,
                 valueClass = SolanaLogRecordEvent::class.java,
                 consumerGroup = consumerGroup,
-                defaultTopic = "$topicPrefix.${listener.subscriberGroup}",
+                defaultTopic = "$topicPrefix.${listener.subscriberGroup.id}",
                 bootstrapServers = properties.brokerReplicaSet,
                 offsetResetStrategy = OffsetResetStrategy.EARLIEST,
                 autoCreateTopic = false
