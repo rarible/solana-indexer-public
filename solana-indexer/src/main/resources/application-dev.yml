@@ -1,0 +1,4 @@
+blockchain:
+  scanner:
+    solana:
+      rpcApiUrls: https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/
