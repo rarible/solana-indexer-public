@@ -13,6 +13,8 @@ typealias BalanceId = String
 @Document("balance")
 data class Balance(
     val account: String,
+    val owner: String,
+    val mint: String,
     val value: Long,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -33,8 +35,10 @@ data class Balance(
     }
 
     companion object {
-        fun empty(owner: String): Balance = Balance(
-            account = owner,
+        fun empty(account: String): Balance = Balance(
+            account = account,
+            owner = "",
+            mint = "",
             value = 0L,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,

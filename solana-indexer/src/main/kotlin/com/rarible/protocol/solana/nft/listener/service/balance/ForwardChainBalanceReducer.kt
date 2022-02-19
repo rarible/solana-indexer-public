@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component
 @Component
 class ForwardChainBalanceReducer(
     eventApplyPolicy: BalanceConfirmEventApplyPolicy,
-    forwardBalanceValueReducer: ForwardBalanceValueReducer
+    forwardBalanceReducer: ForwardBalanceReducer
 ) : EntityChainReducer<BalanceId, BalanceEvent, Balance>(
     eventApplyPolicy,
-    forwardBalanceValueReducer
+    forwardBalanceReducer
 )

@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component
 
 @Component
 class ReversedBalanceValueReducer : Reducer<BalanceEvent, Balance> {
-    private val forwardValueTokenReducer = ForwardBalanceValueReducer()
+    private val forwardValueTokenReducer = ForwardBalanceReducer()
 
     override suspend fun reduce(entity: Balance, event: BalanceEvent): Balance {
-        return forwardValueTokenReducer.reduce(entity, event.invert())
+        val invert = event.invert() ?: return Balance.empty(account = entity.account)
+        return forwardValueTokenReducer.reduce(entity, invert)
     }
 }

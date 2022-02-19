@@ -5,14 +5,52 @@ import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
+import com.rarible.protocol.solana.borsh.InitializeAccount
+import com.rarible.protocol.solana.borsh.InitializeAccount2and3
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
+
+@Component
+class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+        programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
+        id = "initialize_balance_account",
+        groupId = SubscriberGroup.BALANCE.id,
+        entityType = SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java,
+        collection = SubscriberGroup.BALANCE.collectionName
+    )
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaBalanceRecord.InitializeBalanceAccountRecord> {
+        val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
+            InitializeAccount -> SolanaBalanceRecord.InitializeBalanceAccountRecord(
+                balanceAccount = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                owner = log.instruction.accounts[2],
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+            is InitializeAccount2and3 -> SolanaBalanceRecord.InitializeBalanceAccountRecord(
+                balanceAccount = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
+                owner = instruction.owner,
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+            else -> return emptyList()
+        }
+        return listOf(record)
+    }
+}
 
 @Component
 class MintToBalanceSubscriber : SolanaLogEventSubscriber {

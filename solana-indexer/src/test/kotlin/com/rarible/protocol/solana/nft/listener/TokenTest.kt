@@ -35,6 +35,8 @@ class TokenTest : EventAwareBlockScannerTest() {
         )
         val fromBalance = Balance(
             account = account,
+            owner = getWallet(),
+            mint = tokenAddress,
             value = 5.scaleSupply(decimals),
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
@@ -42,6 +44,8 @@ class TokenTest : EventAwareBlockScannerTest() {
         )
         val aliceBalance = Balance(
             account = aliceAccount,
+            owner = aliceWallet,
+            mint = tokenAddress,
             value = 0,
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,

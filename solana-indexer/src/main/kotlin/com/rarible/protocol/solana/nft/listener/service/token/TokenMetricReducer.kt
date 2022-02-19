@@ -21,7 +21,7 @@ class TokenMetricReducer(
         return when (event) {
             is BurnEvent -> "burn"
             is MintEvent -> "mint"
-            is InitializeMintEvent -> "initialize-mint"
+            is InitializeMintEvent -> "initialize_mint"
         }
     }
 }

@@ -39,6 +39,6 @@ class TokenEventConverter {
                 timestamp = record.timestamp
             )
         )
-        else -> emptyList()
+        is SolanaTokenRecord.InitializeTokenAccountRecord -> TODO()
     }
 }

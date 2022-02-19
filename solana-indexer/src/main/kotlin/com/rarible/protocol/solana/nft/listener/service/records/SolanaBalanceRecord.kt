@@ -8,6 +8,16 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
 
     override fun getKey(): String = account
 
+    data class InitializeBalanceAccountRecord(
+        val balanceAccount: String,
+        val owner: String,
+        val mint: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBalanceRecord() {
+        override val account: String get() = balanceAccount
+    }
+
     data class MintToRecord(
         val mintAmount: Long,
         val mint: String,

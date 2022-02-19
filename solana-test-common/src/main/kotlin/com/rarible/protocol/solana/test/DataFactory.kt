@@ -93,6 +93,8 @@ fun createRandomTokenCreator(): MetaplexTokenCreator =
 
 fun createRandomBalance(): Balance = Balance(
     account = randomString(),
+    owner = randomString(),
+    mint = randomString(),
     value = randomLong(),
     revertableEvents = emptyList(),
     createdAt = nowMillis(),

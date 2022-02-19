@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
+import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import org.springframework.stereotype.Component
@@ -44,6 +45,16 @@ class BalanceEventConverter {
                 reversed = reversed,
                 account = record.from,
                 amount = record.outcomeAmount,
+                log = record.log,
+                timestamp = record.timestamp
+            )
+        )
+        is SolanaBalanceRecord.InitializeBalanceAccountRecord -> listOf(
+            BalanceInitializeAccountEvent(
+                reversed = reversed,
+                account = record.account,
+                owner = record.owner,
+                mint = record.mint,
                 log = record.log,
                 timestamp = record.timestamp
             )

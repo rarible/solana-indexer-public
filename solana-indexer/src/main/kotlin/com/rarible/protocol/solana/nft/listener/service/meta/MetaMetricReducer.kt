@@ -17,8 +17,8 @@ class MetaplexMetaMetricReducer(
 
     override fun getMetricName(event: MetaplexMetaEvent): String {
         return when (event) {
-            is MetaplexCreateMetadataEvent -> "create-meta"
-            is MetaplexVerifyMetadataEvent -> "verify-meta"
+            is MetaplexCreateMetadataEvent -> "create_meta"
+            is MetaplexVerifyMetadataEvent -> "verify_meta"
         }
     }
 }
