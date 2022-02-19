@@ -11,7 +11,7 @@ import com.rarible.core.test.ext.MongoTest
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.nft.listener.service.descriptors.SolanaProgramId
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll

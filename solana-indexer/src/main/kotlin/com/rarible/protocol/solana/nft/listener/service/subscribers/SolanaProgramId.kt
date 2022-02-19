@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.descriptors
+package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 object SolanaProgramId {
     const val SPL_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"

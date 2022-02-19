@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
-import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord

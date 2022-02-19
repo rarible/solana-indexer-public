@@ -8,7 +8,7 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
-import com.rarible.protocol.solana.nft.listener.service.descriptors.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.springframework.context.annotation.Bean
