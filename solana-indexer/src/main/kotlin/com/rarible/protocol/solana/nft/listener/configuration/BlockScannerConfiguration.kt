@@ -6,7 +6,7 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
-import com.rarible.protocol.solana.nft.listener.consumer.EntityEventListener
+import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import io.micrometer.core.instrument.MeterRegistry
@@ -23,7 +23,7 @@ class BlockchainScannerConfiguration(
 ) {
     @Bean
     fun entityEventConsumer(
-        entityEventListener: List<EntityEventListener>,
+        logRecordEventListener: List<LogRecordEventListener>,
         solanaBlockchainScannerProperties: SolanaBlockchainScannerProperties,
         publisher: LogRecordEventPublisher
     ): KafkaEntityEventConsumer {
@@ -40,6 +40,6 @@ class BlockchainScannerConfiguration(
             meterRegistry = meterRegistry,
             applicationEnvironmentInfo = applicationEnvironmentInfo,
             solanaBlockchainScannerProperties = solanaBlockchainScannerProperties
-        ).apply { start(entityEventListener) }
+        ).apply { start(logRecordEventListener) }
     }
 }

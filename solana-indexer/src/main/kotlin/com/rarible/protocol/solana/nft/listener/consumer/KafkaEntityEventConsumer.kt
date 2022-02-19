@@ -36,8 +36,8 @@ class KafkaEntityEventConsumer(
         "${applicationEnvironmentInfo.name}.${applicationEnvironmentInfo.host}.${java.util.UUID.randomUUID()}.solana"
     private val batchedConsumerWorkers = arrayListOf<ConsumerWorkerHolder<*>>()
 
-    fun start(entityEventListeners: List<EntityEventListener>) {
-        batchedConsumerWorkers += entityEventListeners
+    fun start(logRecordEventListeners: List<LogRecordEventListener>) {
+        batchedConsumerWorkers += logRecordEventListeners
             .map { consumer(it) }
             .onEach { consumer -> consumer.start() }
     }
@@ -47,7 +47,7 @@ class KafkaEntityEventConsumer(
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun consumer(listener: EntityEventListener): ConsumerWorkerHolder<SolanaLogRecordEvent> {
+    private fun consumer(listener: LogRecordEventListener): ConsumerWorkerHolder<SolanaLogRecordEvent> {
         val workers = (1..properties.numberOfPartitionsPerLogGroup).map { index ->
             val consumerGroup = listener.id
             val kafkaConsumer = RaribleKafkaConsumer(
@@ -74,12 +74,10 @@ class KafkaEntityEventConsumer(
     }
 
     private class BlockEventHandler(
-        private val entityEventListener: EntityEventListener
+        private val logRecordEventListener: LogRecordEventListener
     ) : ConsumerEventHandler<SolanaLogRecordEvent> {
         override suspend fun handle(event: SolanaLogRecordEvent) {
-            entityEventListener.onEntityEvents(
-                listOf(event)
-            )
+            logRecordEventListener.onEntityEvents(listOf(event))
         }
     }
 }

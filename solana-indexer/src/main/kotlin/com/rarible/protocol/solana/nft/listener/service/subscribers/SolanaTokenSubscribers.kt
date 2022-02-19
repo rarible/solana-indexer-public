@@ -115,10 +115,10 @@ class BurnTokenSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class InitializeAccountSubscriber : SolanaLogEventSubscriber {
+class InitializeTokenAccountSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
-        id = "initialize_account",
+        id = "initialize_token_account",
         groupId = SubscriberGroup.TOKEN.id,
         entityType = SolanaTokenRecord.InitializeTokenAccountRecord::class.java,
         collection = SubscriberGroup.TOKEN.collectionName
