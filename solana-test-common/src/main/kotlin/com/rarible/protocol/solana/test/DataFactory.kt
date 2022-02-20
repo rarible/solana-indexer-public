@@ -31,7 +31,7 @@ fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
         uri = randomUrl(),
         sellerFeeBasisPoints = 100,
         creators = listOf(createRandomTokenCreator()),
-        collection = createRandomMetaplexTokenCollection()
+        collection = createRandomMetaplexMetaFieldsCollection()
     ),
     isMutable = randomBoolean(),
     revertableEvents = emptyList(),
@@ -86,7 +86,7 @@ fun createRandomTokenMetadataCollection(): TokenMetadata.Collection =
         )
     }
 
-fun createRandomMetaplexTokenCollection(): MetaplexMetaFields.Collection =
+fun createRandomMetaplexMetaFieldsCollection(): MetaplexMetaFields.Collection =
     MetaplexMetaFields.Collection(
         address = randomString(),
         verified = randomBoolean()

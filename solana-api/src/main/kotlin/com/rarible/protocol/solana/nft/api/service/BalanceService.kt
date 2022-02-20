@@ -14,7 +14,7 @@ class BalanceService(
         balanceRepository.findByAccount(accountAddress)
             ?: throw EntityNotFoundApiException("Balance", accountAddress)
 
-    suspend fun getBalanceByOwner(owner: String): Flow<Balance> =
+    fun getBalanceByOwner(owner: String): Flow<Balance> =
         balanceRepository.findByOwner(owner)
 
 }

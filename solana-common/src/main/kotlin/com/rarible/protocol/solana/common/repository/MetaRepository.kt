@@ -35,7 +35,7 @@ class MetaRepository(
 
     fun findByCollectionAddress(collectionAddress: String): Flow<MetaplexMeta> {
         val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
-        val query = Query(criteria).with(Sort.by(collectionAddressKey, "_id"))
+        val query = Query(criteria).with(Sort.by(collectionAddressKey, MetaplexMeta::tokenAddress.name, "_id"))
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
@@ -53,14 +53,15 @@ class MetaRepository(
             .on("_id", Sort.Direction.ASC)
             .unique()
 
-        val COLLECTION_ADDRESS_ID: Index = Index()
+        val COLLECTION_ADDRESS_TOKEN_ADDRESS_ID: Index = Index()
             .on(collectionAddressKey, Sort.Direction.ASC)
+            .on(MetaplexMeta::tokenAddress.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .sparse()
 
         val ALL_INDEXES = listOf(
             TOKEN_ADDRESS_ID,
-            COLLECTION_ADDRESS_ID
+            COLLECTION_ADDRESS_TOKEN_ADDRESS_ID
         )
     }
 

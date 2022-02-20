@@ -2,9 +2,7 @@ package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
-import com.rarible.protocol.solana.common.meta.TokenMetadataService
-import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
+import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomToken
 import com.rarible.protocol.solana.test.createRandomTokenMetadata
 import io.mockk.coEvery
@@ -12,20 +10,13 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
-class TokenControllerIt : AbstractIntegrationTest() {
-
-    @Autowired
-    private lateinit var tokenRepository: TokenRepository
-
-    @Autowired
-    private lateinit var testTokenMetadataService: TokenMetadataService
+class TokenControllerIt : AbstractControllerTest() {
 
     @Test
     fun `find token by address`() = runBlocking<Unit> {
         val token = createRandomToken()
-        tokenRepository.save(token)
+        coEvery { testTokenService.getToken(token.mint) } returns token
         assertThat(tokenControllerApi.getTokenByAddress(token.mint).awaitFirst())
             .isEqualTo(TokenConverter.convert(token))
     }

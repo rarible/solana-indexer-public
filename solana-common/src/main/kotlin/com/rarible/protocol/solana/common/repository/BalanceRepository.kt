@@ -27,7 +27,7 @@ class BalanceRepository(
     suspend fun findByAccount(account: BalanceId): Balance? =
         mongo.findById<Balance>(account).awaitFirstOrNull()
 
-    suspend fun findByOwner(owner: String): Flow<Balance> {
+    fun findByOwner(owner: String): Flow<Balance> {
         val criteria = Criteria.where(Balance::owner.name).isEqualTo(owner)
         val query = Query(criteria).with(Sort.by(Balance::owner.name, "_id"))
         return mongo.find(query, Balance::class.java).asFlow()
