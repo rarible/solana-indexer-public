@@ -2,17 +2,18 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,10 +23,9 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import java.math.BigInteger
 import java.time.Duration
+import java.time.Instant
 import java.util.*
-import kotlin.math.pow
 
-// TODO[tests]: compare the whole Record objects.
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
 
@@ -43,19 +43,35 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(nft, record.mint)
-            assertEquals(record.data.mutable, false)
-            assertEquals(
-                record.data.metadata, MetaplexMetadataProgram.Data(
-                    name = "My NFT #1",
-                    uri = "https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json",
-                    symbol = "MY_SYMBOL",
-                    sellerFeeBasisPoints = 420,
-                    creators = listOf(MetaplexMetadataProgram.Creator(address = wallet, share = 100, verified = true)),
-                    collection = null
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaMetaRecord.MetaplexCreateMetadataRecord::log.name,
+                SolanaMetaRecord.MetaplexCreateMetadataRecord::metaAccount.name,
+                SolanaMetaRecord.MetaplexCreateMetadataRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaMetaRecord.MetaplexCreateMetadataRecord(
+                        mint = nft,
+                        data = MetaplexCreateMetadataAccountArgs(
+                            mutable = false,
+                            metadata = MetaplexMetadataProgram.Data(
+                                name = "My NFT #1",
+                                uri = "https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json",
+                                symbol = "MY_SYMBOL",
+                                sellerFeeBasisPoints = 420,
+                                creators = listOf(
+                                    MetaplexMetadataProgram.Creator(
+                                        address = wallet,
+                                        share = 100,
+                                        verified = true
+                                    )
+                                ),
+                                collection = null
+                            )
+                        ),
+                        metaAccount = "", // TODO: we can calculate the PDA of metadata account.
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
                 )
             )
         }
@@ -90,12 +106,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaTokenRecord.InitializeMintRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(token, record.mint)
-            assertEquals(wallet, record.mintAuthority)
-            assertEquals(3, record.decimals)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaTokenRecord.InitializeMintRecord::log.name,
+                SolanaTokenRecord.InitializeMintRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaTokenRecord.InitializeMintRecord(
+                        mint = token,
+                        mintAuthority = wallet,
+                        decimals = 3,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
     }
 
@@ -111,12 +135,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(token, record.mint)
-            assertEquals(wallet, record.owner)
-            assertEquals(account, record.balanceAccount)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaBalanceRecord.InitializeBalanceAccountRecord::log.name,
+                SolanaBalanceRecord.InitializeBalanceAccountRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord(
+                        mint = token,
+                        owner = wallet,
+                        balanceAccount = account,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
     }
 
@@ -134,12 +166,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaTokenRecord.MintToRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(token, record.mint)
-            assertEquals(5.scaleSupply(decimals), record.mintAmount)
-            assertEquals(account, record.tokenAccount)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaTokenRecord.MintToRecord::log.name,
+                SolanaTokenRecord.MintToRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaTokenRecord.MintToRecord(
+                        mint = token,
+                        mintAmount = 5.scaleSupply(decimals),
+                        tokenAccount = account,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
     }
 
@@ -158,12 +198,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaTokenRecord.BurnRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(token, record.mint)
-            assertEquals(4.scaleSupply(decimals), record.burnAmount)
-            assertEquals(account, record.tokenAccount)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaTokenRecord.BurnRecord::log.name,
+                SolanaTokenRecord.BurnRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaTokenRecord.BurnRecord(
+                        mint = token,
+                        burnAmount = 4.scaleSupply(decimals),
+                        tokenAccount = account,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
     }
 
@@ -183,12 +231,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaBalanceRecord.TransferIncomeRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(account, record.from)
-            assertEquals(aliceAccount, record.to)
-            assertEquals(BigInteger.ONE, record.incomeAmount)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaBalanceRecord.TransferIncomeRecord::log.name,
+                SolanaBalanceRecord.TransferIncomeRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaBalanceRecord.TransferIncomeRecord(
+                        from = account,
+                        to = aliceAccount,
+                        incomeAmount = BigInteger.ONE,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
 
         Wait.waitAssert(timeout) {
@@ -197,12 +253,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaBalanceRecord.TransferOutcomeRecord::class.java
             ).toList()
 
-            assertEquals(1, records.size)
-            val record = records.single()
-
-            assertEquals(account, record.from)
-            assertEquals(aliceAccount, record.to)
-            assertEquals(BigInteger.ONE, record.outcomeAmount)
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaBalanceRecord.TransferOutcomeRecord::log.name,
+                SolanaBalanceRecord.TransferOutcomeRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaBalanceRecord.TransferOutcomeRecord(
+                        from = account,
+                        to = aliceAccount,
+                        outcomeAmount = BigInteger.ONE,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
         }
     }
 

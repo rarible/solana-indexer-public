@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.test
 
+import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.core.common.nowMillis
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
@@ -108,3 +109,14 @@ fun createRandomBalance(): Balance = Balance(
 )
 
 fun randomUrl(): String = "https://test.com/" + randomString()
+
+/**
+ * [SolanaLog] used in tests as a placeholder in places where the log is not necessary to compare.
+ */
+val ANY_SOLANA_LOG = SolanaLog(
+    blockNumber = 0L,
+    transactionHash = "",
+    blockHash = "",
+    instructionIndex = 0,
+    innerInstructionIndex = null
+)

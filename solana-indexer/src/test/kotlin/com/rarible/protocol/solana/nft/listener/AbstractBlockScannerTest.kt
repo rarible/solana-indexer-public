@@ -13,6 +13,7 @@ import com.rarible.protocol.solana.common.repository.MetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -177,9 +178,7 @@ abstract class AbstractBlockScannerTest {
 
     private fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
         val exec = solana.execInContainer(*args.toTypedArray())
-
-        assertEquals(0, exec.exitCode, exec.stderr)
-
+        assertThat(exec.exitCode).isEqualTo(0).withFailMessage { exec.stderr }
         return parser(exec.stdout)
     }
 
