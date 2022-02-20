@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 
 @Component
-class MetaRepository(
+class MetaplexMetaRepository(
     private val mongo: ReactiveMongoOperations
 ) {
     suspend fun save(metaplexMeta: MetaplexMeta): MetaplexMeta =
@@ -40,7 +40,7 @@ class MetaRepository(
     }
 
     suspend fun createIndexes() {
-        val logger = LoggerFactory.getLogger(MetaRepository::class.java)
+        val logger = LoggerFactory.getLogger(MetaplexMetaRepository::class.java)
         logger.info("Ensuring indexes on ${MetaplexMeta.COLLECTION}")
         MetaIndexes.ALL_INDEXES.forEach { index ->
             mongo.indexOps(MetaplexMeta::class.java).ensureIndex(index).awaitFirst()

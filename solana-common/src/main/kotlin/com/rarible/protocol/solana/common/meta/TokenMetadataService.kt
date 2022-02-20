@@ -1,20 +1,20 @@
 package com.rarible.protocol.solana.common.meta
 
 import com.rarible.protocol.solana.common.model.TokenId
-import com.rarible.protocol.solana.common.repository.MetaRepository
+import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class TokenMetadataService(
-    private val metaRepository: MetaRepository,
+    private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaMetrics: MetaMetrics,
     private val metaplexOffChainMetadataLoader: MetaplexOffChainMetadataLoader
 ) {
     private val logger = LoggerFactory.getLogger(TokenMetadataService::class.java)
 
     suspend fun getTokenMetadata(tokenAddress: TokenId): TokenMetadata? {
-        val metaplexMeta = metaRepository.findByTokenAddress(tokenAddress) ?: return null
+        val metaplexMeta = metaplexMetaRepository.findByTokenAddress(tokenAddress) ?: return null
         val meta = metaplexMeta.metaFields
         val metadataUrl = url(meta.uri)
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")

@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.service
 
-import com.rarible.protocol.solana.common.repository.MetaRepository
+import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
@@ -18,7 +18,7 @@ class TokenServiceIt : AbstractIntegrationTest() {
     private lateinit var tokenRepository: TokenRepository
 
     @Autowired
-    private lateinit var metaRepository: MetaRepository
+    private lateinit var metaplexMetaRepository: MetaplexMetaRepository
 
     @Autowired
     private lateinit var tokenService: TokenService
@@ -48,8 +48,8 @@ class TokenServiceIt : AbstractIntegrationTest() {
                 )
             )
         }
-        metaRepository.save(metaplexMeta)
-        metaRepository.save(metaplexMeta2)
+        metaplexMetaRepository.save(metaplexMeta)
+        metaplexMetaRepository.save(metaplexMeta2)
         assertThat(tokenService.getTokensByMetaplexCollectionAddress(collection.address).toList())
             .isEqualTo(listOf(token, token2).sortedBy { it.mint })
     }

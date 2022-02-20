@@ -83,14 +83,14 @@ class SplProgramTest : AbstractBlockScannerTest() {
         val nft = mintNft(collection)
 
         Wait.waitAssert(timeout) {
-            val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
+            val meta = metaplexMetaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
             assertThat(meta.metaFields.collection?.verified).isFalse
         }
 
         verifyCollection(nft, collection)
 
         Wait.waitAssert(timeout) {
-            val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
+            val meta = metaplexMetaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
             assertThat(meta.metaFields.collection?.verified).isTrue
         }
     }

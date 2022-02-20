@@ -9,12 +9,11 @@ import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import com.rarible.protocol.solana.common.repository.BalanceRepository
-import com.rarible.protocol.solana.common.repository.MetaRepository
+import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +27,6 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigInteger
-import kotlin.math.pow
 
 @MongoTest
 @MongoCleanup
@@ -54,7 +52,7 @@ abstract class AbstractBlockScannerTest {
     private lateinit var client: SolanaClient
 
     @Autowired
-    protected lateinit var metaRepository: MetaRepository
+    protected lateinit var metaplexMetaRepository: MetaplexMetaRepository
 
     @Autowired
     protected lateinit var tokenRepository: TokenRepository
