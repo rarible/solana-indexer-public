@@ -23,12 +23,11 @@ class MetaRepository(
     suspend fun save(metaplexMeta: MetaplexMeta): MetaplexMeta =
          mongo.save(metaplexMeta).awaitFirst()
 
-    suspend fun findById(metaAddress: MetaId): MetaplexMeta? =
+    suspend fun findByMetaAddress(metaAddress: MetaId): MetaplexMeta? =
         mongo.findById<MetaplexMeta>(metaAddress).awaitFirstOrNull()
 
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexMeta? {
         val criteria = Criteria.where("tokenAddress").isEqualTo(tokenAddress)
-
         return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 

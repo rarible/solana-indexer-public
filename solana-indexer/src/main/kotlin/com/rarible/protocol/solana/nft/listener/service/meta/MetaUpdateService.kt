@@ -13,7 +13,7 @@ class MetaUpdateService(
 ) : EntityService<MetaId, MetaplexMeta> {
 
     override suspend fun get(id: MetaId): MetaplexMeta? =
-        metaRepository.findById(id)
+        metaRepository.findByMetaAddress(id)
 
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
         val meta = metaRepository.save(entity)

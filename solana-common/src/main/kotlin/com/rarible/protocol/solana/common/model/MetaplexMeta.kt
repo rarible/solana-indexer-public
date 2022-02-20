@@ -11,6 +11,7 @@ typealias MetaId = String
 
 @Document(MetaplexMeta.COLLECTION)
 data class MetaplexMeta(
+    @Id
     val metaAddress: MetaId,
     val tokenAddress: String,
     val metaFields: MetaplexMetaFields,
@@ -18,16 +19,14 @@ data class MetaplexMeta(
     val verified: Boolean,
     override val revertableEvents: List<MetaplexMetaEvent>
 ) : Entity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
-    @get:Id
-    @get:AccessType(AccessType.Type.PROPERTY)
-    override var id: MetaId
-        get() = metaAddress
-        set(_) {}
 
-    override fun withRevertableEvents(events: List<MetaplexMetaEvent>): MetaplexMeta = copy(revertableEvents = events)
+    override val id: MetaId get() = metaAddress
+
+    override fun withRevertableEvents(events: List<MetaplexMetaEvent>): MetaplexMeta =
+        copy(revertableEvents = events)
 
     companion object {
-        const val COLLECTION = "meta"
+        const val COLLECTION = "metaplex-meta"
 
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
             metaAddress = metaAddress,

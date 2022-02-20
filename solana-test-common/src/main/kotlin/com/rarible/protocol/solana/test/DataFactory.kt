@@ -7,6 +7,7 @@ import com.rarible.core.test.data.randomInt
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.TokenMetadata
 import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.Token
@@ -17,6 +18,23 @@ fun createRandomToken(): Token = Token(
     revertableEvents = emptyList(),
     isDeleted = false,
     createdAt = nowMillis(),
+    updatedAt = nowMillis(),
+)
+
+fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
+    metaAddress = randomString(),
+    tokenAddress = randomString(),
+    metaFields = MetaplexMetaFields(
+        name = randomString(),
+        symbol = randomString(),
+        uri = randomUrl(),
+        sellerFeeBasisPoints = 100,
+        creators = listOf(createRandomTokenCreator()),
+        mutable = false,
+        collection = createRandomMetaplexTokenCollection()
+    ),
+    verified = true,
+    revertableEvents = emptyList(),
     updatedAt = nowMillis(),
 )
 
