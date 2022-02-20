@@ -12,7 +12,7 @@ import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
-import com.rarible.protocol.solana.borsh.toBigInteger
+import com.rarible.protocol.solana.common.util.toBigInteger
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
