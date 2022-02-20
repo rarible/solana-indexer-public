@@ -6,11 +6,13 @@ import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.model.TokenOffChainCollection
 import com.rarible.protocol.solana.common.model.Token
 
 fun createRandomToken(): Token = Token(
@@ -21,6 +23,22 @@ fun createRandomToken(): Token = Token(
     createdAt = nowMillis(),
     updatedAt = nowMillis(),
 )
+
+fun createRandomTokenOffChainCollection(): TokenOffChainCollection {
+    val name = randomString()
+    val family = randomString()
+    return TokenOffChainCollection(
+        tokenAddress = randomString(),
+        name = name,
+        family = family,
+        hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+            name = name,
+            family = family,
+            creators = listOf(randomString())
+        ),
+        metadataUrl = randomUrl()
+    )
+}
 
 fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
     metaAddress = randomString(),

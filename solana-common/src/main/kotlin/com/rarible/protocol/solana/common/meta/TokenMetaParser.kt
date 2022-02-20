@@ -23,25 +23,23 @@ class TokenMetaParser(
         logger.info("$logPrefix: $message")
     }
 
-    fun parseTokenMetadata(
-        meta: MetaplexMetaFields,
-        offChainMetadataJsonContent: String
-    ): TokenMeta {
-        log("parsing metadata JSON " + offChainMetadataJsonContent.take(1024))
-        val offChainMetadataJson =
-            jacksonMapper.readValue<MetaplexOffChainMetadataJsonSchema>(offChainMetadataJsonContent)
-        return TokenMeta(
-            name = meta.name,
-            symbol = meta.symbol,
-            description = offChainMetadataJson.description,
-            creators = getCreators(meta, offChainMetadataJson),
-            collection = getCollection(meta, offChainMetadataJson),
-            url = meta.uri,
-            attributes = offChainMetadataJson.attributes.orEmpty().mapNotNull { it.getAttribute() },
-            contents = parseContents(offChainMetadataJson),
-            externalUrl = offChainMetadataJson.external_url
-        )
-    }
+    fun parseOffChainMeta(offChainMetadataJsonContent: String): MetaplexOffChainMetadataJsonSchema =
+        jacksonMapper.readValue(offChainMetadataJsonContent)
+
+    fun mergeOnChainAndOffChainMeta(
+        onChainMeta: MetaplexMetaFields,
+        offChainMeta: MetaplexOffChainMetadataJsonSchema
+    ): TokenMeta = TokenMeta(
+        name = onChainMeta.name,
+        symbol = onChainMeta.symbol,
+        description = offChainMeta.description,
+        creators = getCreators(onChainMeta, offChainMeta),
+        collection = getCollection(onChainMeta, offChainMeta),
+        url = onChainMeta.uri,
+        attributes = offChainMeta.attributes.orEmpty().mapNotNull { it.getAttribute() },
+        contents = parseContents(offChainMeta),
+        externalUrl = offChainMeta.external_url
+    )
 
     private fun parseContents(offChainMetadataJson: MetaplexOffChainMetadataJsonSchema) =
         (offChainMetadataJson.parseFiles() + listOfNotNull(

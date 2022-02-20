@@ -29,8 +29,8 @@ class TokenController(
     }
 
     override suspend fun getTokensByCollection(collection: String): ResponseEntity<TokensDto> {
-        val tokens = tokenService.getTokensByMetaplexCollectionAddress(collection).toList()
-        // TODO: request and merge with tokens having a collection defined off-chain.
-        return ResponseEntity.ok(TokenConverter.convert(tokens))
+        val tokensByOnChainCollection = tokenService.getTokensByMetaplexCollectionAddress(collection).toList()
+        val tokensByOffChainCollection = tokenService.getTokensByOffChainCollectionHash(collection).toList()
+        return ResponseEntity.ok(TokenConverter.convert(tokensByOnChainCollection + tokensByOffChainCollection))
     }
 }

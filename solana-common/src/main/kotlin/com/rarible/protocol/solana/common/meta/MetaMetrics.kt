@@ -20,21 +20,11 @@ class MetaMetrics(
         .builder(META_PARSING_ERROR)
         .register(meterRegistry)
 
-    fun onMetaLoadingError(
-        tokenAddress: String,
-        metadataUrl: String,
-        exception: Exception
-    ) {
-        logger.error("Failed to load metadata for token $tokenAddress by URL", exception)
+    fun onMetaLoadingError() {
         metaLoadingErrorCounter.increment()
     }
 
-    fun onMetaParsingError(
-        tokenAddress: String,
-        metadataUrl: String,
-        exception: Exception
-    ) {
-        logger.error("Failed to parse metadata for token $tokenAddress by URL", exception)
+    fun onMetaParsingError() {
         metaParsingErrorCounter.increment()
     }
 
