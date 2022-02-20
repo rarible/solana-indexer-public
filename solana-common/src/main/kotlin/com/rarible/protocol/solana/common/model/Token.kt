@@ -12,6 +12,7 @@ typealias TokenId = String
 
 @Document("token")
 data class Token(
+    @Id
     val mint: String,
     val supply: BigInteger,
     // TODO: probably, can be calculated based on supply = 0
@@ -21,11 +22,8 @@ data class Token(
     val updatedAt: Instant,
     override val revertableEvents: List<TokenEvent>
 ) : Entity<TokenId, TokenEvent, Token> {
-    @get:Id
-    @get:AccessType(AccessType.Type.PROPERTY)
-    override var id: TokenId
-        get() = mint
-        set(_) {}
+
+    override val id: TokenId get() = mint
 
     override fun withRevertableEvents(events: List<TokenEvent>): Token =
         copy(revertableEvents = events)

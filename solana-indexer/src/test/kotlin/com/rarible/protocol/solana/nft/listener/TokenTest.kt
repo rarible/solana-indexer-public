@@ -106,7 +106,7 @@ class TokenTest : EventAwareBlockScannerTest() {
     }
 
     private suspend fun assertToken(expectedToken: Token) {
-        val actualToken = tokenRepository.findById(expectedToken.mint)
+        val actualToken = tokenRepository.findByMint(expectedToken.mint)
         assertTokensEqual(actualToken, expectedToken)
     }
 

@@ -10,6 +10,6 @@ class TokenService(
     private val tokenRepository: TokenRepository
 ) {
     suspend fun getToken(tokenAddress: String): Token =
-        tokenRepository.findById(tokenAddress)
+        tokenRepository.findByMint(tokenAddress)
             ?: throw EntityNotFoundApiException("Token", tokenAddress)
 }

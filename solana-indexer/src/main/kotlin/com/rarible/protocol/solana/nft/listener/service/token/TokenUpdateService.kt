@@ -15,7 +15,7 @@ class TokenUpdateService(
 ) : EntityService<TokenId, Token> {
 
     override suspend fun get(id: TokenId): Token? =
-        tokenRepository.findById(id)
+        tokenRepository.findByMint(id)
 
     override suspend fun update(entity: Token): Token {
         val token = tokenRepository.save(entity)

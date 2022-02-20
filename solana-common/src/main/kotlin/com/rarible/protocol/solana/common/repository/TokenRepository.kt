@@ -15,6 +15,6 @@ class TokenRepository(
     suspend fun save(token: Token): Token =
         mongo.save(token).awaitFirst()
 
-    suspend fun findById(id: TokenId): Token? =
-        mongo.findById<Token>(id).awaitFirstOrNull()
+    suspend fun findByMint(mint: TokenId): Token? =
+        mongo.findById<Token>(mint).awaitFirstOrNull()
 }
