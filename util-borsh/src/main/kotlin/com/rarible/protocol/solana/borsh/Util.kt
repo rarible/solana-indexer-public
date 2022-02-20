@@ -25,11 +25,3 @@ internal fun ByteBuffer.readPubkey(): Pubkey {
 
     return Base58.encode(bytes)
 }
-
-fun ULong.toBigInteger(): BigInteger {
-    val long = toLong()
-    if (long >= 0) {
-        return BigInteger.valueOf(long)
-    }
-    return BigInteger.valueOf(long).abs().minus(BigInteger.ONE)
-}
