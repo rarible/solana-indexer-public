@@ -13,8 +13,7 @@ class MetaMetrics(
     private val logger = LoggerFactory.getLogger(MetaMetrics::class.java)
 
     private val metaLoadingErrorCounter = Counter
-        .builder(META_PARSING_ERROR)
-        .tag("sync", "true")
+        .builder(META_LOADING_ERROR)
         .register(meterRegistry)
 
     private val metaParsingErrorCounter = Counter
