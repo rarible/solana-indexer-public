@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class MetadataSubscriber : SolanaLogEventSubscriber {
+class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
-        id = "create_metadata",
+        id = "metadata_create",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName
@@ -44,7 +44,7 @@ class MetadataSubscriber : SolanaLogEventSubscriber {
 class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
-        id = "update_metadata",
+        id = "metadata_update",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexUpdateMetadataRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName
@@ -73,7 +73,7 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
 class VerifyCollectionSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
-        id = "update_metadata",
+        id = "metadata_verify_collection",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexVerifyCollectionRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName

@@ -26,6 +26,7 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.math.BigInteger
 import kotlin.math.pow
 
 @MongoTest
@@ -191,7 +192,8 @@ abstract class AbstractBlockScannerTest {
         return cols[j]
     }
 
-    protected fun Int.scaleSupply(decimals: Int) = this * 10.0.pow(decimals.toDouble()).toLong()
+    protected fun Int.scaleSupply(decimals: Int): BigInteger =
+        BigInteger.valueOf(this.toLong()) * BigInteger.TEN.pow(decimals)
 
     companion object {
         val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")

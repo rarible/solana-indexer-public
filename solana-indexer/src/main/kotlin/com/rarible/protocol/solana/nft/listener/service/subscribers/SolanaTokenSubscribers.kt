@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.borsh.InitializeMint1and2
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
+import com.rarible.protocol.solana.borsh.toBigInteger
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -17,7 +18,7 @@ import java.time.Instant
 class InitializeMintSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
-        id = "initialize_mint",
+        id = "token_initialize_mint",
         groupId = SubscriberGroup.TOKEN.id,
         entityType = SolanaTokenRecord.InitializeMintRecord::class.java,
         collection = SubscriberGroup.TOKEN.collectionName
@@ -44,7 +45,7 @@ class InitializeMintSubscriber : SolanaLogEventSubscriber {
 class MintToTokenSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
-        id = "mint_to_token",
+        id = "token_mint_to",
         groupId = SubscriberGroup.TOKEN.id,
         entityType = SolanaTokenRecord.MintToRecord::class.java,
         collection = SubscriberGroup.TOKEN.collectionName
@@ -58,14 +59,14 @@ class MintToTokenSubscriber : SolanaLogEventSubscriber {
             is MintTo -> SolanaTokenRecord.MintToRecord(
                 mint = log.instruction.accounts[0],
                 tokenAccount = log.instruction.accounts[1],
-                mintAmount = instruction.amount.toLong(),
+                mintAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is MintToChecked -> SolanaTokenRecord.MintToRecord(
                 mint = log.instruction.accounts[0],
                 tokenAccount = log.instruction.accounts[1],
-                mintAmount = instruction.amount.toLong(),
+                mintAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
@@ -80,7 +81,7 @@ class MintToTokenSubscriber : SolanaLogEventSubscriber {
 class BurnTokenSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
-        id = "burn_token",
+        id = "token_burn",
         groupId = SubscriberGroup.TOKEN.id,
         entityType = SolanaTokenRecord.BurnRecord::class.java,
         collection = SubscriberGroup.TOKEN.collectionName
@@ -94,14 +95,14 @@ class BurnTokenSubscriber : SolanaLogEventSubscriber {
             is Burn -> SolanaTokenRecord.BurnRecord(
                 tokenAccount = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                burnAmount = instruction.amount.toLong(),
+                burnAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is BurnChecked -> SolanaTokenRecord.BurnRecord(
                 tokenAccount = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                burnAmount = instruction.amount.toLong(),
+                burnAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )

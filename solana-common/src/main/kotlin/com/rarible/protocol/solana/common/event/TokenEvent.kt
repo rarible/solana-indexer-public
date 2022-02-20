@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.event
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
+import java.math.BigInteger
 import java.time.Instant
 
 sealed class TokenEvent : EntityEvent {
@@ -25,7 +26,7 @@ data class MintEvent(
     override val reversed: Boolean,
     override val token: String,
     override val timestamp: Instant,
-    val amount: Long,
+    val amount: BigInteger,
 ) : TokenEvent() {
     override fun invert() = BurnEvent(
         token = token,
@@ -41,7 +42,7 @@ data class BurnEvent(
     override val reversed: Boolean,
     override val token: String,
     override val timestamp: Instant,
-    val amount: Long
+    val amount: BigInteger
 ) : TokenEvent() {
     override fun invert() = MintEvent(
         token = token,

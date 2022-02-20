@@ -1,19 +1,19 @@
 package com.rarible.protocol.solana.test
 
 import com.rarible.core.common.nowMillis
+import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
-import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.TokenMetadata
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
-import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.model.Token
 
 fun createRandomToken(): Token = Token(
     mint = randomString(),
-    supply = randomLong(),
+    supply = randomBigInt(),
     revertableEvents = emptyList(),
     isDeleted = false,
     createdAt = nowMillis(),
@@ -54,17 +54,6 @@ fun createRandomTokenMetaAttribute(): TokenMetadata.Attribute =
         format = null
     )
 
-fun createRandomMetaplexTokenMeta(): MetaplexMetaFields =
-    MetaplexMetaFields(
-        name = randomString(),
-        symbol = randomString(),
-        uri = randomUrl(),
-        sellerFeeBasisPoints = randomInt(100),
-        creators = listOf(createRandomTokenCreator()),
-        collection = createRandomMetaplexTokenCollection(),
-        mutable = randomBoolean()
-    )
-
 fun createRandomTokenMetadataCollection(): TokenMetadata.Collection =
     if (randomBoolean()) {
         TokenMetadata.Collection.OnChain(
@@ -95,7 +84,7 @@ fun createRandomBalance(): Balance = Balance(
     account = randomString(),
     owner = randomString(),
     mint = randomString(),
-    value = randomLong(),
+    value = randomBigInt(),
     revertableEvents = emptyList(),
     createdAt = nowMillis(),
     updatedAt = nowMillis()

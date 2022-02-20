@@ -12,6 +12,7 @@ import com.rarible.solana.protocol.dto.TokenUpdateEventDto
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.math.BigInteger
 import java.time.Instant
 import java.util.*
 
@@ -46,7 +47,7 @@ class TokenTest : EventAwareBlockScannerTest() {
             account = aliceAccount,
             owner = aliceWallet,
             mint = tokenAddress,
-            value = 0,
+            value = BigInteger.ZERO,
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,

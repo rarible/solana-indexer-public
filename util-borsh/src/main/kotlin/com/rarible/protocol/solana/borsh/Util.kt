@@ -3,6 +3,7 @@
 package com.rarible.protocol.solana.borsh
 
 import org.bitcoinj.core.Base58
+import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
@@ -23,4 +24,12 @@ internal fun ByteBuffer.readPubkey(): Pubkey {
     val bytes = ByteArray(32).apply { get(this) }
 
     return Base58.encode(bytes)
+}
+
+fun ULong.toBigInteger(): BigInteger {
+    val long = toLong()
+    if (long >= 0) {
+        return BigInteger.valueOf(long)
+    }
+    return BigInteger.valueOf(long).abs().minus(BigInteger.ONE)
 }

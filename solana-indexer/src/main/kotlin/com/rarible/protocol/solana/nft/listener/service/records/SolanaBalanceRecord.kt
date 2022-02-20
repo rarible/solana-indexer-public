@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
+import java.math.BigInteger
 import java.time.Instant
 
 sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
@@ -19,7 +20,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     }
 
     data class MintToRecord(
-        val mintAmount: Long,
+        val mintAmount: BigInteger,
         val mint: String,
         override val account: String,
         override val log: SolanaLog,
@@ -28,7 +29,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
 
     data class BurnRecord(
         val mint: String,
-        val burnAmount: Long,
+        val burnAmount: BigInteger,
         override val account: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -37,7 +38,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     data class TransferIncomeRecord(
         val from: String,
         val to: String,
-        val incomeAmount: Long,
+        val incomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {
@@ -48,7 +49,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     data class TransferOutcomeRecord(
         val from: String,
         val to: String,
-        val outcomeAmount: Long,
+        val outcomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {

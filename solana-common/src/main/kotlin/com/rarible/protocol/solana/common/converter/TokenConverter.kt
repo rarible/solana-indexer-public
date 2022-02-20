@@ -6,7 +6,7 @@ import com.rarible.solana.protocol.dto.TokenDto
 object TokenConverter {
     fun convert(token: Token): TokenDto = TokenDto(
         address = token.id,
-        supply = token.supply.toBigInteger(),
+        supply = token.supply,
         createdAt = token.createdAt,
         updatedAt = token.updatedAt,
         closed = token.isDeleted

@@ -6,6 +6,7 @@ import org.springframework.data.annotation.AccessType
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.mongodb.core.mapping.Document
+import java.math.BigInteger
 import java.time.Instant
 
 typealias BalanceId = String
@@ -15,7 +16,7 @@ data class Balance(
     val account: String,
     val owner: String,
     val mint: String,
-    val value: Long,
+    val value: BigInteger,
     val createdAt: Instant,
     val updatedAt: Instant,
     override val revertableEvents: List<BalanceEvent>
@@ -39,7 +40,7 @@ data class Balance(
             account = account,
             owner = "",
             mint = "",
-            value = 0L,
+            value = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList()

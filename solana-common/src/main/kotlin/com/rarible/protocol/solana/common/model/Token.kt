@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.event.TokenEvent
 import org.springframework.data.annotation.AccessType
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.math.BigInteger
 import java.time.Instant
 
 typealias TokenId = String
@@ -12,8 +13,7 @@ typealias TokenId = String
 @Document("token")
 data class Token(
     val mint: String,
-    // TODO: change to BigInteger.
-    val supply: Long,
+    val supply: BigInteger,
     // TODO: probably, can be calculated based on supply = 0
     // TODO: rename to 'closed'?
     val isDeleted: Boolean,
@@ -33,7 +33,7 @@ data class Token(
     companion object {
         fun empty(mint: String): Token = Token(
             mint = mint,
-            supply = 0L,
+            supply = BigInteger.ZERO,
             revertableEvents = emptyList(),
             isDeleted = false,
             createdAt = Instant.EPOCH,

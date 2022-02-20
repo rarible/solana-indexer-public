@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.entity.reducer.service.Reducer
+import com.rarible.protocol.solana.borsh.toBigInteger
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
