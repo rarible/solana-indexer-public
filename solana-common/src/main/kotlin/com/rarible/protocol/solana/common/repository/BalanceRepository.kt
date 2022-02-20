@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.repository
 
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
-import com.rarible.protocol.solana.common.model.MetaplexMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -52,12 +51,10 @@ class BalanceRepository(
         val OWNER_ID: Index = Index()
             .on(Balance::owner.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
-            .unique()
 
         val MINT_ID: Index = Index()
             .on(Balance::mint.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
-            .unique()
 
         val ALL_INDEXES = listOf(
             OWNER_ID,
