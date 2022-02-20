@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -19,6 +20,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
+import java.math.BigInteger
 import java.time.Duration
 import java.util.*
 import kotlin.math.pow
@@ -60,22 +62,20 @@ class SplProgramTest : AbstractBlockScannerTest() {
     }
 
     @Test
-    fun verifyMetadata() = runBlocking {
+    fun `verify collection`() = runBlocking {
         val collection = mintNft()
         val nft = mintNft(collection)
 
         Wait.waitAssert(timeout) {
             val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
-
-            assertFalse(meta.verified)
+            assertThat(meta.metaFields.collection?.verified).isFalse
         }
 
         verifyCollection(nft, collection)
 
         Wait.waitAssert(timeout) {
             val meta = metaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
-
-            assertTrue(meta.verified)
+            assertThat(meta.metaFields.collection?.verified).isTrue
         }
     }
 
@@ -107,8 +107,8 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                SubscriberGroup.TOKEN.collectionName,
-                SolanaTokenRecord.InitializeTokenAccountRecord::class.java
+                SubscriberGroup.BALANCE.collectionName,
+                SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
             ).toList()
 
             assertEquals(1, records.size)
@@ -116,7 +116,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
             assertEquals(token, record.mint)
             assertEquals(wallet, record.owner)
-            assertEquals(account, record.tokenAccount)
+            assertEquals(account, record.balanceAccount)
         }
     }
 
@@ -138,7 +138,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
             val record = records.single()
 
             assertEquals(token, record.mint)
-            assertEquals(5 * 10.0.pow(decimals).toLong(), record.mintAmount)
+            assertEquals(5.scaleSupply(decimals), record.mintAmount)
             assertEquals(account, record.tokenAccount)
         }
     }
@@ -162,7 +162,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
             val record = records.single()
 
             assertEquals(token, record.mint)
-            assertEquals(4 * 10.0.pow(decimals).toLong(), record.burnAmount)
+            assertEquals(4.scaleSupply(decimals), record.burnAmount)
             assertEquals(account, record.tokenAccount)
         }
     }
@@ -188,7 +188,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
             assertEquals(account, record.from)
             assertEquals(aliceAccount, record.to)
-            assertEquals(1, record.incomeAmount)
+            assertEquals(BigInteger.ONE, record.incomeAmount)
         }
 
         Wait.waitAssert(timeout) {
@@ -202,7 +202,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
             assertEquals(account, record.from)
             assertEquals(aliceAccount, record.to)
-            assertEquals(1, record.outcomeAmount)
+            assertEquals(BigInteger.ONE, record.outcomeAmount)
         }
     }
 

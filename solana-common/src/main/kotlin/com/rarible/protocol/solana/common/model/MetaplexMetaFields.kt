@@ -9,7 +9,6 @@ data class MetaplexMetaFields(
     val uri: String,
     val sellerFeeBasisPoints: Int,
     val creators: List<MetaplexTokenCreator>?,
-    val mutable: Boolean,
     val collection: Collection?
 ) {
     data class Collection(

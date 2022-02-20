@@ -3,7 +3,8 @@ package com.rarible.protocol.solana.nft.listener.service.meta
 import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
-import com.rarible.protocol.solana.common.event.MetaplexVerifyMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import org.springframework.stereotype.Component
 
@@ -14,11 +15,20 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
             is MetaplexCreateMetadataEvent -> entity.copy(
                 tokenAddress = event.token,
                 metaFields = event.metadata,
-                updatedAt = event.timestamp
+                isMutable = event.isMutable
             )
-            is MetaplexVerifyMetadataEvent -> entity.copy(
-                verified = true
+            // TODO: add a test for updating metadata.
+            is MetaplexUpdateMetadataEvent -> entity.copy(
+                metaFields = event.newMetadata ?: entity.metaFields,
+                isMutable = event.newIsMutable ?: entity.isMutable
             )
-        }
+            is MetaplexVerifyCollectionMetadataEvent -> entity.copy(
+                metaFields = entity.metaFields.copy(
+                    collection = entity.metaFields.collection?.copy(
+                        verified = true
+                    )
+                )
+            )
+        }.copy(updatedAt = event.timestamp)
     }
 }

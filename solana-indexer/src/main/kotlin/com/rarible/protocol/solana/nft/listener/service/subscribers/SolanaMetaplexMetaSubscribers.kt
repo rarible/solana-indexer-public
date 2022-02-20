@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
-import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
@@ -26,12 +26,12 @@ class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaMetaRecord> {
         val data = log.instruction.data
-        val metaplexCreateMetadataAccount =
-            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccount ?: return emptyList()
+        val metaplexCreateMetadataAccountArgs =
+            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccountArgs ?: return emptyList()
         val record = SolanaMetaRecord.MetaplexCreateMetadataRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            data = metaplexCreateMetadataAccount,
+            data = metaplexCreateMetadataAccountArgs,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
@@ -60,7 +60,7 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
         val record = SolanaMetaRecord.MetaplexUpdateMetadataRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            newData = metaplexUpdateMetadataAccountArgs,
+            updateArgs = metaplexUpdateMetadataAccountArgs,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )

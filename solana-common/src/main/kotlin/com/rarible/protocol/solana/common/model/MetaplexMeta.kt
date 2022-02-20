@@ -15,8 +15,8 @@ data class MetaplexMeta(
     val metaAddress: MetaId,
     val tokenAddress: String,
     val metaFields: MetaplexMetaFields,
+    val isMutable: Boolean,
     val updatedAt: Instant,
-    val verified: Boolean,
     override val revertableEvents: List<MetaplexMetaEvent>
 ) : Entity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
 
@@ -37,12 +37,11 @@ data class MetaplexMeta(
                 uri = "",
                 sellerFeeBasisPoints = 0,
                 creators = emptyList(),
-                mutable = false,
                 collection = MetaplexMetaFields.Collection("", false)
             ),
             updatedAt = Instant.EPOCH,
-            verified = false,
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            isMutable = false
         )
     }
 }

@@ -64,7 +64,7 @@ object MetaplexMetadataProgram {
         val data = readData(version)
         val mutable = readBoolean()
 
-        return MetaplexCreateMetadataAccount(
+        return MetaplexCreateMetadataAccountArgs(
             data,
             mutable
         )
@@ -126,7 +126,7 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
 
 sealed class MetaplexMetadataInstruction
 
-data class MetaplexCreateMetadataAccount(
+data class MetaplexCreateMetadataAccountArgs(
     val metadata: MetaplexMetadataProgram.Data,
     val mutable: Boolean
 ) : MetaplexMetadataInstruction()

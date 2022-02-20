@@ -7,7 +7,7 @@ internal class MetadataProgramTest {
     @Test
     fun testMetadataInstruction() {
         val data = "1Nv8vdQyYWA4p7Zby9ovSQHFwSYKjFNdHHTHFo2acE4zUUGd8rWyqZ9ZiTDNi9Uxp5kRbYkrfXUEQDSPfnYRPe1bMgGsVqFyV4S1vWLbi2dYMt5UCosMcnrnWC7imqtX1rUx4akShePSpugcpjgp1zNsoKUNvVCZHQYNksrgEMmun51DRqyBwGtRUQrtcHcRmAus3xxqVPZWzEhz9SVZGfSkcDVyPpcmts8iH8GU24sKchaCo234Gwx99TVY68fqk8vkTj8HRXHLNZMSqzzwZVxhr4xWECWwSLSrDL8YBesgfCNx4xnquFTgazc8QdNJnrzpn2WH3tCX8FNFs79q9v1NVpU6qDwf94noqX4Q4Rc9VQ7MvLB9"
-        val metadata = data.parseMetaplexMetadataInstruction() as MetaplexCreateMetadataAccount
+        val metadata = data.parseMetaplexMetadataInstruction() as MetaplexCreateMetadataAccountArgs
 
         assertEquals(metadata.mutable, false)
 

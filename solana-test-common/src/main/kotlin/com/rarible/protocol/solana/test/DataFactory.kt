@@ -30,10 +30,9 @@ fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
         uri = randomUrl(),
         sellerFeeBasisPoints = 100,
         creators = listOf(createRandomTokenCreator()),
-        mutable = false,
         collection = createRandomMetaplexTokenCollection()
     ),
-    verified = true,
+    isMutable = randomBoolean(),
     revertableEvents = emptyList(),
     updatedAt = nowMillis(),
 )
