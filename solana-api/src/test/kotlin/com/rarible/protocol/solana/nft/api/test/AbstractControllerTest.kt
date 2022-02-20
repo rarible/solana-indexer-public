@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.test
 
-import com.rarible.protocol.solana.common.meta.TokenMetadataService
+import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceService
 import com.rarible.protocol.solana.nft.api.service.TokenService
 import com.rarible.solana.protocol.api.client.BalanceControllerApi
@@ -20,7 +20,7 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
     lateinit var testTokenService: TokenService
 
     @Autowired
-    lateinit var testTokenMetadataService: TokenMetadataService
+    lateinit var testTokenMetaService: TokenMetaService
 
     @Autowired
     lateinit var testBalanceService: BalanceService

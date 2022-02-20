@@ -4,7 +4,7 @@ import com.rarible.protocol.solana.common.converter.TokenConverter
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomToken
-import com.rarible.protocol.solana.test.createRandomTokenMetadata
+import com.rarible.protocol.solana.test.createRandomTokenMeta
 import io.mockk.coEvery
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -24,13 +24,13 @@ class TokenControllerIt : AbstractControllerTest() {
     @Test
     fun `load meta by address`() = runBlocking<Unit> {
         val token = createRandomToken()
-        val tokenMetadata = createRandomTokenMetadata()
+        val tokenMeta = createRandomTokenMeta()
         coEvery {
             @Suppress("BlockingMethodInNonBlockingContext")
-            testTokenMetadataService.getTokenMetadata(token.id)
-        } returns tokenMetadata
+            testTokenMetaService.getTokenMeta(token.id)
+        } returns tokenMeta
         assertThat(tokenControllerApi.getTokenMetaByAddress(token.mint).awaitFirst())
-            .isEqualTo(TokenMetaConverter.convert(tokenMetadata))
+            .isEqualTo(TokenMetaConverter.convert(tokenMeta))
     }
 
 }

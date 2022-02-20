@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.test
 
-import com.rarible.protocol.solana.common.meta.TokenMetadataService
+import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceService
 import com.rarible.protocol.solana.nft.api.service.TokenService
 import io.mockk.mockk
@@ -16,7 +16,7 @@ class ControllersTestConfiguration {
 
     @Bean
     @Primary
-    fun testMetadataService(): TokenMetadataService = mockk()
+    fun testMetadataService(): TokenMetaService = mockk()
 
     @Bean
     @Primary

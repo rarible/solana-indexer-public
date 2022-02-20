@@ -6,14 +6,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class TokenMetadataService(
+class TokenMetaService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaMetrics: MetaMetrics,
     private val metaplexOffChainMetadataLoader: MetaplexOffChainMetadataLoader
 ) {
-    private val logger = LoggerFactory.getLogger(TokenMetadataService::class.java)
+    private val logger = LoggerFactory.getLogger(TokenMetaService::class.java)
 
-    suspend fun getTokenMetadata(tokenAddress: TokenId): TokenMetadata? {
+    suspend fun getTokenMeta(tokenAddress: TokenId): TokenMeta? {
         val metaplexMeta = metaplexMetaRepository.findByTokenAddress(tokenAddress) ?: return null
         val meta = metaplexMeta.metaFields
         val metadataUrl = url(meta.uri)
@@ -25,7 +25,7 @@ class TokenMetadataService(
             return null
         }
         return try {
-            TokenMetadataParser(tokenAddress, metadataUrl)
+            TokenMetaParser(tokenAddress, metadataUrl)
                 .parseTokenMetadata(meta, offChainMetadataJsonContent)
         } catch (e: Exception) {
             metaMetrics.onMetaParsingError(tokenAddress, meta.uri, e)

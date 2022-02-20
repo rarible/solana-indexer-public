@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 /**
  * Metaplex aggregated meta of on-chain and off-chain meta.
  */
-data class TokenMetadata(
+data class TokenMeta(
     val name: String,
     val symbol: String,
     val description: String,

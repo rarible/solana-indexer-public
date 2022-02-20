@@ -6,7 +6,7 @@ import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
 import com.rarible.core.test.data.randomString
-import com.rarible.protocol.solana.common.meta.TokenMetadata
+import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
@@ -38,8 +38,8 @@ fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
     updatedAt = nowMillis(),
 )
 
-fun createRandomTokenMetadata(): TokenMetadata =
-    TokenMetadata(
+fun createRandomTokenMeta(): TokenMeta =
+    TokenMeta(
         name = randomString(),
         description = randomString(),
         symbol = randomString(),
@@ -51,35 +51,35 @@ fun createRandomTokenMetadata(): TokenMetadata =
         externalUrl = randomUrl()
     )
 
-fun createRandomTokenMetaContent(): TokenMetadata.Content =
+fun createRandomTokenMetaContent(): TokenMeta.Content =
     if (randomBoolean()) {
-        TokenMetadata.Content.ImageContent(
+        TokenMeta.Content.ImageContent(
             url = randomUrl(),
             mimeType = null
         )
     } else {
-        TokenMetadata.Content.VideoContent(
+        TokenMeta.Content.VideoContent(
             url = randomUrl(),
             mimeType = null
         )
     }
 
-fun createRandomTokenMetaAttribute(): TokenMetadata.Attribute =
-    TokenMetadata.Attribute(
+fun createRandomTokenMetaAttribute(): TokenMeta.Attribute =
+    TokenMeta.Attribute(
         key = randomString(),
         value = randomString(),
         type = null,
         format = null
     )
 
-fun createRandomTokenMetadataCollection(): TokenMetadata.Collection =
+fun createRandomTokenMetadataCollection(): TokenMeta.Collection =
     if (randomBoolean()) {
-        TokenMetadata.Collection.OnChain(
+        TokenMeta.Collection.OnChain(
             address = randomString(),
             verified = randomBoolean()
         )
     } else {
-        TokenMetadata.Collection.OffChain(
+        TokenMeta.Collection.OffChain(
             name = randomString(),
             family = randomString(),
             hash = randomString()

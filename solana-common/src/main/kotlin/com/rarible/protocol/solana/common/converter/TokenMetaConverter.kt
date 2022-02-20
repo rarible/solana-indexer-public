@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.common.converter
 
-import com.rarible.protocol.solana.common.meta.TokenMetadata
+import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.solana.protocol.dto.ImageContentDto
 import com.rarible.solana.protocol.dto.TokenMetaAttributeDto
 import com.rarible.solana.protocol.dto.TokenMetaCollectionDto
@@ -11,7 +11,7 @@ import com.rarible.solana.protocol.dto.TokenMetaOnChainCollectionDto
 import com.rarible.solana.protocol.dto.VideoContentDto
 
 object TokenMetaConverter {
-    fun convert(tokenMeta: TokenMetadata): TokenMetaDto =
+    fun convert(tokenMeta: TokenMeta): TokenMetaDto =
         TokenMetaDto(
             name = tokenMeta.name,
             collection = tokenMeta.collection?.convert(),
@@ -20,9 +20,9 @@ object TokenMetaConverter {
             content = tokenMeta.contents.map { it.convert() }
         )
 
-    private fun TokenMetadata.Content.convert(): TokenMetaContentDto =
+    private fun TokenMeta.Content.convert(): TokenMetaContentDto =
         when (this) {
-            is TokenMetadata.Content.ImageContent -> ImageContentDto(
+            is TokenMeta.Content.ImageContent -> ImageContentDto(
                 url = url,
                 representation = TokenMetaContentDto.Representation.ORIGINAL,
                 mimeType = null,
@@ -30,7 +30,7 @@ object TokenMetaConverter {
                 width = null,
                 height = null
             )
-            is TokenMetadata.Content.VideoContent -> VideoContentDto(
+            is TokenMeta.Content.VideoContent -> VideoContentDto(
                 url = url,
                 representation = TokenMetaContentDto.Representation.ORIGINAL,
                 mimeType = null,
@@ -40,7 +40,7 @@ object TokenMetaConverter {
             )
         }
 
-    private fun TokenMetadata.Attribute.convert(): TokenMetaAttributeDto =
+    private fun TokenMeta.Attribute.convert(): TokenMetaAttributeDto =
         TokenMetaAttributeDto(
             type = type,
             value = value,
@@ -48,14 +48,14 @@ object TokenMetaConverter {
             key = key
         )
 
-    private fun TokenMetadata.Collection.convert(): TokenMetaCollectionDto =
+    private fun TokenMeta.Collection.convert(): TokenMetaCollectionDto =
         when (this) {
-            is TokenMetadata.Collection.OffChain -> TokenMetaOffChainCollectionDto(
+            is TokenMeta.Collection.OffChain -> TokenMetaOffChainCollectionDto(
                 name = name,
                 family = family,
                 hash = hash
             )
-            is TokenMetadata.Collection.OnChain -> TokenMetaOnChainCollectionDto(
+            is TokenMeta.Collection.OnChain -> TokenMetaOnChainCollectionDto(
                 address = address,
                 verified = verified
             )

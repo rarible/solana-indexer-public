@@ -8,12 +8,12 @@ import com.rarible.protocol.solana.common.model.TokenId
 import org.slf4j.LoggerFactory
 import java.net.URL
 
-class TokenMetadataParser(
+class TokenMetaParser(
     tokenAddress: TokenId,
     metadataUrl: URL
 ) {
 
-    private val logger = LoggerFactory.getLogger(TokenMetadataParser::class.java)
+    private val logger = LoggerFactory.getLogger(TokenMetaParser::class.java)
 
     private val jacksonMapper = jacksonObjectMapper()
 
@@ -26,11 +26,11 @@ class TokenMetadataParser(
     fun parseTokenMetadata(
         meta: MetaplexMetaFields,
         offChainMetadataJsonContent: String
-    ): TokenMetadata {
+    ): TokenMeta {
         log("parsing metadata JSON " + offChainMetadataJsonContent.take(1024))
         val offChainMetadataJson =
             jacksonMapper.readValue<MetaplexOffChainMetadataJsonSchema>(offChainMetadataJsonContent)
-        return TokenMetadata(
+        return TokenMeta(
             name = meta.name,
             symbol = meta.symbol,
             description = offChainMetadataJson.description,
@@ -49,44 +49,44 @@ class TokenMetadataParser(
             offChainMetadataJson.parseAnimation()
         )).distinctBy { it.url }
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseImage(): TokenMetadata.Content.ImageContent? =
-        if (image == null) null else TokenMetadata.Content.ImageContent(image, null)
+    private fun MetaplexOffChainMetadataJsonSchema.parseImage(): TokenMeta.Content.ImageContent? =
+        if (image == null) null else TokenMeta.Content.ImageContent(image, null)
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseAnimation(): TokenMetadata.Content.VideoContent? =
-        if (animation_url == null) null else TokenMetadata.Content.VideoContent(animation_url, null)
+    private fun MetaplexOffChainMetadataJsonSchema.parseAnimation(): TokenMeta.Content.VideoContent? =
+        if (animation_url == null) null else TokenMeta.Content.VideoContent(animation_url, null)
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseFiles(): List<TokenMetadata.Content> =
+    private fun MetaplexOffChainMetadataJsonSchema.parseFiles(): List<TokenMeta.Content> =
         properties?.files.orEmpty().mapNotNull { it.parseFile() }
 
     // TODO[meta]: parse properties.category and other fields.
-    private fun MetaplexOffChainMetadataJsonSchema.Properties.File.parseFile(): TokenMetadata.Content? {
+    private fun MetaplexOffChainMetadataJsonSchema.Properties.File.parseFile(): TokenMeta.Content? {
         val uri = parseField("file.uri") { this.uri } ?: return null
         val type = parseField("file.type") { this.type }
         return when {
             type == null -> {
                 if (listOf("png", "jpg", "jpeg", "svg").any { uri.endsWith(it) }) {
-                    TokenMetadata.Content.ImageContent(uri, null)
+                    TokenMeta.Content.ImageContent(uri, null)
                 } else {
-                    TokenMetadata.Content.VideoContent(uri, null)
+                    TokenMeta.Content.VideoContent(uri, null)
                 }
             }
             type.startsWith("image") -> {
-                TokenMetadata.Content.ImageContent(uri, type)
+                TokenMeta.Content.ImageContent(uri, type)
             }
             type.startsWith("video") -> {
-                TokenMetadata.Content.VideoContent(uri, type)
+                TokenMeta.Content.VideoContent(uri, type)
             }
             else -> {
                 // TODO[meta]: support other types.
-                TokenMetadata.Content.VideoContent(uri, type.takeIf { it != "unknown" })
+                TokenMeta.Content.VideoContent(uri, type.takeIf { it != "unknown" })
             }
         }
     }
 
-    private fun MetaplexOffChainMetadataJsonSchema.Attribute.getAttribute(): TokenMetadata.Attribute? {
+    private fun MetaplexOffChainMetadataJsonSchema.Attribute.getAttribute(): TokenMeta.Attribute? {
         val traitType = parseField("attribute.trait_type") { this.trait_type } ?: return null
         val value = parseField("attribute.value") { this.value } ?: return null
-        return TokenMetadata.Attribute(
+        return TokenMeta.Attribute(
             key = traitType,
             value = value,
             type = null,
@@ -97,16 +97,16 @@ class TokenMetadataParser(
     private fun getCollection(
         metaplexMeta: MetaplexMetaFields,
         offChainMetadataJson: MetaplexOffChainMetadataJsonSchema
-    ): TokenMetadata.Collection? {
+    ): TokenMeta.Collection? {
         val onChainCollection = metaplexMeta.collection
         if (onChainCollection != null) {
-            return TokenMetadata.Collection.OnChain(
+            return TokenMeta.Collection.OnChain(
                 address = onChainCollection.address,
                 verified = onChainCollection.verified
             )
         }
         val offChainCollection = offChainMetadataJson.collection ?: return null
-        return TokenMetadata.Collection.OffChain(
+        return TokenMeta.Collection.OffChain(
             name = offChainCollection.name,
             family = offChainCollection.family,
             hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
