@@ -1,9 +1,11 @@
 package com.rarible.protocol.solana.common.repository
 
-import com.rarible.protocol.solana.common.configuration.RepositoryConfiguration
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.TokenId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
@@ -31,6 +33,12 @@ class MetaRepository(
         return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 
+    fun findByCollectionAddress(collectionAddress: String): Flow<MetaplexMeta> {
+        val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
+        val query = Query(criteria).with(Sort.by(collectionAddressKey, "_id"))
+        return mongo.find(query, MetaplexMeta::class.java).asFlow()
+    }
+
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(MetaRepository::class.java)
         logger.info("Ensuring indexes on ${MetaplexMeta.COLLECTION}")
@@ -45,9 +53,19 @@ class MetaRepository(
             .on("_id", Sort.Direction.ASC)
             .unique()
 
+        val COLLECTION_ADDRESS_ID: Index = Index()
+            .on(collectionAddressKey, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .sparse()
+
         val ALL_INDEXES = listOf(
-            TOKEN_ADDRESS_ID
+            TOKEN_ADDRESS_ID,
+            COLLECTION_ADDRESS_ID
         )
+    }
+
+    companion object {
+        val collectionAddressKey = MetaplexMeta::metaFields.name + "." + MetaplexMetaFields::collection.name + "." + MetaplexMetaFields.Collection::address.name
     }
 
 }
