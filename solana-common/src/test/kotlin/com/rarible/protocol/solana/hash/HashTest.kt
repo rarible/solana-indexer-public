@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.repository
+package com.rarible.protocol.solana.hash
 
 import com.rarible.protocol.solana.common.hash.Hash
 import org.assertj.core.api.Assertions.assertThat

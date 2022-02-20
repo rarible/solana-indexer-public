@@ -13,7 +13,8 @@ typealias BalanceId = String
 
 @Document("balance")
 data class Balance(
-    val account: String,
+    @Id
+    val account: BalanceId,
     val owner: String,
     val mint: String,
     val value: BigInteger,
@@ -22,18 +23,10 @@ data class Balance(
     override val revertableEvents: List<BalanceEvent>
 ) : Entity<BalanceId, BalanceEvent, Balance> {
 
-    @Transient
-    private val _id: BalanceId = account
+    override val id: BalanceId get() = account
 
-    @get:Id
-    @get:AccessType(AccessType.Type.PROPERTY)
-    override var id: BalanceId
-        get() = _id
-        set(_) {}
-
-    override fun withRevertableEvents(events: List<BalanceEvent>): Balance {
-        return copy(revertableEvents = events)
-    }
+    override fun withRevertableEvents(events: List<BalanceEvent>): Balance =
+        copy(revertableEvents = events)
 
     companion object {
         fun empty(account: String): Balance = Balance(

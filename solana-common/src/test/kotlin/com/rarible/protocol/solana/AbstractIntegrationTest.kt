@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.repository
+package com.rarible.protocol.solana
 
 import com.rarible.core.mongo.configuration.IncludePersistProperties
 import com.rarible.core.test.ext.KafkaTest

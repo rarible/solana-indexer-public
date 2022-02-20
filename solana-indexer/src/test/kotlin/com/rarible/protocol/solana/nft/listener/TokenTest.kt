@@ -134,7 +134,7 @@ class TokenTest : EventAwareBlockScannerTest() {
     }
 
     private suspend fun assertBalance(expectedBalance: Balance) {
-        val actualBalance = balanceRepository.findById(expectedBalance.account)
+        val actualBalance = balanceRepository.findByAccount(expectedBalance.account)
         assertBalancesEqual(actualBalance, expectedBalance)
     }
 
