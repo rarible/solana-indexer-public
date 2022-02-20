@@ -11,7 +11,7 @@ import java.time.Instant
 
 typealias BalanceId = String
 
-@Document("balance")
+@Document(Balance.COLLECTION)
 data class Balance(
     @Id
     val account: BalanceId,
@@ -29,6 +29,8 @@ data class Balance(
         copy(revertableEvents = events)
 
     companion object {
+        const val COLLECTION = "balance"
+
         fun empty(account: String): Balance = Balance(
             account = account,
             owner = "",

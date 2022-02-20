@@ -22,4 +22,20 @@ class BalanceControllerIt : AbstractIntegrationTest() {
         assertThat(balanceControllerApi.getBalanceByAccount(balance.account).awaitFirst())
             .isEqualTo(BalanceConverter.convert(balance))
     }
+
+    @Test
+    fun `find balances by owner`() = runBlocking<Unit> {
+        val balance = createRandomBalance()
+        val balance2 = createRandomBalance().copy(
+            mint = balance.mint,
+            owner = balance.owner
+        )
+        val balance3 = createRandomBalance().copy(mint = balance.mint)
+        balanceRepository.save(balance)
+        balanceRepository.save(balance2)
+        balanceRepository.save(balance3)
+        assertThat(balanceControllerApi.getBalanceByOwner(balance.owner).awaitFirst())
+            .isEqualTo(BalanceConverter.convert(listOf(balance, balance2).sortedBy { it.account }))
+    }
+
 }

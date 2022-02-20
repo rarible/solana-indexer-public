@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.configuration
 
 import com.rarible.core.mongo.configuration.EnableRaribleMongo
+import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaRepository
 import com.rarible.protocol.solana.common.repository.PackageRepository
 import kotlinx.coroutines.runBlocking
@@ -20,12 +21,13 @@ class RepositoryConfiguration {
 
     @Bean
     fun ensureIndexes(
-        metaRepository: MetaRepository
+        metaRepository: MetaRepository,
+        balanceRepository: BalanceRepository
     ): CommandLineRunner {
-        val logger = LoggerFactory.getLogger(RepositoryConfiguration::class.java)
         return CommandLineRunner {
             runBlocking {
                 metaRepository.createIndexes()
+                balanceRepository.createIndexes()
             }
         }
     }

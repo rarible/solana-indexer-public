@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.api.service
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
+import kotlinx.coroutines.flow.Flow
 import org.springframework.stereotype.Component
 
 @Component
@@ -12,4 +13,8 @@ class BalanceService(
     suspend fun getBalance(accountAddress: String): Balance =
         balanceRepository.findByAccount(accountAddress)
             ?: throw EntityNotFoundApiException("Balance", accountAddress)
+
+    suspend fun getBalanceByOwner(owner: String): Flow<Balance> =
+        balanceRepository.findByOwner(owner)
+
 }

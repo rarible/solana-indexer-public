@@ -27,7 +27,7 @@ class MetaRepository(
         mongo.findById<MetaplexMeta>(metaAddress).awaitFirstOrNull()
 
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexMeta? {
-        val criteria = Criteria.where("tokenAddress").isEqualTo(tokenAddress)
+        val criteria = Criteria.where(MetaplexMeta::tokenAddress.name).isEqualTo(tokenAddress)
         return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 
