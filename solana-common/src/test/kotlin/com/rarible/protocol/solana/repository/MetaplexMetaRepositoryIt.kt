@@ -32,7 +32,7 @@ class MetaplexMetaRepositoryIt : AbstractIntegrationTest() {
         metaplexMetaRepository.save(metaplexMeta2)
         metaplexMetaRepository.save(metaplexMeta3)
         assertThat(metaplexMetaRepository.findByCollectionAddress(metaplexMeta.metaFields.collection!!.address).toList())
-            .isEqualTo(listOf(metaplexMeta, metaplexMeta2).sortedBy { it.metaAddress })
+            .isEqualTo(listOf(metaplexMeta, metaplexMeta2).sortedBy { it.tokenAddress })
     }
 
     @Test
