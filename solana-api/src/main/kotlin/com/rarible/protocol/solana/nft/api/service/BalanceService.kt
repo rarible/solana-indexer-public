@@ -17,4 +17,6 @@ class BalanceService(
     fun getBalanceByOwner(owner: String): Flow<Balance> =
         balanceRepository.findByOwner(owner)
 
+    fun getBalanceByMint(owner: String): Flow<Balance> =
+        balanceRepository.findByMint(owner)
 }

@@ -23,4 +23,9 @@ class BalanceController(
         val balances = balanceService.getBalanceByOwner(owner).toList()
         return ResponseEntity.ok(BalanceConverter.convert(balances))
     }
+
+    override suspend fun getBalanceByMint(mint: String): ResponseEntity<BalancesDto> {
+        val balances = balanceService.getBalanceByMint(mint).toList()
+        return ResponseEntity.ok(BalanceConverter.convert(balances))
+    }
 }

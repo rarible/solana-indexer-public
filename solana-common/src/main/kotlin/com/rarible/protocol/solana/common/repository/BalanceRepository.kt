@@ -33,7 +33,7 @@ class BalanceRepository(
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
-    suspend fun findByMint(mint: String): Flow<Balance> {
+    fun findByMint(mint: String): Flow<Balance> {
         val criteria = Criteria.where(Balance::mint.name).isEqualTo(mint)
         val query = Query(criteria).with(Sort.by(Balance::mint.name, "_id"))
         return mongo.find(query, Balance::class.java).asFlow()
