@@ -4,7 +4,6 @@ package com.rarible.protocol.solana.borsh
 
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseMetaplexCreateMetadataInstruction
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseUpdateMetadataAccountArgs
-import org.bitcoinj.core.Base58
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
