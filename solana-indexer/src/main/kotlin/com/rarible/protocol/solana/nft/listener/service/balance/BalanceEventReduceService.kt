@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
-import com.rarible.protocol.solana.common.model.EntityEventListeners
+import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListenerId
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
@@ -20,7 +20,7 @@ class BalanceEventReduceService(
 ) : LogRecordEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
-    override val id: String = EntityEventListeners.balanceHistoryListenerId(environmentInfo.name)
+    override val id: String = LogRecordEventListenerId.balanceHistoryListenerId(environmentInfo.name)
 
     override val subscriberGroup: SubscriberGroup = SubscriberGroup.BALANCE
 
