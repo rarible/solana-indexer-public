@@ -6,8 +6,8 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
-import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
+import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking

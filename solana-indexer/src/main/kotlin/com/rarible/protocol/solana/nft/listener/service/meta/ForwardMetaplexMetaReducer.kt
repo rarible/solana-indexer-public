@@ -1,8 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.meta
 
 import com.rarible.core.entity.reducer.service.Reducer
-import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta

@@ -6,7 +6,6 @@ import com.rarible.solana.protocol.dto.SolanaApiErrorBadRequestDto
 import com.rarible.solana.protocol.dto.SolanaApiErrorServerErrorDto
 import kotlinx.coroutines.reactor.mono
 import org.slf4j.LoggerFactory
-import org.springframework.core.convert.ConversionFailedException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

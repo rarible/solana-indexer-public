@@ -3,7 +3,6 @@ package com.rarible.protocol.solana.nft.listener.service.token
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.BurnEvent
 import com.rarible.protocol.solana.common.event.InitializeMintEvent
-import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
 import com.rarible.protocol.solana.common.model.Token

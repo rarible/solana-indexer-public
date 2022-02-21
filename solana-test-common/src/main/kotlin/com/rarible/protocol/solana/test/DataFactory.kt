@@ -12,8 +12,8 @@ import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.protocol.solana.common.model.TokenOffChainCollection
 import com.rarible.protocol.solana.common.model.Token
+import com.rarible.protocol.solana.common.model.TokenOffChainCollection
 
 fun createRandomToken(): Token = Token(
     mint = randomString(),

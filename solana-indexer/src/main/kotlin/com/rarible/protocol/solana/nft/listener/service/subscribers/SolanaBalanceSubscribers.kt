@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
+import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
@@ -19,13 +20,13 @@ import java.time.Instant
 
 @Component
 class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_initialize_account",
         groupId = SubscriberGroup.BALANCE.id,
         entityType = SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java,
         collection = SubscriberGroup.BALANCE.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -54,13 +55,13 @@ class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class MintToBalanceSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_mint_to",
         groupId = SubscriberGroup.BALANCE.id,
         entityType = SolanaBalanceRecord.MintToRecord::class.java,
         collection = SubscriberGroup.BALANCE.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -90,13 +91,13 @@ class MintToBalanceSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class BurnBalanceSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_burn",
         groupId = SubscriberGroup.BALANCE.id,
         entityType = SolanaBalanceRecord.BurnRecord::class.java,
         collection = SubscriberGroup.BALANCE.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -126,13 +127,13 @@ class BurnBalanceSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class TransferIncomeSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         groupId = SubscriberGroup.BALANCE.id,
         id = "balance_transfer_income",
         entityType = SolanaBalanceRecord.TransferIncomeRecord::class.java,
         collection = SubscriberGroup.BALANCE.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -162,13 +163,13 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         groupId = SubscriberGroup.BALANCE.id,
         id = "balance_transfer_outcome",
         entityType = SolanaBalanceRecord.TransferOutcomeRecord::class.java,
         collection = SubscriberGroup.BALANCE.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,

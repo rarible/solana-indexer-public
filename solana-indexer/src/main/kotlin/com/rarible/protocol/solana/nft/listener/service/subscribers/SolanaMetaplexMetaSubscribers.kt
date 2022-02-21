@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
+import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
@@ -13,13 +14,13 @@ import java.time.Instant
 
 @Component
 class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
         id = "metadata_create",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -42,13 +43,13 @@ class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
         id = "metadata_update",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexUpdateMetadataRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
@@ -71,13 +72,13 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class VerifyCollectionSubscriber : SolanaLogEventSubscriber {
-    override fun getDescriptor(): SolanaDescriptor = SolanaDescriptor(
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
         id = "metadata_verify_collection",
         groupId = SubscriberGroup.METAPLEX_META.id,
         entityType = SolanaMetaRecord.MetaplexVerifyCollectionRecord::class.java,
         collection = SubscriberGroup.METAPLEX_META.collectionName
-    )
+    ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,

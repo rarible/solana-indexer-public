@@ -3,7 +3,6 @@
 package com.rarible.protocol.solana.borsh
 
 import org.bitcoinj.core.Base58
-import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
