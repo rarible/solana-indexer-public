@@ -9,7 +9,7 @@ sealed class MetaplexMetaEvent : EntityEvent {
     abstract val metaAddress: String
 }
 
-data class MetaplexCreateMetadataEvent(
+data class MetaplexCreateMetadataAccountEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val metaAddress: String,
@@ -29,6 +29,13 @@ data class MetaplexUpdateMetadataEvent(
 ) : MetaplexMetaEvent()
 
 data class MetaplexVerifyCollectionMetadataEvent(
+    override val log: SolanaLog,
+    override val reversed: Boolean,
+    override val metaAddress: String,
+    override val timestamp: Instant
+) : MetaplexMetaEvent()
+
+data class MetaplexUnVerifyCollectionMetadataEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val metaAddress: String,

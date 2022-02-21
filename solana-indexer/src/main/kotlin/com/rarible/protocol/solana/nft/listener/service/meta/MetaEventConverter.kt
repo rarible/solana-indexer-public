@@ -1,8 +1,9 @@
 package com.rarible.protocol.solana.nft.listener.service.meta
 
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
-import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
+import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
@@ -16,8 +17,8 @@ class MetaEventConverter {
         record: SolanaMetaRecord,
         reversed: Boolean
     ): List<MetaplexMetaEvent> = when (record) {
-        is SolanaMetaRecord.MetaplexCreateMetadataRecord -> listOf(
-            MetaplexCreateMetadataEvent(
+        is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> listOf(
+            MetaplexCreateMetadataAccountEvent(
                 metaAddress = record.metaAccount,
                 log = record.log,
                 reversed = reversed,
@@ -39,6 +40,14 @@ class MetaEventConverter {
         )
         is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> listOf(
             MetaplexVerifyCollectionMetadataEvent(
+                metaAddress = record.metaAccount,
+                log = record.log,
+                reversed = reversed,
+                timestamp = record.timestamp
+            )
+        )
+        is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> listOf(
+            MetaplexUnVerifyCollectionMetadataEvent(
                 metaAddress = record.metaAccount,
                 log = record.log,
                 reversed = reversed,

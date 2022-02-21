@@ -2,7 +2,7 @@
 
 package com.rarible.protocol.solana.borsh
 
-import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseMetaplexCreateMetadataInstruction
+import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseMetaplexCreateMetadataAccountInstruction
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram.parseUpdateMetadataAccountArgs
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -57,7 +57,7 @@ object MetaplexMetadataProgram {
         )
     }
 
-    internal fun ByteBuffer.parseMetaplexCreateMetadataInstruction(
+    internal fun ByteBuffer.parseMetaplexCreateMetadataAccountInstruction(
         version: DataVersion
     ): MetaplexMetadataInstruction {
         val data = readData(version)
@@ -114,11 +114,34 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
     val bytes = Base58.decode(this)
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
     return when (buffer.get().toInt()) {
-        0 -> buffer.parseMetaplexCreateMetadataInstruction(MetaplexMetadataProgram.DataVersion.V1)
-        16 -> buffer.parseMetaplexCreateMetadataInstruction(MetaplexMetadataProgram.DataVersion.V2)
+        0 -> buffer.parseMetaplexCreateMetadataAccountInstruction(MetaplexMetadataProgram.DataVersion.V1)
         1 -> buffer.parseUpdateMetadataAccountArgs(MetaplexMetadataProgram.DataVersion.V1)
+        2 -> null // DeprecatedCreateMasterEdition(CreateMasterEditionArgs),
+        3 -> null // DeprecatedMintNewEditionFromMasterEditionViaPrintingToken,
+        4 -> null // UpdatePrimarySaleHappenedViaToken,
+        5 -> null // DeprecatedSetReservationList(SetReservationListArgs),
+        6 -> null // DeprecatedCreateReservationList,
+        7 -> null // SignMetadata,
+        8 -> null // DeprecatedMintPrintingTokensViaToken(MintPrintingTokensViaTokenArgs),
+        9 -> null // DeprecatedMintPrintingTokens(MintPrintingTokensViaTokenArgs),
+        10 -> null // CreateMasterEdition(CreateMasterEditionArgs),
+        11 -> null // MintNewEditionFromMasterEditionViaToken(MintNewEditionFromMasterEditionViaTokenArgs),
+        12 -> null // ConvertMasterEditionV1ToV2,
+        13 -> null // MintNewEditionFromMasterEditionViaVaultProxy(MintNewEditionFromMasterEditionViaTokenArgs),
+        14 -> null // PuffMetadata,
         15 -> buffer.parseUpdateMetadataAccountArgs(MetaplexMetadataProgram.DataVersion.V2)
+        16 -> buffer.parseMetaplexCreateMetadataAccountInstruction(MetaplexMetadataProgram.DataVersion.V2)
+        17 -> null // CreateMasterEditionV3(CreateMasterEditionArgs),
         18 -> VerifyCollection
+        19 -> null // Utilize(UtilizeArgs),
+        20 -> null // ApproveUseAuthority(ApproveUseAuthorityArgs),
+        21 -> null // RevokeUseAuthority,
+        22 -> UnVerifyCollection
+        23 -> null // ApproveCollectionAuthority,
+        24 -> null // RevokeCollectionAuthority,
+        25 -> null // SetAndVerifyCollection,
+        26 -> null // FreezeDelegatedAccount,
+        27 -> null // ThawDelegatedAccount
         else -> null
     }
 }
@@ -138,3 +161,5 @@ data class MetaplexUpdateMetadataAccountArgs(
 ) : MetaplexMetadataInstruction()
 
 object VerifyCollection : MetaplexMetadataInstruction()
+
+object UnVerifyCollection : MetaplexMetadataInstruction()

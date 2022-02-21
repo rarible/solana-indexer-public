@@ -40,16 +40,16 @@ class SplProgramTest : AbstractBlockScannerTest() {
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
                 collection = SubscriberGroup.METAPLEX_META.collectionName,
-                type = SolanaMetaRecord.MetaplexCreateMetadataRecord::class.java
+                type = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class.java
             ).toList()
 
             assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaMetaRecord.MetaplexCreateMetadataRecord::log.name,
-                SolanaMetaRecord.MetaplexCreateMetadataRecord::metaAccount.name,
-                SolanaMetaRecord.MetaplexCreateMetadataRecord::timestamp.name
+                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::log.name,
+                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::metaAccount.name,
+                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::timestamp.name
             ).isEqualTo(
                 listOf(
-                    SolanaMetaRecord.MetaplexCreateMetadataRecord(
+                    SolanaMetaRecord.MetaplexCreateMetadataAccountRecord(
                         mint = nft,
                         data = MetaplexCreateMetadataAccountArgs(
                             mutable = false,

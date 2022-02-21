@@ -10,7 +10,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     override fun getKey(): String = metaAccount
 
-    data class MetaplexCreateMetadataRecord(
+    data class MetaplexCreateMetadataAccountRecord(
         val mint: String,
         val data: MetaplexCreateMetadataAccountArgs,
         override val metaAccount: String,
@@ -33,6 +33,12 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
         override val timestamp: Instant
     ) : SolanaMetaRecord()
 
-    // TODO: add UnverifyCollection instruction
+    data class MetaplexUnVerifyCollectionRecord(
+        val unVerifyCollectionAccount: String,
+        override val metaAccount: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaMetaRecord()
+
     // TODO: add SetAndVerifyCollection instruction
 }
