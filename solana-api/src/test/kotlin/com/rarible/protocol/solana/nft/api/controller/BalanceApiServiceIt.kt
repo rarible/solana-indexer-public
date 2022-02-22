@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.common.converter.BalanceConverter
+import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomBalance
 import io.mockk.coEvery
@@ -10,7 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class BalanceControllerIt : AbstractControllerTest() {
+class BalanceApiServiceIt : AbstractControllerTest() {
 
     @Test
     fun `find balance by account`() = runBlocking<Unit> {
@@ -29,7 +30,7 @@ class BalanceControllerIt : AbstractControllerTest() {
         )
         coEvery { testBalanceService.getBalanceByOwner(balance.owner) } returns flowOf(balance, balance2)
         assertThat(balanceControllerApi.getBalanceByOwner(balance.owner).awaitFirst())
-            .isEqualTo(BalanceConverter.convert(listOf(balance, balance2)))
+            .isEqualTo(BalanceConverter.convert(listOf(balance, balance2).map { BalanceWithMeta(it, tokenMeta = null) }))
     }
 
 }

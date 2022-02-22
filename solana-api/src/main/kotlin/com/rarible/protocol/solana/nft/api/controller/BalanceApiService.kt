@@ -12,13 +12,14 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class BalanceController(
+class BalanceApiService(
     private val balanceService: BalanceService,
     private val tokenMetaService: TokenMetaService
 ) : BalanceControllerApi {
     override suspend fun getBalanceByAccount(accountAddress: String): ResponseEntity<BalanceDto> {
         val balance = balanceService.getBalance(accountAddress)
         val balanceWithMeta = tokenMetaService.extendWithAvailableMeta(balance)
+
         return ResponseEntity.ok(BalanceConverter.convert(balanceWithMeta))
     }
 
