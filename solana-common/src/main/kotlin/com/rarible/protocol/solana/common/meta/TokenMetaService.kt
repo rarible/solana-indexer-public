@@ -1,6 +1,8 @@
 package com.rarible.protocol.solana.common.meta
 
 import com.rarible.core.common.nowMillis
+import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
@@ -30,7 +32,14 @@ class TokenMetaService(
 
     suspend fun extendWithAvailableMeta(token: Token): TokenWithMeta {
         val tokenMeta = getAvailableTokenMeta(token.mint)
+
         return TokenWithMeta(token, tokenMeta)
+    }
+
+    suspend fun extendWithAvailableMeta(balance: Balance): BalanceWithMeta {
+        val tokenMeta = getAvailableTokenMeta(balance.mint)
+
+        return BalanceWithMeta(balance, tokenMeta)
     }
 
     suspend fun getAvailableTokenMeta(tokenAddress: TokenId): TokenMeta? {
