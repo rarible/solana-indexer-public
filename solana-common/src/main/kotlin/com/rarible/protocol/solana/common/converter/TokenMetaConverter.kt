@@ -1,23 +1,26 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.meta.TokenMeta
+import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.solana.protocol.dto.CollectionDto
 import com.rarible.solana.protocol.dto.ImageContentDto
+import com.rarible.solana.protocol.dto.JsonCollectionDto
+import com.rarible.solana.protocol.dto.OnChainCollectionDto
+import com.rarible.solana.protocol.dto.TokenCreatorPartDto
 import com.rarible.solana.protocol.dto.TokenMetaAttributeDto
-import com.rarible.solana.protocol.dto.TokenMetaCollectionDto
 import com.rarible.solana.protocol.dto.TokenMetaContentDto
 import com.rarible.solana.protocol.dto.TokenMetaDto
-import com.rarible.solana.protocol.dto.TokenMetaOffChainCollectionDto
-import com.rarible.solana.protocol.dto.TokenMetaOnChainCollectionDto
 import com.rarible.solana.protocol.dto.VideoContentDto
 
 object TokenMetaConverter {
     fun convert(tokenMeta: TokenMeta): TokenMetaDto =
         TokenMetaDto(
             name = tokenMeta.name,
-            collection = tokenMeta.collection?.convert(),
+            collection = tokenMeta.collection?.let { convert(it) },
             description = tokenMeta.description,
             attributes = tokenMeta.attributes.map { it.convert() },
-            content = tokenMeta.contents.map { it.convert() }
+            content = tokenMeta.contents.map { it.convert() },
+            creators = tokenMeta.creators.map { it.convert() }
         )
 
     private fun TokenMeta.Content.convert(): TokenMetaContentDto =
@@ -40,6 +43,12 @@ object TokenMetaConverter {
             )
         }
 
+    private fun MetaplexTokenCreator.convert(): TokenCreatorPartDto =
+        TokenCreatorPartDto(
+            address = address,
+            share = share
+        )
+
     private fun TokenMeta.Attribute.convert(): TokenMetaAttributeDto =
         TokenMetaAttributeDto(
             type = type,
@@ -48,16 +57,16 @@ object TokenMetaConverter {
             key = key
         )
 
-    private fun TokenMeta.Collection.convert(): TokenMetaCollectionDto =
-        when (this) {
-            is TokenMeta.Collection.OffChain -> TokenMetaOffChainCollectionDto(
-                name = name,
-                family = family,
-                hash = hash
+    fun convert(collection: TokenMeta.Collection): CollectionDto =
+        when (collection) {
+            is TokenMeta.Collection.OffChain -> JsonCollectionDto(
+                name = collection.name,
+                family = collection.family,
+                hash = collection.hash
             )
-            is TokenMeta.Collection.OnChain -> TokenMetaOnChainCollectionDto(
-                address = address,
-                verified = verified
+            is TokenMeta.Collection.OnChain -> OnChainCollectionDto(
+                address = collection.address,
+                verified = collection.verified
             )
         }
 }

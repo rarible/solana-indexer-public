@@ -2,9 +2,11 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.converter.BalanceConverter
-import com.rarible.protocol.solana.common.converter.TokenConverter
+import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
+import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.Token
+import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.solana.protocol.dto.BalanceDto
 import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
 import com.rarible.solana.protocol.dto.TokenDto
@@ -17,6 +19,10 @@ import java.time.Instant
 import java.util.*
 
 class TokenTest : EventAwareBlockScannerTest() {
+
+    // In this test, the token meta is empty.
+    private val emptyTokenMeta: TokenMeta? = null
+
     @Test
     fun `mint, burn, transfer token`() = runBlocking {
         val decimals = 3
@@ -91,7 +97,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         assertThat(tokenEvents).anySatisfy { event ->
             assertThat(event).isInstanceOfSatisfying(TokenUpdateEventDto::class.java) {
                 assertThat(it.address).isEqualTo(token.mint)
-                assertTokenDtoEqual(it.token, TokenConverter.convert(token))
+                assertTokenDtoEqual(it.token, TokenWithMetaConverter.convert(TokenWithMeta(token, emptyTokenMeta)))
             }
         }
     }

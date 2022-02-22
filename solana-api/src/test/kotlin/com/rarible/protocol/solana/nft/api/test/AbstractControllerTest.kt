@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.api.test
 
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceService
-import com.rarible.protocol.solana.nft.api.service.TokenService
+import com.rarible.protocol.solana.nft.api.service.TokenApiService
 import com.rarible.solana.protocol.api.client.BalanceControllerApi
 import com.rarible.solana.protocol.api.client.FixedSolanaApiServiceUriProvider
 import com.rarible.solana.protocol.api.client.NoopWebClientCustomizer
@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct
 abstract class AbstractControllerTest : AbstractIntegrationTest() {
 
     @Autowired
-    lateinit var testTokenService: TokenService
+    lateinit var testTokenApiService: TokenApiService
 
     @Autowired
     lateinit var testTokenMetaService: TokenMetaService

@@ -3,61 +3,53 @@ package com.rarible.protocol.solana.common.meta
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
+import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.protocol.solana.common.model.TokenId
 import org.slf4j.LoggerFactory
-import java.net.URL
 
-class TokenMetaParser(
-    tokenAddress: TokenId,
-    metadataUrl: URL
-) {
+object TokenMetaParser {
 
     private val logger = LoggerFactory.getLogger(TokenMetaParser::class.java)
 
     private val jacksonMapper = jacksonObjectMapper()
 
-    private val logPrefix = "Metadata parsing for token $tokenAddress by URL $metadataUrl"
-
-    private fun log(message: String) {
-        logger.info("$logPrefix: $message")
-    }
-
-    fun parseOffChainMeta(offChainMetadataJsonContent: String): MetaplexOffChainMetadataJsonSchema =
-        jacksonMapper.readValue(offChainMetadataJsonContent)
+    fun parseMetaplexOffChainMetaFields(offChainMetadataJsonContent: String): MetaplexOffChainMetaFields =
+        jacksonMapper
+            .readValue<MetaplexOffChainMetadataJsonSchema>(offChainMetadataJsonContent)
+            .toMetaplexOffChainMetaFields()
 
     fun mergeOnChainAndOffChainMeta(
         onChainMeta: MetaplexMetaFields,
-        offChainMeta: MetaplexOffChainMetadataJsonSchema
+        offChainMeta: MetaplexOffChainMetaFields
     ): TokenMeta = TokenMeta(
         name = onChainMeta.name,
         symbol = onChainMeta.symbol,
-        description = offChainMeta.description,
+        url = onChainMeta.uri,
         creators = getCreators(onChainMeta, offChainMeta),
         collection = getCollection(onChainMeta, offChainMeta),
-        url = onChainMeta.uri,
-        attributes = offChainMeta.attributes.orEmpty().mapNotNull { it.getAttribute() },
+        description = offChainMeta.description,
+        attributes = offChainMeta.attributes.mapNotNull { it.getAttribute() },
         contents = parseContents(offChainMeta),
-        externalUrl = offChainMeta.external_url
+        externalUrl = offChainMeta.externalUrl
     )
 
-    private fun parseContents(offChainMetadataJson: MetaplexOffChainMetadataJsonSchema) =
+    private fun parseContents(offChainMetadataJson: MetaplexOffChainMetaFields) =
         (offChainMetadataJson.parseFiles() + listOfNotNull(
             offChainMetadataJson.parseImage(),
             offChainMetadataJson.parseAnimation()
         )).distinctBy { it.url }
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseImage(): TokenMeta.Content.ImageContent? =
+    private fun MetaplexOffChainMetaFields.parseImage(): TokenMeta.Content.ImageContent? =
         if (image == null) null else TokenMeta.Content.ImageContent(image, null)
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseAnimation(): TokenMeta.Content.VideoContent? =
-        if (animation_url == null) null else TokenMeta.Content.VideoContent(animation_url, null)
+    private fun MetaplexOffChainMetaFields.parseAnimation(): TokenMeta.Content.VideoContent? =
+        if (animationUrl == null) null else TokenMeta.Content.VideoContent(animationUrl, null)
 
-    private fun MetaplexOffChainMetadataJsonSchema.parseFiles(): List<TokenMeta.Content> =
+    private fun MetaplexOffChainMetaFields.parseFiles(): List<TokenMeta.Content> =
         properties?.files.orEmpty().mapNotNull { it.parseFile() }
 
     // TODO[meta]: parse properties.category and other fields.
-    private fun MetaplexOffChainMetadataJsonSchema.Properties.File.parseFile(): TokenMeta.Content? {
+    private fun MetaplexOffChainMetaFields.Properties.File.parseFile(): TokenMeta.Content? {
         val uri = parseField("file.uri") { this.uri } ?: return null
         val type = parseField("file.type") { this.type }
         return when {
@@ -81,8 +73,8 @@ class TokenMetaParser(
         }
     }
 
-    private fun MetaplexOffChainMetadataJsonSchema.Attribute.getAttribute(): TokenMeta.Attribute? {
-        val traitType = parseField("attribute.trait_type") { this.trait_type } ?: return null
+    private fun MetaplexOffChainMetaFields.Attribute.getAttribute(): TokenMeta.Attribute? {
+        val traitType = parseField("attribute.trait_type") { this.traitType } ?: return null
         val value = parseField("attribute.value") { this.value } ?: return null
         return TokenMeta.Attribute(
             key = traitType,
@@ -94,7 +86,7 @@ class TokenMetaParser(
 
     private fun getCollection(
         metaplexMeta: MetaplexMetaFields,
-        offChainMetadataJson: MetaplexOffChainMetadataJsonSchema
+        offChainMetadataJson: MetaplexOffChainMetaFields
     ): TokenMeta.Collection? {
         val onChainCollection = metaplexMeta.collection
         if (onChainCollection != null) {
@@ -117,22 +109,67 @@ class TokenMetaParser(
 
     private fun getCreators(
         metaplexMeta: MetaplexMetaFields,
-        offChainMetadataJson: MetaplexOffChainMetadataJsonSchema
+        offChainMetadataJson: MetaplexOffChainMetaFields
     ): List<MetaplexTokenCreator> =
         metaplexMeta.creators?.takeIf { it.isNotEmpty() }
-            ?: offChainMetadataJson.properties?.creators.orEmpty().map { it.convert() }
-
-    private fun MetaplexOffChainMetadataJsonSchema.Properties.Creator.convert(): MetaplexTokenCreator =
-        MetaplexTokenCreator(
-            address = address,
-            share = share
-        )
+            ?: offChainMetadataJson.properties?.creators.orEmpty()
 
     private fun <T> parseField(fieldName: String, block: () -> T): T {
         val field = block()
         if (field == null) {
-            log("$logPrefix: missing field $fieldName")
+            logger.info("Metadata parsing: missing field '$fieldName'")
         }
         return field
     }
 }
+
+private fun MetaplexOffChainMetadataJsonSchema.toMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields =
+    MetaplexOffChainMetaFields(
+        name = name,
+        symbol = symbol,
+        description = description,
+        collection = collection?.let { collection ->
+            MetaplexOffChainMetaFields.Collection(
+                name = collection.name,
+                family = collection.family,
+                hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                    name = collection.name,
+                    family = collection.family,
+                    creators = properties?.creators.orEmpty().map { it.address }
+                )
+            )
+        },
+        sellerFeeBasisPoints = seller_fee_basis_points,
+        externalUrl = external_url,
+        edition = edition,
+        backgroundColor = background_color,
+        attributes = attributes.orEmpty().let { attributes ->
+            attributes.map {
+                MetaplexOffChainMetaFields.Attribute(
+                    traitType = it.trait_type,
+                    value = it.value
+                )
+            }
+        },
+        properties = properties?.let { properties ->
+            MetaplexOffChainMetaFields.Properties(
+                category = properties.category,
+                creators = properties.creators.orEmpty().map {
+                    MetaplexTokenCreator(
+                        address = it.address,
+                        share = it.share
+                    )
+                },
+                files = properties.files?.let { files ->
+                    files.map { file ->
+                        MetaplexOffChainMetaFields.Properties.File(
+                            uri = file.uri,
+                            type = file.type
+                        )
+                    }
+                }
+            )
+        },
+        image = image,
+        animationUrl = animation_url
+    )

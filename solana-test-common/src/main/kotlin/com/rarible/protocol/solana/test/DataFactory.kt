@@ -11,9 +11,11 @@ import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
+import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
+import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.Token
-import com.rarible.protocol.solana.common.model.TokenOffChainCollection
+import com.rarible.protocol.solana.common.model.TokenWithMeta
 
 fun createRandomToken(): Token = Token(
     mint = randomString(),
@@ -24,21 +26,10 @@ fun createRandomToken(): Token = Token(
     updatedAt = nowMillis(),
 )
 
-fun createRandomTokenOffChainCollection(): TokenOffChainCollection {
-    val name = randomString()
-    val family = randomString()
-    return TokenOffChainCollection(
-        tokenAddress = randomString(),
-        name = name,
-        family = family,
-        hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-            name = name,
-            family = family,
-            creators = listOf(randomString())
-        ),
-        metadataUrl = randomUrl()
-    )
-}
+fun createRandomTokenWithMeta(): TokenWithMeta = TokenWithMeta(
+    token = createRandomToken(),
+    tokenMeta = createRandomTokenMeta()
+)
 
 fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
     metaAddress = randomString(),
@@ -55,6 +46,54 @@ fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
     revertableEvents = emptyList(),
     updatedAt = nowMillis(),
 )
+
+fun createRandomMetaplexOffChainMeta(): MetaplexOffChainMeta = MetaplexOffChainMeta(
+    tokenAddress = randomString(),
+    metaFields = createRandomMetaplexOffChainMetaFields(),
+    loadedAt = nowMillis()
+)
+
+fun createRandomMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields {
+    val collectionName = randomString()
+    val collectionFamily = randomString()
+    val creators = listOf(MetaplexTokenCreator(randomString(), 100))
+    return MetaplexOffChainMetaFields(
+        name = randomString(),
+        symbol = randomString(),
+        description = randomString(),
+        collection = MetaplexOffChainMetaFields.Collection(
+            name = collectionName,
+            family = collectionFamily,
+            hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                name = collectionName,
+                family = collectionFamily,
+                creators = creators.map { it.address }
+            )
+        ),
+        sellerFeeBasisPoints = randomInt(),
+        externalUrl = randomUrl(),
+        edition = randomString(),
+        backgroundColor = randomString(),
+        attributes = listOf(
+            MetaplexOffChainMetaFields.Attribute(
+                traitType = randomString(),
+                value = randomString()
+            )
+        ),
+        properties = MetaplexOffChainMetaFields.Properties(
+            category = randomString(),
+            creators = creators,
+            files = listOf(
+                MetaplexOffChainMetaFields.Properties.File(
+                    uri = randomString(),
+                    type = randomString()
+                )
+            )
+        ),
+        image = randomString(),
+        animationUrl = randomString()
+    )
+}
 
 fun createRandomTokenMeta(): TokenMeta =
     TokenMeta(
