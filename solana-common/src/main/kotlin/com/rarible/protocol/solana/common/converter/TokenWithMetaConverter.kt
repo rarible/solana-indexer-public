@@ -13,7 +13,8 @@ object TokenWithMetaConverter {
             createdAt = token.createdAt,
             updatedAt = token.updatedAt,
             closed = token.isDeleted,
-            collection = tokenMeta?.collection?.let { TokenMetaConverter.convert(it) }
+            collection = tokenMeta?.collection?.let { TokenMetaConverter.convert(it) },
+            creators = tokenMeta?.creators?.map { TokenMetaConverter.convert(it) }
         )
     }
 

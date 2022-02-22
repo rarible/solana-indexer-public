@@ -20,7 +20,7 @@ object TokenMetaConverter {
             description = tokenMeta.description,
             attributes = tokenMeta.attributes.map { it.convert() },
             content = tokenMeta.contents.map { it.convert() },
-            creators = tokenMeta.creators.map { it.convert() }
+            creators = tokenMeta.creators.map { convert(it) }
         )
 
     private fun TokenMeta.Content.convert(): TokenMetaContentDto =
@@ -43,10 +43,10 @@ object TokenMetaConverter {
             )
         }
 
-    private fun MetaplexTokenCreator.convert(): TokenCreatorPartDto =
+    fun convert(creator: MetaplexTokenCreator): TokenCreatorPartDto =
         TokenCreatorPartDto(
-            address = address,
-            share = share
+            address = creator.address,
+            share = creator.share
         )
 
     private fun TokenMeta.Attribute.convert(): TokenMetaAttributeDto =
