@@ -1,28 +1,32 @@
 package com.rarible.protocol.solana.common.meta
 
-import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
-import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.update.MetaplexMetaUpdateListener
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import java.net.URL
 
 @Component
 class TokenMetaService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
-    private val metaMetrics: MetaMetrics,
-    private val metaplexOffChainMetadataLoader: MetaplexOffChainMetadataLoader,
-    private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
+    private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
+    private val metaplexOffChainMetaLoader: MetaplexOffChainMetaLoader
 ) {
+
     private val logger = LoggerFactory.getLogger(TokenMetaService::class.java)
+
+    @Lazy
+    @Autowired
+    private lateinit var metaplexMetaUpdateListener: MetaplexMetaUpdateListener
 
     private suspend fun getOnChainMeta(tokenAddress: TokenId): MetaplexMeta? =
         metaplexMetaRepository.findByTokenAddress(tokenAddress)
@@ -32,13 +36,11 @@ class TokenMetaService(
 
     suspend fun extendWithAvailableMeta(token: Token): TokenWithMeta {
         val tokenMeta = getAvailableTokenMeta(token.mint)
-
         return TokenWithMeta(token, tokenMeta)
     }
 
     suspend fun extendWithAvailableMeta(balance: Balance): BalanceWithMeta {
         val tokenMeta = getAvailableTokenMeta(balance.mint)
-
         return BalanceWithMeta(balance, tokenMeta)
     }
 
@@ -55,33 +57,28 @@ class TokenMetaService(
         val onChainMeta = getOnChainMeta(tokenAddress) ?: return null
         val metaFields = onChainMeta.metaFields
         val metadataUrl = url(metaFields.uri)
-        val offChainMetaFields = loadMetaplexOffChainMetaFields(tokenAddress, metadataUrl) ?: return null
-        val metaplexOffChainMeta = MetaplexOffChainMeta(
+        val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
             tokenAddress = tokenAddress,
-            metaFields = offChainMetaFields,
-            loadedAt = nowMillis()
+            metadataUrl = metadataUrl
+        ) ?: return null
+        val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(metaFields, metaplexOffChainMeta.metaFields)
+        metaplexMetaUpdateListener.onTokenMetaChanged(tokenAddress, tokenMeta)
+        return tokenMeta
+    }
+
+    suspend fun onMetaplexMetaChanged(metaplexMeta: MetaplexMeta) {
+        val offChainMeta = getOffChainMeta(metaplexMeta.tokenAddress)
+        if (offChainMeta == null) {
+            logger.info(
+                "There is no off-chain meta loaded for ${metaplexMeta.tokenAddress}, " +
+                        "so ignoring the on-chain metaplex meta update yet."
+            )
+            return
+        }
+        val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(
+            onChainMeta = metaplexMeta.metaFields,
+            offChainMeta = offChainMeta.metaFields
         )
-        metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
-        // TODO: when meta gets changed, we have to send a token update event.
-        return TokenMetaParser.mergeOnChainAndOffChainMeta(metaFields, offChainMetaFields)
+        metaplexMetaUpdateListener.onTokenMetaChanged(metaplexMeta.tokenAddress, tokenMeta)
     }
-
-    suspend fun loadMetaplexOffChainMetaFields(tokenAddress: TokenId, metadataUrl: URL): MetaplexOffChainMetaFields? {
-        logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
-        val offChainMetadataJsonContent = try {
-            metaplexOffChainMetadataLoader.loadOffChainMetadataJson(metadataUrl)
-        } catch (e: Exception) {
-            logger.error("Failed to load metadata for token $tokenAddress by URL $metadataUrl", e)
-            metaMetrics.onMetaLoadingError()
-            return null
-        }
-        return try {
-            MetaplexOffChainMetadataParser.parseMetaplexOffChainMetaFields(offChainMetadataJsonContent)
-        } catch (e: Exception) {
-            logger.error("Failed to parse metadata for token $tokenAddress by URL $metadataUrl", e)
-            metaMetrics.onMetaParsingError()
-            return null
-        }
-    }
-
 }

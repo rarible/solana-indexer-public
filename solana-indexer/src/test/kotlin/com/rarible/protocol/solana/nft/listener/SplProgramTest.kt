@@ -2,10 +2,7 @@ package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
-import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
@@ -31,69 +28,6 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
-
-    @Test
-    fun createMetadata() = runBlocking {
-        val wallet = getWallet()
-        val nft = mintNft()
-
-        Wait.waitAssert(timeout) {
-            val records = findRecordByType(
-                collection = SubscriberGroup.METAPLEX_META.collectionName,
-                type = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class.java
-            ).toList()
-
-            assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::log.name,
-                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::metaAccount.name,
-                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::timestamp.name
-            ).isEqualTo(
-                listOf(
-                    SolanaMetaRecord.MetaplexCreateMetadataAccountRecord(
-                        mint = nft,
-                        data = MetaplexCreateMetadataAccountArgs(
-                            mutable = false,
-                            metadata = MetaplexMetadataProgram.Data(
-                                name = "My NFT #1",
-                                uri = "https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json",
-                                symbol = "MY_SYMBOL",
-                                sellerFeeBasisPoints = 420,
-                                creators = listOf(
-                                    MetaplexMetadataProgram.Creator(
-                                        address = wallet,
-                                        share = 100,
-                                        verified = true
-                                    )
-                                ),
-                                collection = null
-                            )
-                        ),
-                        metaAccount = "", // TODO: we can calculate the PDA of metadata account.
-                        log = ANY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH
-                    )
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `verify collection`() = runBlocking {
-        val collection = mintNft()
-        val nft = mintNft(collection)
-
-        Wait.waitAssert(timeout) {
-            val meta = metaplexMetaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
-            assertThat(meta.metaFields.collection?.verified).isFalse
-        }
-
-        verifyCollection(nft, collection)
-
-        Wait.waitAssert(timeout) {
-            val meta = metaplexMetaRepository.findByTokenAddress(nft) ?: fail("Meta not ready")
-            assertThat(meta.metaFields.collection?.verified).isTrue
-        }
-    }
 
     @Test
     fun initializeMint() = runBlocking {

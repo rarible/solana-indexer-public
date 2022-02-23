@@ -1,8 +1,10 @@
 package com.rarible.protocol.solana.common.configuration
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import java.time.Clock
 
 @Configuration
 @Import(
@@ -11,4 +13,7 @@ import org.springframework.context.annotation.Import
     SolanaMetaConfiguration::class
 )
 @EnableConfigurationProperties(SolanaIndexerProperties::class)
-class CommonConfiguration
+class CommonConfiguration {
+    @Bean
+    fun solanaClock(): Clock = Clock.systemUTC()
+}

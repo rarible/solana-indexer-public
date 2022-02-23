@@ -1,19 +1,10 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
-import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
-import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.Token
-import com.rarible.protocol.solana.common.model.TokenWithMeta
-import com.rarible.solana.protocol.dto.BalanceDto
-import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
-import com.rarible.solana.protocol.dto.TokenDto
-import com.rarible.solana.protocol.dto.TokenUpdateEventDto
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.time.Instant
@@ -62,8 +53,8 @@ class TokenTest : EventAwareBlockScannerTest() {
 
         Wait.waitAssert {
             assertToken(token)
-            assertUpdateTokenEvent(token)
-            assertUpdateBalanceEvent(fromBalance)
+            assertUpdateTokenEvent(token, emptyTokenMeta)
+            assertUpdateBalanceEvent(fromBalance, emptyTokenMeta)
             assertBalance(fromBalance)
         }
 
@@ -71,106 +62,26 @@ class TokenTest : EventAwareBlockScannerTest() {
         Wait.waitAssert {
             val partlyBurnedToken = token.copy(supply = 1.scaleSupply(decimals))
             assertToken(partlyBurnedToken)
-            assertUpdateTokenEvent(partlyBurnedToken)
+            assertUpdateTokenEvent(partlyBurnedToken, emptyTokenMeta)
 
             val partlyBurnedBalance = fromBalance.copy(value = 1.scaleSupply(decimals))
             assertBalance(partlyBurnedBalance)
-            assertUpdateBalanceEvent(partlyBurnedBalance)
+            assertUpdateBalanceEvent(partlyBurnedBalance, emptyTokenMeta)
         }
 
         transferToken(tokenAddress, amount = 1UL, aliceAccount)
         Wait.waitAssert {
             val finalToken = token.copy(supply = 1.scaleSupply(decimals))
             assertToken(finalToken)
-            assertUpdateTokenEvent(finalToken)
+            assertUpdateTokenEvent(finalToken, emptyTokenMeta)
 
             val finalFromBalance = fromBalance.copy(value = 0.scaleSupply(decimals))
             assertBalance(finalFromBalance)
-            assertUpdateBalanceEvent(finalFromBalance)
+            assertUpdateBalanceEvent(finalFromBalance, emptyTokenMeta)
 
             val finalAliceBalance = aliceBalance.copy(value = 1.scaleSupply(decimals))
             assertBalance(finalAliceBalance)
-            assertUpdateBalanceEvent(finalAliceBalance)
+            assertUpdateBalanceEvent(finalAliceBalance, emptyTokenMeta)
         }
     }
-
-    private fun assertUpdateTokenEvent(token: Token) {
-        assertThat(tokenEvents).anySatisfy { event ->
-            assertThat(event).isInstanceOfSatisfying(TokenUpdateEventDto::class.java) {
-                assertThat(it.address).isEqualTo(token.mint)
-                assertTokenDtoEqual(it.token, TokenWithMetaConverter.convert(TokenWithMeta(token, emptyTokenMeta)))
-            }
-        }
-    }
-
-    private fun assertUpdateBalanceEvent(balance: Balance) {
-        assertThat(balanceEvents).anySatisfy { event ->
-            assertThat(event).isInstanceOfSatisfying(BalanceUpdateEventDto::class.java) {
-                assertThat(it.account).isEqualTo(balance.account)
-                assertBalanceDtoEqual(it.balance, BalanceWithMetaConverter.convert(BalanceWithMeta(balance, emptyTokenMeta)))
-            }
-        }
-    }
-
-    private suspend fun assertToken(expectedToken: Token) {
-        val actualToken = tokenRepository.findByMint(expectedToken.mint)
-        assertTokensEqual(actualToken, expectedToken)
-    }
-
-    private fun assertTokenDtoEqual(actualToken: TokenDto?, expectedToken: TokenDto) {
-        // Ignore some fields because they are minor and hard to get.
-        fun TokenDto.ignore() = this
-            .copy(createdAt = Instant.EPOCH)
-            .copy(updatedAt = Instant.EPOCH)
-        assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
-
-        assertThat(actualToken?.createdAt).isNotEqualTo(Instant.EPOCH)
-        assertThat(actualToken?.updatedAt).isNotEqualTo(Instant.EPOCH)
-    }
-
-    private fun assertTokensEqual(actualToken: Token?, expectedToken: Token) {
-        // Ignore some fields because they are minor and hard to get.
-        fun Token.ignore() = this
-            .copy(createdAt = Instant.EPOCH)
-            .copy(updatedAt = Instant.EPOCH)
-            .copy(revertableEvents = emptyList())
-        assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
-
-        assertThat(actualToken?.createdAt).isNotEqualTo(Instant.EPOCH)
-        assertThat(actualToken?.updatedAt).isNotEqualTo(Instant.EPOCH)
-    }
-
-    private suspend fun assertBalance(expectedBalance: Balance) {
-        val actualBalance = balanceRepository.findByAccount(expectedBalance.account)
-        assertBalancesEqual(actualBalance, expectedBalance)
-    }
-
-    private fun assertBalanceDtoEqual(actualBalance: BalanceDto?, expectedBalance: BalanceDto) {
-        // Ignore some fields because they are minor and hard to get.
-        fun BalanceDto.ignore() = this
-            .copy(createdAt = Instant.EPOCH)
-            .copy(updatedAt = Instant.EPOCH)
-        assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
-
-        // TODO: consider comparing these fields (get from the blockchain)?
-        assertThat(actualBalance?.createdAt).isNotEqualTo(Instant.EPOCH)
-        assertThat(actualBalance?.updatedAt).isNotEqualTo(Instant.EPOCH)
-    }
-
-    private fun assertBalancesEqual(
-        actualBalance: Balance?,
-        expectedBalance: Balance
-    ) {
-        // Ignore [revertableEvents] because they are minor and hard to get.
-        fun Balance.ignore() = this
-            .copy(createdAt = Instant.EPOCH)
-            .copy(updatedAt = Instant.EPOCH)
-            .copy(revertableEvents = emptyList())
-        assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
-
-        // TODO: consider comparing these fields (get from the blockchain)?
-        assertThat(actualBalance?.createdAt).isNotEqualTo(Instant.EPOCH)
-        assertThat(actualBalance?.updatedAt).isNotEqualTo(Instant.EPOCH)
-    }
-
 }

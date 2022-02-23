@@ -8,15 +8,23 @@ import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
+import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
+import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
+import io.mockk.clearMocks
+import io.mockk.coEvery
+import io.mockk.coJustRun
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.test.context.ActiveProfiles
@@ -55,6 +63,17 @@ abstract class AbstractBlockScannerTest {
     protected lateinit var metaplexMetaRepository: MetaplexMetaRepository
 
     @Autowired
+    protected lateinit var tokenMetaService: TokenMetaService
+
+    @Qualifier("test.solana.meta.loader")
+    @Autowired
+    protected lateinit var testMetaplexOffChainMetaLoader: MetaplexOffChainMetaLoader
+
+    @Autowired
+    @Qualifier("test.metaplex.off.chain.meta.repository")
+    protected lateinit var metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
+
+    @Autowired
     protected lateinit var tokenRepository: TokenRepository
 
     @Autowired
@@ -79,6 +98,15 @@ abstract class AbstractBlockScannerTest {
                 )
             )
         }
+    }
+
+    @BeforeEach
+    fun cleanupMocks() {
+        clearMocks(metaplexOffChainMetaRepository)
+        coJustRun { metaplexOffChainMetaRepository.createIndexes() }
+        coEvery { metaplexOffChainMetaRepository.findByTokenAddress(any()) } returns null
+        coEvery { metaplexOffChainMetaRepository.findByOffChainCollectionHash(any()) } returns emptyFlow()
+        coEvery { metaplexOffChainMetaRepository.save(any()) } throws (UnsupportedOperationException())
     }
 
     protected fun verifyCollection(mint: String, collection: String): String {
