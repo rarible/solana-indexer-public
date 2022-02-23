@@ -1,10 +1,11 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.common.converter.BalanceConverter
+import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.solana.protocol.dto.BalanceDto
@@ -106,7 +107,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         assertThat(balanceEvents).anySatisfy { event ->
             assertThat(event).isInstanceOfSatisfying(BalanceUpdateEventDto::class.java) {
                 assertThat(it.account).isEqualTo(balance.account)
-                assertBalanceDtoEqual(it.balance, BalanceConverter.convert(balance))
+                assertBalanceDtoEqual(it.balance, BalanceWithMetaConverter.convert(BalanceWithMeta(balance, emptyTokenMeta)))
             }
         }
     }

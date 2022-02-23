@@ -1,62 +1,56 @@
 package com.rarible.protocol.solana.nft.api.service
 
-import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
-import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
-import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexMetaFieldsCollection
-import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
+import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMetaFields
 import com.rarible.protocol.solana.test.createRandomToken
-import com.rarible.protocol.solana.test.createRandomTokenWithMeta
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class TokenApiServiceIt : AbstractIntegrationTest() {
+class TokenApiServiceIt : AbstractMetaAwareIntegrationTest() {
 
     @Autowired
     private lateinit var tokenRepository: TokenRepository
 
     @Autowired
-    private lateinit var metaplexMetaRepository: MetaplexMetaRepository
-
-    @Autowired
-    private lateinit var metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
-
-    @Autowired
     private lateinit var tokenApiService: TokenApiService
 
     @Test
-    fun `find tokens with meta by metaplex collection`() = runBlocking<Unit> {
-        val token = createRandomTokenWithMeta()
-        val token2 = createRandomTokenWithMeta()
-        val token3 = createRandomTokenWithMeta()
-        tokenRepository.save(token.token)
-        tokenRepository.save(token2.token)
-        tokenRepository.save(token3.token)
+    fun `find token with meta by token address`() = runBlocking<Unit> {
+        val token = createRandomToken()
+        tokenRepository.save(token)
+        val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(token.mint)
+        assertThat(tokenApiService.getTokenWithMeta(token.mint))
+            .isEqualTo(TokenWithMeta(token, tokenMeta))
+    }
+
+    @Test
+    fun `find tokens with meta by metaplex on-chain collection address`() = runBlocking<Unit> {
+        val token = createRandomToken()
+        val token2 = createRandomToken()
+        val token3 = createRandomToken()
+        tokenRepository.save(token)
+        tokenRepository.save(token2)
+        tokenRepository.save(token3)
+
         val collection = createRandomMetaplexMetaFieldsCollection()
-        val metaplexMeta = createRandomMetaplexMeta().let {
-            it.copy(
-                tokenAddress = token.token.mint,
-                metaFields = it.metaFields.copy(
-                    collection = collection
-                )
-            )
-        }
-        val metaplexMeta2 = createRandomMetaplexMeta().let {
-            it.copy(
-                tokenAddress = token2.token.mint,
-                metaFields = it.metaFields.copy(
-                    collection = collection
-                )
-            )
-        }
-        metaplexMetaRepository.save(metaplexMeta)
-        metaplexMetaRepository.save(metaplexMeta2)
+        val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(
+            tokenAddress = token.mint,
+            metaplexMetaCustomizer = { this.copy(metaFields = this.metaFields.copy(collection = collection)) }
+        )
+        val tokenMeta2 = saveRandomMetaplexOnChainAndOffChainMeta(
+            tokenAddress = token2.mint,
+            metaplexMetaCustomizer = { this.copy(metaFields = this.metaFields.copy(collection = collection)) }
+        )
         assertThat(tokenApiService.getTokensWithMetaByCollection(collection.address).toList())
-            .isEqualTo(listOf(token, token2).sortedBy { it.token.mint })
+            .isEqualTo(
+                listOf(
+                    TokenWithMeta(token, tokenMeta),
+                    TokenWithMeta(token2, tokenMeta2)
+                ).sortedBy { it.token.mint })
     }
 
     @Test
@@ -68,21 +62,21 @@ class TokenApiServiceIt : AbstractIntegrationTest() {
         tokenRepository.save(token2)
         tokenRepository.save(token3)
 
-        val offChainMeta = createRandomMetaplexOffChainMeta().copy(tokenAddress = token.mint)
-        val collection = offChainMeta.metaFields.collection!!
-        val offChainMeta2 = createRandomMetaplexOffChainMeta().copy(
-            tokenAddress = token2.mint,
-            metaFields = offChainMeta.metaFields.copy(
-                collection = collection
-            )
+        val collection = createRandomMetaplexOffChainMetaFields().collection!!
+        val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(
+            tokenAddress = token.mint,
+            metaplexOffChainMetaCustomizer = { this.copy(metaFields = this.metaFields.copy(collection = collection)) }
         )
-        val offChainMeta3 = createRandomMetaplexOffChainMeta().copy(tokenAddress = token3.mint)
-        metaplexOffChainMetaRepository.save(offChainMeta)
-        metaplexOffChainMetaRepository.save(offChainMeta2)
-        metaplexOffChainMetaRepository.save(offChainMeta3)
-
+        val tokenMeta2 = saveRandomMetaplexOnChainAndOffChainMeta(
+            tokenAddress = token2.mint,
+            metaplexOffChainMetaCustomizer = { this.copy(metaFields = this.metaFields.copy(collection = collection)) }
+        )
         assertThat(tokenApiService.getTokensWithMetaByCollection(collection.hash).toList())
-            .isEqualTo(listOf(token, token2).sortedBy { it.mint })
+            .isEqualTo(
+                listOf(
+                    TokenWithMeta(token, tokenMeta),
+                    TokenWithMeta(token2, tokenMeta2)
+                ).sortedBy { it.token.mint })
     }
 
 }

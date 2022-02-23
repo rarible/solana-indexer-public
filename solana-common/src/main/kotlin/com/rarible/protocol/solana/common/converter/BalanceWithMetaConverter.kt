@@ -1,17 +1,12 @@
 package com.rarible.protocol.solana.common.converter
 
-import com.rarible.protocol.solana.common.meta.TokenMeta
-import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.solana.protocol.dto.BalanceDto
 import com.rarible.solana.protocol.dto.BalancesDto
 
-object BalanceConverter {
+object BalanceWithMetaConverter {
     fun convert(balanceWithMeta: BalanceWithMeta): BalanceDto {
-        return convert(balanceWithMeta.balance, balanceWithMeta.tokenMeta)
-    }
-
-    fun convert(balance: Balance, meta: TokenMeta? = null): BalanceDto {
+        val (balance, meta) = balanceWithMeta
         return BalanceDto(
             account = balance.account,
             value = balance.value,

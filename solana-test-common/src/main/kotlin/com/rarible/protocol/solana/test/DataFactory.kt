@@ -9,6 +9,7 @@ import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
@@ -34,14 +35,7 @@ fun createRandomTokenWithMeta(): TokenWithMeta = TokenWithMeta(
 fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
     metaAddress = randomString(),
     tokenAddress = randomString(),
-    metaFields = MetaplexMetaFields(
-        name = randomString(),
-        symbol = randomString(),
-        uri = randomUrl(),
-        sellerFeeBasisPoints = 100,
-        creators = listOf(createRandomTokenCreator()),
-        collection = createRandomMetaplexMetaFieldsCollection()
-    ),
+    metaFields = createRandomMetaplexMetaFields(),
     isMutable = randomBoolean(),
     revertableEvents = emptyList(),
     updatedAt = nowMillis(),
@@ -51,6 +45,15 @@ fun createRandomMetaplexOffChainMeta(): MetaplexOffChainMeta = MetaplexOffChainM
     tokenAddress = randomString(),
     metaFields = createRandomMetaplexOffChainMetaFields(),
     loadedAt = nowMillis()
+)
+
+fun createRandomMetaplexMetaFields() = MetaplexMetaFields(
+    name = randomString(),
+    symbol = randomString(),
+    uri = randomUrl(),
+    sellerFeeBasisPoints = 100,
+    creators = listOf(createRandomTokenCreator()),
+    collection = createRandomMetaplexMetaFieldsCollection()
 )
 
 fun createRandomMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields {
@@ -163,6 +166,11 @@ fun createRandomBalance(): Balance = Balance(
     revertableEvents = emptyList(),
     createdAt = nowMillis(),
     updatedAt = nowMillis()
+)
+
+fun createRandomBalanceWithMeta(): BalanceWithMeta = BalanceWithMeta(
+    balance = createRandomBalance(),
+    tokenMeta = createRandomTokenMeta()
 )
 
 fun randomUrl(): String = "https://test.com/" + randomString()

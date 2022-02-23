@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.api.test
 
 import com.rarible.protocol.solana.common.meta.TokenMetaService
-import com.rarible.protocol.solana.nft.api.service.BalanceService
+import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.solana.nft.api.service.TokenApiService
 import io.mockk.mockk
 import org.springframework.boot.test.context.TestConfiguration
@@ -20,5 +20,5 @@ class ControllersTestConfiguration {
 
     @Bean
     @Primary
-    fun testBalanceService(): BalanceService = mockk()
+    fun testBalanceService(): BalanceApiService = mockk()
 }
