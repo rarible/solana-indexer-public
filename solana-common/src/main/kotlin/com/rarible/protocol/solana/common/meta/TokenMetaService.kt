@@ -76,7 +76,7 @@ class TokenMetaService(
             return null
         }
         return try {
-            TokenMetaParser.parseMetaplexOffChainMetaFields(offChainMetadataJsonContent)
+            MetaplexOffChainMetadataParser.parseMetaplexOffChainMetaFields(offChainMetadataJsonContent)
         } catch (e: Exception) {
             logger.error("Failed to parse metadata for token $tokenAddress by URL $metadataUrl", e)
             metaMetrics.onMetaParsingError()
