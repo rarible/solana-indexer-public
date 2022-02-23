@@ -4,14 +4,14 @@ import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import com.rarible.protocol.solana.common.repository.BalanceRepository
-import com.rarible.protocol.solana.common.update.BalanceReduceListener
+import com.rarible.protocol.solana.common.update.BalanceUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class BalanceUpdateService(
     private val balanceRepository: BalanceRepository,
-    private val balanceReduceListener: BalanceReduceListener
+    private val balanceUpdateListener: BalanceUpdateListener
 ) : EntityService<BalanceId, Balance> {
 
     override suspend fun get(id: BalanceId): Balance? =
@@ -19,7 +19,7 @@ class BalanceUpdateService(
 
     override suspend fun update(entity: Balance): Balance {
         val balance = balanceRepository.save(entity)
-        balanceReduceListener.onBalanceChanged(balance)
+        balanceUpdateListener.onBalanceChanged(balance)
         logger.info("Updated balance: $entity")
         return balance
     }

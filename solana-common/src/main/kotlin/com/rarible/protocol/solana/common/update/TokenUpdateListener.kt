@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class TokenReduceListener(
+class TokenUpdateListener(
     private val publisher: RaribleKafkaProducer<TokenEventDto>,
     private val tokenWithMetaService: TokenMetaService
 ) {
-    private val logger = LoggerFactory.getLogger(TokenReduceListener::class.java)
+    private val logger = LoggerFactory.getLogger(TokenUpdateListener::class.java)
 
     suspend fun onTokenChanged(token: Token) {
         // TODO: listen to changes of on-chain/off-chain meta and send token update events.

@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class BalanceReduceListener(
+class BalanceUpdateListener(
     private val publisher: RaribleKafkaProducer<BalanceEventDto>,
     private val tokenWithMetaService: TokenMetaService
 ) {
-    private val logger = LoggerFactory.getLogger(BalanceReduceListener::class.java)
+    private val logger = LoggerFactory.getLogger(BalanceUpdateListener::class.java)
 
     suspend fun onBalanceChanged(balance: Balance) {
         // TODO: listen to changes of on-chain/off-chain meta and send balance update events.
