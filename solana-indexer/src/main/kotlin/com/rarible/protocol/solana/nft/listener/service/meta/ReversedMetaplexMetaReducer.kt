@@ -7,32 +7,61 @@ import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetada
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class ReversedMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
 
+    private val logger = LoggerFactory.getLogger(ReversedMetaplexMetaReducer::class.java)
+
     override suspend fun reduce(entity: MetaplexMeta, event: MetaplexMetaEvent): MetaplexMeta {
+        val revertableEvents = entity.revertableEvents
+        if (revertableEvents.isEmpty() || revertableEvents.last().log != event.log) {
+            logger.error(
+                "Revertable event error: attempt to revert an event which is not the latest one, event: $event, entity: $entity"
+            )
+            return entity
+        }
+        val beforeRevertedEvents = revertableEvents.dropLast(1)
         return when (event) {
             is MetaplexCreateMetadataAccountEvent -> MetaplexMeta.empty(event.metaAddress)
-            is MetaplexVerifyCollectionMetadataEvent -> entity.copy(
-                metaFields = entity.metaFields.copy(
-                    collection = entity.metaFields.collection?.copy(
-                        // TODO[quality]: this is not 100% correct: previous must have been 'true' already.
-                        verified = false
+            is MetaplexVerifyCollectionMetadataEvent -> {
+                val wasVerifiedBefore = beforeRevertedEvents.lastOrNull {
+                    it is MetaplexVerifyCollectionMetadataEvent || it is MetaplexUnVerifyCollectionMetadataEvent
+                }?.let { it is MetaplexVerifyCollectionMetadataEvent }
+                entity.copy(
+                    metaFields = entity.metaFields.copy(
+                        collection = entity.metaFields.collection?.copy(
+                            verified = wasVerifiedBefore ?: true
+                        )
                     )
                 )
-            )
-            is MetaplexUnVerifyCollectionMetadataEvent -> entity.copy(
-                metaFields = entity.metaFields.copy(
-                    collection = entity.metaFields.collection?.copy(
-                        // TODO[quality]: this is not 100% correct: previous must have been 'true' already.
-                        verified = true
+            }
+            is MetaplexUnVerifyCollectionMetadataEvent -> {
+                val wasVerifiedBefore = beforeRevertedEvents.lastOrNull {
+                    it is MetaplexVerifyCollectionMetadataEvent || it is MetaplexUnVerifyCollectionMetadataEvent
+                }?.let { it is MetaplexVerifyCollectionMetadataEvent }
+                entity.copy(
+                    metaFields = entity.metaFields.copy(
+                        collection = entity.metaFields.collection?.copy(
+                            verified = wasVerifiedBefore ?: false
+                        )
                     )
                 )
-            )
-            // TODO[quality]: handle revert to the previous state.
-            is MetaplexUpdateMetadataEvent -> entity
-        }
+            }
+            is MetaplexUpdateMetadataEvent -> {
+                val lastMetaFields = beforeRevertedEvents.reversed().asSequence().mapNotNull {
+                    when (it) {
+                        is MetaplexCreateMetadataAccountEvent -> it.metadata
+                        is MetaplexUpdateMetadataEvent -> it.newMetadata
+                        else -> null
+                    }
+                }.firstOrNull() ?: MetaplexMeta.emptyMetaFields
+                entity.copy(
+                    metaFields = lastMetaFields
+                )
+            }
+        }.copy(updatedAt = event.timestamp)
     }
 }

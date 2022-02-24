@@ -30,17 +30,19 @@ data class MetaplexMeta(
         fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
             metaAddress = metaAddress,
             tokenAddress = "",
-            metaFields = MetaplexMetaFields(
-                name = "",
-                symbol = "",
-                uri = "",
-                sellerFeeBasisPoints = 0,
-                creators = emptyList(),
-                collection = MetaplexMetaFields.Collection("", false)
-            ),
+            metaFields = emptyMetaFields,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
             isMutable = false
+        )
+
+        val emptyMetaFields: MetaplexMetaFields = MetaplexMetaFields(
+            name = "",
+            symbol = "",
+            uri = "",
+            sellerFeeBasisPoints = 0,
+            creators = emptyList(),
+            collection = MetaplexMetaFields.Collection("", false)
         )
     }
 }
