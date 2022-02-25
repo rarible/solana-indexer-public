@@ -9,6 +9,8 @@ solana-indexer:
   nodeSelector:
     node.labels.rarible.job: true
   endpointMode: dnsrr
+  updateConfig:
+    order: stop-first
   resources:
     jvm:
       xmx_megabytes: 6144
