@@ -43,7 +43,7 @@ class BalanceRepository(
         val logger = LoggerFactory.getLogger(BalanceRepository::class.java)
         logger.info("Ensuring indexes on ${Balance.COLLECTION}")
         BalanceIndexes.ALL_INDEXES.forEach { index ->
-            mongo.indexOps(Balance::class.java).ensureIndex(index).awaitFirst()
+            mongo.indexOps(Balance.COLLECTION).ensureIndex(index).awaitFirst()
         }
     }
 

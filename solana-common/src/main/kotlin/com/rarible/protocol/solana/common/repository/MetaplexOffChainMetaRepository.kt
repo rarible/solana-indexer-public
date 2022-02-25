@@ -9,7 +9,6 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.findById
@@ -46,7 +45,7 @@ class MetaplexOffChainMetaRepository(
         val logger = LoggerFactory.getLogger(MetaplexOffChainMetaRepository::class.java)
         logger.info("Ensuring indexes on ${MetaplexOffChainMeta.COLLECTION}")
         MetaIndexes.ALL_INDEXES.forEach { index ->
-            mongo.indexOps(MetaplexOffChainMetaFields::class.java).ensureIndex(index).awaitFirst()
+            mongo.indexOps(MetaplexOffChainMeta.COLLECTION).ensureIndex(index).awaitFirst()
         }
     }
 
