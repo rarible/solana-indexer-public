@@ -4,6 +4,7 @@ import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.common.util.toBigInteger
 import com.rarible.protocol.solana.test.createRandomToken
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -19,6 +20,14 @@ class TokenRepositoryIt : AbstractIntegrationTest() {
         val token = createRandomToken()
         tokenRepository.save(token)
         assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(token)
+    }
+
+    @Test
+    fun `save and find by mints`() = runBlocking<Unit> {
+        val tokens = (1..3).map { createRandomToken() }.sortedBy { it.id }
+        tokens.asReversed().forEach { tokenRepository.save(it) }
+
+        assertThat(tokenRepository.findByMints(tokens.map { it.id }).toList()).isEqualTo(tokens)
     }
 
     @Test

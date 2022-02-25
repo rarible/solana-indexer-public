@@ -8,8 +8,9 @@ import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaReposit
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.merge
 import org.springframework.stereotype.Component
 
 @Component
@@ -19,16 +20,23 @@ class TokenApiService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
 ) {
+    suspend fun getTokensWithMeta(tokenAddresses: List<String>): Flow<TokenWithMeta> {
+        val tokens = tokenRepository.findByMints(tokenAddresses)
+
+        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }
+    }
+
     suspend fun getTokenWithMeta(tokenAddress: String): TokenWithMeta {
         val token = (tokenRepository.findByMint(tokenAddress)
             ?: throw EntityNotFoundApiException("Token", tokenAddress))
         return tokenMetaService.extendWithAvailableMeta(token)
     }
 
-    suspend fun getTokensWithMetaByCollection(collection: String): List<TokenWithMeta> {
-        val tokensByOnChainCollection = getTokensByMetaplexCollectionAddress(collection).toList()
-        val tokensByOffChainCollection = getTokensByOffChainCollectionHash(collection).toList()
-        val tokens = tokensByOnChainCollection + tokensByOffChainCollection
+    suspend fun getTokensWithMetaByCollection(collection: String): Flow<TokenWithMeta> {
+        val tokensByOnChainCollection = getTokensByMetaplexCollectionAddress(collection)
+        val tokensByOffChainCollection = getTokensByOffChainCollectionHash(collection)
+        val tokens = merge(tokensByOnChainCollection, tokensByOffChainCollection)
+
         return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }
     }
 
