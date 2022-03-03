@@ -61,7 +61,8 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                             creators = listOf(
                                 MetaplexTokenCreator(
                                     address = wallet,
-                                    share = 100
+                                    share = 100,
+                                    verified = false
                                 )
                             ),
                             collection = null
@@ -80,7 +81,8 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
             creators = listOf(
                 MetaplexTokenCreator(
                     address = wallet,
-                    share = 100
+                    share = 100,
+                    verified = false
                 )
             ),
             collection = TokenMeta.Collection.OffChain(
@@ -127,7 +129,8 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
             creators = listOf(
                 MetaplexTokenCreator(
                     address = wallet,
-                    share = 100
+                    share = 100,
+                    verified = false
                 )
             ),
             collection = onChainCollection

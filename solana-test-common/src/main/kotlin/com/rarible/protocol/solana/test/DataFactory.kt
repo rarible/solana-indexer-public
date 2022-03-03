@@ -59,7 +59,7 @@ fun createRandomMetaplexMetaFields() = MetaplexMetaFields(
 fun createRandomMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields {
     val collectionName = randomString()
     val collectionFamily = randomString()
-    val creators = listOf(MetaplexTokenCreator(randomString(), 100))
+    val creators = listOf(MetaplexTokenCreator(randomString(), 100, randomBoolean()))
     return MetaplexOffChainMetaFields(
         name = randomString(),
         symbol = randomString(),
@@ -155,7 +155,8 @@ fun createRandomMetaplexMetaFieldsCollection(): MetaplexMetaFields.Collection =
 fun createRandomTokenCreator(): MetaplexTokenCreator =
     MetaplexTokenCreator(
         address = randomString(),
-        share = randomInt(101)
+        share = randomInt(101),
+        verified = randomBoolean()
     )
 
 fun createRandomBalance(): Balance = Balance(

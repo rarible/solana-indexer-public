@@ -29,7 +29,7 @@ class TokenControllerIt : AbstractControllerTest() {
     fun `find tokens by collection`() = runBlocking<Unit> {
         val tokenWithMeta = createRandomTokenWithMeta()
         val collectionAddress = randomString()
-        coEvery { testTokenApiService.getTokensWithMetaByCollection(collectionAddress) } returns listOf(tokenWithMeta)
+        coEvery { testTokenApiService.getTokensWithMetaByCollection(collectionAddress) } returns flowOf(tokenWithMeta)
         assertThat(tokenControllerApi.getTokensByCollection(collectionAddress).awaitFirst())
             .isEqualTo(TokenWithMetaConverter.convert(listOf(tokenWithMeta)))
     }

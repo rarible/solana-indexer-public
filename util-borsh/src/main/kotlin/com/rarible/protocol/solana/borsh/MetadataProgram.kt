@@ -121,7 +121,7 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
         4 -> null // UpdatePrimarySaleHappenedViaToken,
         5 -> null // DeprecatedSetReservationList(SetReservationListArgs),
         6 -> null // DeprecatedCreateReservationList,
-        7 -> null // SignMetadata,
+        7 -> SignMetadata
         8 -> null // DeprecatedMintPrintingTokensViaToken(MintPrintingTokensViaTokenArgs),
         9 -> null // DeprecatedMintPrintingTokens(MintPrintingTokensViaTokenArgs),
         10 -> null // CreateMasterEdition(CreateMasterEditionArgs),
@@ -159,6 +159,8 @@ data class MetaplexUpdateMetadataAccountArgs(
     val primarySaleHappened: Boolean?,
     val mutable: Boolean?
 ) : MetaplexMetadataInstruction()
+
+object SignMetadata : MetaplexMetadataInstruction()
 
 object VerifyCollection : MetaplexMetadataInstruction()
 

@@ -41,3 +41,11 @@ data class MetaplexUnVerifyCollectionMetadataEvent(
     override val metaAddress: String,
     override val timestamp: Instant
 ) : MetaplexMetaEvent()
+
+data class MetaplexSignMetadataEvent(
+    val creatorAddress: String,
+    override val log: SolanaLog,
+    override val reversed: Boolean,
+    override val metaAddress: String,
+    override val timestamp: Instant
+) : MetaplexMetaEvent()

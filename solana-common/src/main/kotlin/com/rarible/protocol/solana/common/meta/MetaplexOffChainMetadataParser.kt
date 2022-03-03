@@ -48,7 +48,8 @@ object MetaplexOffChainMetadataParser {
                     creators = properties.creators.orEmpty().map {
                         MetaplexTokenCreator(
                             address = it.address,
-                            share = it.share
+                            share = it.share,
+                            verified = false
                         )
                     },
                     files = properties.files?.let { files ->

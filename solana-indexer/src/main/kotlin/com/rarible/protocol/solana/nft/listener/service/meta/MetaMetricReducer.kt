@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service.meta
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
+import com.rarible.protocol.solana.common.event.MetaplexSignMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
@@ -23,6 +24,7 @@ class MetaplexMetaMetricReducer(
             is MetaplexVerifyCollectionMetadataEvent -> "verify_collection"
             is MetaplexUnVerifyCollectionMetadataEvent -> "un_verify_collection"
             is MetaplexUpdateMetadataEvent -> "update"
+            is MetaplexSignMetadataEvent -> "sign"
         }
     }
 }

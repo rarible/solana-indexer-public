@@ -40,5 +40,12 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
         override val timestamp: Instant
     ) : SolanaMetaRecord()
 
+    data class MetaplexSignMetadataRecord(
+        val creatorAddress: String,
+        override val metaAccount: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaMetaRecord()
+
     // TODO: add SetAndVerifyCollection instruction
 }

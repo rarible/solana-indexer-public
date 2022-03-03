@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.test.createRandomMetaplexMetaFieldsCollection
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMetaFields
 import com.rarible.protocol.solana.test.createRandomToken
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

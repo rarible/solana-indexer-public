@@ -6,6 +6,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
 import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
+import com.rarible.protocol.solana.borsh.SignMetadata
 import com.rarible.protocol.solana.borsh.UnVerifyCollection
 import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
@@ -126,3 +127,32 @@ class UnVerifyCollectionSubscriber : SolanaLogEventSubscriber {
         return listOf(record)
     }
 }
+
+@Component
+class SignMetadataSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
+        programId = SolanaProgramId.TOKEN_METADATA_PROGRAM,
+        id = "metadata_sign_collection",
+        groupId = SubscriberGroup.METAPLEX_META.id,
+        entityType = SolanaMetaRecord.MetaplexSignMetadataRecord::class.java,
+        collection = SubscriberGroup.METAPLEX_META.collectionName
+    ) {}
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaMetaRecord> {
+        val instruction = log.instruction
+
+        if (instruction.data.parseMetaplexMetadataInstruction() !is SignMetadata) return emptyList()
+
+        val record = SolanaMetaRecord.MetaplexSignMetadataRecord(
+            metaAccount = instruction.accounts[0],
+            creatorAddress = instruction.accounts[1],
+            log = log.log,
+            timestamp = Instant.ofEpochSecond(block.timestamp)
+        )
+        return listOf(record)
+    }
+}
+

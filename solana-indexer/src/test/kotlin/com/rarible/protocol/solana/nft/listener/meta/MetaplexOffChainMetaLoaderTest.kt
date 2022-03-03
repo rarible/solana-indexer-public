@@ -68,7 +68,8 @@ class MetaplexOffChainMetaLoaderTest {
                         creators = listOf(
                             MetaplexTokenCreator(
                                 address = "6G7AqEUxwbyHJtKA3aHL7SbiijGqznuvNRDb2hG7uwA4",
-                                share = 100
+                                share = 100,
+                                verified = false
                             )
                         ),
                         files = listOf(
