@@ -139,7 +139,7 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
         22 -> UnVerifyCollection
         23 -> null // ApproveCollectionAuthority,
         24 -> null // RevokeCollectionAuthority,
-        25 -> null // SetAndVerifyCollection,
+        25 -> SetAndVerifyCollection
         26 -> null // FreezeDelegatedAccount,
         27 -> null // ThawDelegatedAccount
         else -> null
@@ -161,6 +161,8 @@ data class MetaplexUpdateMetadataAccountArgs(
 ) : MetaplexMetadataInstruction()
 
 object SignMetadata : MetaplexMetadataInstruction()
+
+object SetAndVerifyCollection : MetaplexMetadataInstruction()
 
 object VerifyCollection : MetaplexMetadataInstruction()
 

@@ -203,7 +203,7 @@ fun String.parseTokenInstruction(): TokenInstruction? {
         17 -> { _ -> SyncNative }
         18 -> ByteBuffer::parseInitializeAccount3
         19 -> return null // InitializeMultisig2
-        20 -> ByteBuffer::parseInitializeMint2 // InitializeMint2
+        20 -> ByteBuffer::parseInitializeMint2
         21 -> return null // GetAccountDataSize
         22 -> return null // InitializeImmutableOwner
         23 -> return null // AmountToUiAmount

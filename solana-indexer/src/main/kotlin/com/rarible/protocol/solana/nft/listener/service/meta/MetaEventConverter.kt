@@ -3,7 +3,8 @@ package com.rarible.protocol.solana.nft.listener.service.meta
 import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
-import com.rarible.protocol.solana.common.event.MetaplexSignMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexSetAndVerifyCollectionEvent
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
@@ -56,8 +57,18 @@ class MetaEventConverter {
             )
         )
         is SolanaMetaRecord.MetaplexSignMetadataRecord -> listOf(
-            MetaplexSignMetadataEvent(
+            MetaplexVerifyCreatorEvent(
                 creatorAddress = record.creatorAddress,
+                metaAddress = record.metaAccount,
+                log = record.log,
+                reversed = reversed,
+                timestamp = record.timestamp
+            )
+        )
+        is SolanaMetaRecord.SetAndVerifyMetadataRecord -> listOf(
+            MetaplexSetAndVerifyCollectionEvent(
+                mint = record.mint,
+                collection = record.metaAccount,
                 metaAddress = record.metaAccount,
                 log = record.log,
                 reversed = reversed,

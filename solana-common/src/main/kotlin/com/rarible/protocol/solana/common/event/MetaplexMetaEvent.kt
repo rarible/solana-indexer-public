@@ -28,6 +28,15 @@ data class MetaplexUpdateMetadataEvent(
     val newIsMutable: Boolean?
 ) : MetaplexMetaEvent()
 
+data class MetaplexSetAndVerifyCollectionEvent(
+    val mint: String,
+    val collection: String,
+    override val log: SolanaLog,
+    override val reversed: Boolean,
+    override val metaAddress: String,
+    override val timestamp: Instant
+) : MetaplexMetaEvent()
+
 data class MetaplexVerifyCollectionMetadataEvent(
     override val log: SolanaLog,
     override val reversed: Boolean,
@@ -42,7 +51,7 @@ data class MetaplexUnVerifyCollectionMetadataEvent(
     override val timestamp: Instant
 ) : MetaplexMetaEvent()
 
-data class MetaplexSignMetadataEvent(
+data class MetaplexVerifyCreatorEvent(
     val creatorAddress: String,
     override val log: SolanaLog,
     override val reversed: Boolean,

@@ -3,7 +3,8 @@ package com.rarible.protocol.solana.nft.listener.service.meta
 import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
-import com.rarible.protocol.solana.common.event.MetaplexSignMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexSetAndVerifyCollectionEvent
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
@@ -64,7 +65,7 @@ class ReversedMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
                     metaFields = lastMetaFields
                 )
             }
-            is MetaplexSignMetadataEvent -> entity.copy(
+            is MetaplexVerifyCreatorEvent -> entity.copy(
                 metaFields = entity.metaFields.copy(
                     creators = entity.metaFields.creators?.map {
                         if (it.address == event.creatorAddress) {
@@ -75,6 +76,19 @@ class ReversedMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
                     }
                 )
             )
+            is MetaplexSetAndVerifyCollectionEvent -> {
+                val lastMetaFields = beforeRevertedEvents.reversed().asSequence().mapNotNull {
+                    when (it) {
+                        is MetaplexCreateMetadataAccountEvent -> it.metadata
+                        is MetaplexUpdateMetadataEvent -> it.newMetadata
+                        else -> null
+                    }
+                }.firstOrNull() ?: MetaplexMeta.emptyMetaFields
+
+                entity.copy(
+                    metaFields = lastMetaFields
+                )
+            }
         }.copy(updatedAt = event.timestamp)
     }
 }

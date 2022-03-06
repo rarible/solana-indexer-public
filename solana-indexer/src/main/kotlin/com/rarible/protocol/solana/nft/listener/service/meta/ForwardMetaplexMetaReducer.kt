@@ -1,10 +1,10 @@
 package com.rarible.protocol.solana.nft.listener.service.meta
 
 import com.rarible.core.entity.reducer.service.Reducer
-import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
-import com.rarible.protocol.solana.common.event.MetaplexSignMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexSetAndVerifyCollectionEvent
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
@@ -41,7 +41,7 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
                     )
                 )
             )
-            is MetaplexSignMetadataEvent -> entity.copy(
+            is MetaplexVerifyCreatorEvent -> entity.copy(
                 metaFields = entity.metaFields.copy(
                     creators = entity.metaFields.creators?.map {
                         if (it.address == event.creatorAddress) {
@@ -50,6 +50,15 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
                             it
                         }
                     }
+                )
+            )
+            // TODO[test]: add a test for set and verify metadata.
+            is MetaplexSetAndVerifyCollectionEvent -> entity.copy(
+                tokenAddress = event.mint,
+                metaFields = entity.metaFields.copy(
+                    collection = entity.metaFields.collection?.copy(
+                        verified = true
+                    )
                 )
             )
         }.copy(updatedAt = event.timestamp)
