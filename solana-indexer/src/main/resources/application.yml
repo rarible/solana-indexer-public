@@ -46,7 +46,6 @@ blockchain:
       service: protocol-solana-nft-listener
       rpcApiUrls: https://still-holy-lake.solana-testnet.quiknode.pro/37d77e8a7fd97d3f9f19da391bfe285aceaef7b5/
       scan:
-        logProcessingEnabled: false
         batchLoad:
           batchSize: 100
           enabled: true

@@ -112,7 +112,7 @@ abstract class AbstractBlockScannerTest {
     protected fun verifyCollection(mint: String, collection: String): String {
         val args = buildList {
             add("ts-node")
-            add("/home/rarible/metaplex/js/packages/cli/src/cli-nft.ts")
+            add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
             add("verify-collection")
             add("-e")
             add("local")
@@ -121,7 +121,7 @@ abstract class AbstractBlockScannerTest {
             add("-c")
             add(collection)
             add("--keypair")
-            add("/root/.config/solana/id.json")
+            add("/home/solana/.config/solana/id.json")
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -130,7 +130,7 @@ abstract class AbstractBlockScannerTest {
     protected fun mintNft(collection: String? = null): String {
         val args = buildList {
             add("ts-node")
-            add("/home/rarible/metaplex/js/packages/cli/src/cli-nft.ts")
+            add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
             add("mint")
             add("-e")
             add("local")
@@ -141,7 +141,7 @@ abstract class AbstractBlockScannerTest {
             add("-u")
             add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
             add("--keypair")
-            add("/root/.config/solana/id.json")
+            add("/home/solana/.config/solana/id.json")
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -151,14 +151,14 @@ abstract class AbstractBlockScannerTest {
         val args = buildList {
             add("spl-token")
             add("address")
-            config?.let { add("/root/.config/solana/$it") }
+            config?.let { add("/home/solana/.config/solana/$it") }
         }
 
         return processOperation(args) { it.parse(0, -1) }
     }
 
     protected fun createWallet(name: String): String {
-        val args = listOf("solana-keygen", "new", "--outfile", "/root/.config/solana/$name")
+        val args = listOf("solana-keygen", "new", "--outfile", "/home/solana/.config/solana/$name")
 
         return processOperation(args) { it.parse(4, -1) }
     }
@@ -221,9 +221,9 @@ abstract class AbstractBlockScannerTest {
         BigInteger.valueOf(this.toLong()) * BigInteger.TEN.pow(decimals)
 
     companion object {
-        val solana: GenericContainer<*> = KGenericContainer("rarible/solana-docker")
+        val solana: GenericContainer<*> = KGenericContainer("rarible/solana")
             .withExposedPorts(8899)
-            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/rarible/mpl_token_metadata.so")
+            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so")
             .waitingFor(Wait.defaultWaitStrategy())
 
         @BeforeAll

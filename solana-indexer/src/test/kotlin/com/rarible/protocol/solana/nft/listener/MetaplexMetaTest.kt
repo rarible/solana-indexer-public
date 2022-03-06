@@ -62,7 +62,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                                 MetaplexTokenCreator(
                                     address = wallet,
                                     share = 100,
-                                    verified = false
+                                    verified = true
                                 )
                             ),
                             collection = null
@@ -82,7 +82,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                 MetaplexTokenCreator(
                     address = wallet,
                     share = 100,
-                    verified = false
+                    verified = true
                 )
             ),
             collection = TokenMeta.Collection.OffChain(
