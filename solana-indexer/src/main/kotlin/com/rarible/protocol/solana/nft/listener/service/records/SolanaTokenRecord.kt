@@ -17,14 +17,6 @@ sealed class SolanaTokenRecord : SolanaBaseLogRecord() {
         override val timestamp: Instant
     ) : SolanaTokenRecord()
 
-    data class InitializeTokenAccountRecord(
-        val tokenAccount: String,
-        val owner: String,
-        override val mint: String,
-        override val log: SolanaLog,
-        override val timestamp: Instant
-    ) : SolanaTokenRecord()
-
     data class MintToRecord(
         val tokenAccount: String,
         val mintAmount: BigInteger,
