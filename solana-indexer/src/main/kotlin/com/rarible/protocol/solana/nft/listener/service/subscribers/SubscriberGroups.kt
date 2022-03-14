@@ -3,7 +3,8 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers
 enum class SubscriberGroup {
     TOKEN,
     BALANCE,
-    METAPLEX_META;
+    METAPLEX_META,
+    AUCTION_HOUSE;
 
     val id: String get() = name.lowercase()
 

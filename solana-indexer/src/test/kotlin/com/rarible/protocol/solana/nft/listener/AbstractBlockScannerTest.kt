@@ -109,6 +109,36 @@ abstract class AbstractBlockScannerTest {
         coEvery { metaplexOffChainMetaRepository.save(any()) } throws (UnsupportedOperationException())
     }
 
+    protected fun createAuctionHouse(): String {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("create_auction_house")
+            add("-e")
+            add("local")
+            add("--keypair")
+            add("/home/solana/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun updateAuctionHouse(auctionHouse: String) {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("update_auction_house")
+            add("-e")
+            add("local")
+            add("-ah")
+            add(auctionHouse)
+            add("--keypair")
+            add("/home/solana/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
     protected fun verifyCollection(mint: String, collection: String): String {
         val args = buildList {
             add("ts-node")
@@ -223,13 +253,19 @@ abstract class AbstractBlockScannerTest {
     companion object {
         val solana: GenericContainer<*> = KGenericContainer("rarible/solana")
             .withExposedPorts(8899)
-            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so")
+            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so --bpf-program ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} /home/solana/mpl_auction_house.so")
             .waitingFor(Wait.defaultWaitStrategy())
 
         @BeforeAll
         @JvmStatic
         fun setUp() {
             solana.start()
+            val exec = solana.execInContainer(
+                "bash",
+                "-c",
+                "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
+            )
+            assertThat(exec.exitCode).isEqualTo(0).withFailMessage { exec.stderr }
         }
 
         @JvmStatic
