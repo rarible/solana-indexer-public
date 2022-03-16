@@ -1,0 +1,6 @@
+global:
+  network: rinkeby
+
+solana-api:
+  service:
+    nodePort: 30228

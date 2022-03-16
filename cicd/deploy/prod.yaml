@@ -1,0 +1,6 @@
+global:
+  network: mainnet
+
+solana-api:
+  service:
+    nodePort: 30128
