@@ -34,7 +34,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         )
         val fromBalance = Balance(
             account = account,
-            owner = getWallet(),
+            owner = getWalletAddress(),
             mint = tokenAddress,
             value = 5.scaleSupply(decimals),
             revertableEvents = emptyList(),

@@ -22,7 +22,7 @@ import java.time.Instant
 class MetaplexMetaTest : EventAwareBlockScannerTest() {
     @Test
     fun `create metadata - send token and balance update events`() = runBlocking {
-        val wallet = getWallet()
+        val wallet = getWalletAddress()
 
         val metaplexOffChainMeta = createRandomMetaplexOffChainMeta().let {
             it.copy(
@@ -98,7 +98,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
         // Off-chain collection will be overridden with on-chain one.
         mockOffChainMeta(createRandomMetaplexOffChainMeta())
 
-        val wallet = getWallet()
+        val wallet = getWalletAddress()
         val collection = mintNft()
         val tokenAddress = mintNft(collection)
 

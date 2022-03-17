@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import java.math.BigInteger
+import java.nio.ByteBuffer
 import java.time.Instant
 
 sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {

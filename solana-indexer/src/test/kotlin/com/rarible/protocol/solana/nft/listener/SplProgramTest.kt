@@ -12,7 +12,6 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
@@ -31,7 +30,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun initializeMint() = runBlocking {
-        val wallet = getWallet()
+        val wallet = getWalletAddress()
         val token = createToken(decimals = 3)
 
         Wait.waitAssert(timeout) {
@@ -59,7 +58,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun createAccount() = runBlocking {
-        val wallet = getWallet()
+        val wallet = getWalletAddress()
         val token = createToken(decimals = 3)
         val account = createAccount(token)
 

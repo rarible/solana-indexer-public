@@ -21,6 +21,7 @@ import io.mockk.coJustRun
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -109,6 +110,17 @@ abstract class AbstractBlockScannerTest {
         coEvery { metaplexOffChainMetaRepository.save(any()) } throws (UnsupportedOperationException())
     }
 
+    protected fun airdrop(sol: Int, address: String): String {
+        val args = buildList {
+            add("solana")
+            add("airdrop")
+            add("$sol")
+            add(address)
+        }
+
+        return processOperation(args) { it.parse(0, -1) }
+    }
+
     protected fun createAuctionHouse(): String {
         val args = buildList {
             add("ts-node")
@@ -116,11 +128,31 @@ abstract class AbstractBlockScannerTest {
             add("create_auction_house")
             add("-e")
             add("local")
+            add("-sfbp")
+            add("1000")
+            add("-ccsp")
+            add("false")
+            add("-rso")
+            add("-false")
             add("--keypair")
             add("/home/solana/.config/solana/id.json")
         }
 
         return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun getFeePayerAccountForAuctionHouse(): String {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("show")
+            add("-e")
+            add("local")
+            add("--keypair")
+            add("/home/solana/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(8, -1) }
     }
 
     protected fun updateAuctionHouse(auctionHouse: String) {
@@ -132,6 +164,95 @@ abstract class AbstractBlockScannerTest {
             add("local")
             add("-ah")
             add(auctionHouse)
+            add("--keypair")
+            add("/home/solana/.config/solana/id.json")
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun sell(
+        auctionHouse: String,
+        buyPrice: Long,
+        mint: String,
+        amount: Long,
+        wallet: String = "/home/solana/.config/solana/id.json"
+    ) {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("sell")
+            add("-env")
+            add("local")
+            add("-ah")
+            add(auctionHouse)
+            add("--buy-price")
+            add("$buyPrice")
+            add("--mint")
+            add(mint)
+            add("--token-size")
+            add("$amount")
+            add("--keypair")
+            add(wallet)
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun buy(
+        auctionHouse: String,
+        buyPrice: Long,
+        mint: String,
+        amount: Long,
+        wallet: String = "/home/solana/.config/solana/id.json"
+    ) {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("buy")
+            add("-e")
+            add("local")
+            add("-ah")
+            add(auctionHouse)
+            add("--buy-price")
+            add("$buyPrice")
+            add("--mint")
+            add(mint)
+            add("--token-size")
+            add("$amount")
+            add("--keypair")
+            add(wallet)
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun executeSale(
+        auctionHouse: String,
+        buyPrice: Long,
+        mint: String,
+        amount: Long,
+        buyerWallet: String,
+        sellerWallet: String,
+    ) {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("execute_sale")
+            add("-e")
+            add("local")
+            add("-ah")
+            add(auctionHouse)
+            add("--buy-price")
+            add("$buyPrice")
+            add("--mint")
+            add(mint)
+            add("--token-size")
+            add("$amount")
+            add("--buyer-wallet")
+            add(buyerWallet)
+            add("--seller-wallet")
+            add(sellerWallet)
             add("--keypair")
             add("/home/solana/.config/solana/id.json")
         }
@@ -177,11 +298,14 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun getWallet(config: String? = null): String {
+    protected fun getWalletAddress(config: String? = null): String {
         val args = buildList {
-            add("spl-token")
+            add("solana")
             add("address")
-            config?.let { add("/home/solana/.config/solana/$it") }
+            config?.let {
+                add("-k")
+                add(it)
+            }
         }
 
         return processOperation(args) { it.parse(0, -1) }
@@ -191,6 +315,12 @@ abstract class AbstractBlockScannerTest {
         val args = listOf("solana-keygen", "new", "--outfile", "/home/solana/.config/solana/$name")
 
         return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun createFileWallet(name: String): String {
+        val args = listOf("solana-keygen", "new", "--outfile", "/home/solana/.config/solana/$name")
+
+        return processOperation(args) { "/home/solana/.config/solana/$name" }
     }
 
     protected fun createToken(decimals: Int?): String {
@@ -234,7 +364,7 @@ abstract class AbstractBlockScannerTest {
 
     private fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
         val exec = solana.execInContainer(*args.toTypedArray())
-        assertThat(exec.exitCode).isEqualTo(0).withFailMessage { exec.stderr }
+        assertEquals(0, exec.exitCode, exec.stderr)
         return parser(exec.stdout)
     }
 
@@ -266,6 +396,7 @@ abstract class AbstractBlockScannerTest {
                 "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
             )
             assertThat(exec.exitCode).isEqualTo(0).withFailMessage { exec.stderr }
+            Thread.sleep(3000) // this is for tests
         }
 
         @JvmStatic
