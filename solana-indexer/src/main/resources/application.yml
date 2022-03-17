@@ -22,6 +22,10 @@ spring:
     banner-mode: log
     web-application-type: reactive
 
+mongock:
+  change-logs-scan-package:
+    - com.rarible.protocol.solana.nft.listener.migration
+
 common:
   metricRootPath: solana-nft-metrics
 
