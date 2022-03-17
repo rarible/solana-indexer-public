@@ -45,6 +45,9 @@ class AccountToMintAssociationService(
     }
 
     suspend fun saveAccountToMintMapping(accountToMints: Map<String, String>) {
+        if (accountToMints.isEmpty()) {
+            return
+        }
         withSpan("AccountToMintAssociationService#saveBalanceTokens", SpanType.CACHE) {
             redis.mset(accountToMints).awaitFirstOrNull()
         }
@@ -52,11 +55,15 @@ class AccountToMintAssociationService(
 
     suspend fun isCurrencyToken(mint: String): Boolean = currencyTokens.contains(mint)
 
-    private suspend fun getCachedMintsByAccounts(accounts: Collection<String>): Map<String, String> =
-        withSpan("AccountToMintAssociationService#getCachedMintsByAccounts", SpanType.CACHE) {
+    private suspend fun getCachedMintsByAccounts(accounts: Collection<String>): Map<String, String> {
+        if (accounts.isEmpty()) {
+            return emptyMap()
+        }
+        return withSpan("AccountToMintAssociationService#getCachedMintsByAccounts", SpanType.CACHE) {
             redis.mget(*accounts.toTypedArray())
                 .filter { it.hasValue() }
                 .collectMap({ it.key }, { it.value })
                 .awaitFirst()
         }
+    }
 }
