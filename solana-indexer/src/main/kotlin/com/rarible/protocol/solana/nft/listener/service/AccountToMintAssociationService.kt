@@ -19,6 +19,8 @@ class AccountToMintAssociationService(
 
     private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.map { it.address }
 
+    suspend fun getMintByAccount(account: String): String? = getMintsByAccounts(listOf(account))[account]
+
     suspend fun getMintsByAccounts(accounts: List<String>): Map<String, String> {
         val fromCache = getCachedMintsByAccounts(accounts)
         if (fromCache.size == accounts.size) {
@@ -34,10 +36,6 @@ class AccountToMintAssociationService(
         saveCachedAccountToMint(fromDb)
 
         return fromCache + fromDb
-    }
-
-    suspend fun saveBalanceTokens(accountToMints: Map<String, String>) {
-        saveCachedAccountToMint(accountToMints)
     }
 
     suspend fun isCurrencyToken(mint: String): Boolean = currencyTokens.contains(mint)

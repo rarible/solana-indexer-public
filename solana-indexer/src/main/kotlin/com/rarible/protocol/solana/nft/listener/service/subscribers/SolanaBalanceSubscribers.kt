@@ -3,7 +3,6 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
-import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
 import com.rarible.protocol.solana.borsh.InitializeAccount
@@ -14,12 +13,15 @@ import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
 import com.rarible.protocol.solana.common.util.toBigInteger
+import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
+class InitializeBalanceAccountSubscriber(
+    accountToMintAssociationService: AccountToMintAssociationService
+) : BaseSolanaOnlyNftLogEventSubscriber(accountToMintAssociationService) {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_initialize_account",
@@ -28,7 +30,7 @@ class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
         collection = SubscriberGroup.BALANCE.collectionName
     ) {}
 
-    override suspend fun getEventRecords(
+    override suspend fun parseSolanaLogRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaBalanceRecord.InitializeBalanceAccountRecord> {
@@ -54,7 +56,9 @@ class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class MintToBalanceSubscriber : SolanaLogEventSubscriber {
+class MintToBalanceSubscriber(
+    accountToMintAssociationService: AccountToMintAssociationService
+) : BaseSolanaOnlyNftLogEventSubscriber(accountToMintAssociationService) {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_mint_to",
@@ -63,7 +67,7 @@ class MintToBalanceSubscriber : SolanaLogEventSubscriber {
         collection = SubscriberGroup.BALANCE.collectionName
     ) {}
 
-    override suspend fun getEventRecords(
+    override suspend fun parseSolanaLogRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaBalanceRecord> {
@@ -90,7 +94,9 @@ class MintToBalanceSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class BurnBalanceSubscriber : SolanaLogEventSubscriber {
+class BurnBalanceSubscriber(
+    accountToMintAssociationService: AccountToMintAssociationService
+) : BaseSolanaOnlyNftLogEventSubscriber(accountToMintAssociationService) {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "balance_burn",
@@ -99,7 +105,7 @@ class BurnBalanceSubscriber : SolanaLogEventSubscriber {
         collection = SubscriberGroup.BALANCE.collectionName
     ) {}
 
-    override suspend fun getEventRecords(
+    override suspend fun parseSolanaLogRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaBalanceRecord> {
@@ -126,7 +132,9 @@ class BurnBalanceSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class TransferIncomeSubscriber : SolanaLogEventSubscriber {
+class TransferIncomeSubscriber(
+    accountToMintAssociationService: AccountToMintAssociationService
+) : BaseSolanaOnlyNftLogEventSubscriber(accountToMintAssociationService) {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         groupId = SubscriberGroup.BALANCE.id,
@@ -135,7 +143,7 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
         collection = SubscriberGroup.BALANCE.collectionName
     ) {}
 
-    override suspend fun getEventRecords(
+    override suspend fun parseSolanaLogRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaBalanceRecord> {
@@ -162,7 +170,9 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
 }
 
 @Component
-class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
+class TransferOutcomeSubscriber(
+    accountToMintAssociationService: AccountToMintAssociationService
+) : BaseSolanaOnlyNftLogEventSubscriber(accountToMintAssociationService) {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         groupId = SubscriberGroup.BALANCE.id,
@@ -171,7 +181,7 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
         collection = SubscriberGroup.BALANCE.collectionName
     ) {}
 
-    override suspend fun getEventRecords(
+    override suspend fun parseSolanaLogRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaBalanceRecord> {
