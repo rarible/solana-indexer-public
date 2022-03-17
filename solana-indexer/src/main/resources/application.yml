@@ -69,3 +69,4 @@ blockchain:
 mongock:
   change-logs-scan-package:
     - com.rarible.blockchain.scanner.solana.migration
+    - com.rarible.protocol.solana.nft.listener.migration

@@ -1,10 +1,12 @@
 package com.rarible.protocol.solana.nft.listener.configuration
 
+import com.github.cloudyrock.spring.v5.EnableMongock
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
 import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
+import com.rarible.core.lockredis.EnableRaribleRedisLock
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
@@ -16,6 +18,8 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @EnableSolanaScanner
+@EnableRaribleRedisLock
+@EnableMongock
 class BlockchainScannerConfiguration(
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val meterRegistry: MeterRegistry,

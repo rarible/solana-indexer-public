@@ -8,6 +8,7 @@ import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
+import com.rarible.core.test.ext.RedisTest
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.repository.BalanceRepository
@@ -52,6 +53,7 @@ import java.math.BigInteger
 )
 @ActiveProfiles("test")
 @KafkaTest
+@RedisTest
 @Testcontainers
 abstract class AbstractBlockScannerTest {
     @Autowired
