@@ -15,8 +15,6 @@ blockchain:
       broker-replica-set: PLAINTEXT://localhost:53502
     solana:
       rpcApiUrls: https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/,https://holy-proud-wave.solana-mainnet.quiknode.pro/790699a8dbe2e4f3b6b5593a366664d78646cf95/
-      scan:
-        logProcessingEnabled: false
 
 common:
   metricRootPath: solana-nft-metrics
