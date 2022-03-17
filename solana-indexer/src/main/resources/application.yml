@@ -65,3 +65,7 @@ blockchain:
         rootPath: "blockchain.scanner"
         worker:
           pollingPeriod: 1m
+
+mongock:
+  change-logs-scan-package:
+    - com.rarible.blockchain.scanner.solana.migration

@@ -183,6 +183,7 @@ val ANY_SOLANA_LOG = SolanaLog(
     blockNumber = 0L,
     transactionHash = "",
     blockHash = "",
+    transactionIndex = 0,
     instructionIndex = 0,
     innerInstructionIndex = null
 )

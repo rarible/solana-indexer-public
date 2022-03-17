@@ -12,3 +12,7 @@ spring:
 
 common:
   metricRootPath: solana-nft-metrics
+
+mongock:
+  change-logs-scan-package:
+    - com.rarible.blockchain.scanner.solana.migration
