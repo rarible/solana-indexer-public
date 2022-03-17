@@ -46,7 +46,7 @@ class AccountToMintAssociationService(
 
     private suspend fun getCachedMintsByAccounts(accounts: Collection<String>): Map<String, String> =
         redis.mget(*accounts.toTypedArray())
-            .filter { it.value != null }
+            .filter { it.hasValue() }
             .collectMap({ it.key }, { it.value })
             .awaitFirst()
 }
