@@ -39,6 +39,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     data class TransferIncomeRecord(
         val from: String,
         val to: String,
+        val mint: String?,
         val incomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -56,6 +57,7 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     data class TransferOutcomeRecord(
         val from: String,
         val to: String,
+        val mint: String?,
         val outcomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant

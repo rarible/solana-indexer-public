@@ -61,8 +61,8 @@ class SolanaLogEventFilter(
         return when (record) {
             is SolanaBalanceRecord.MintToRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
             is SolanaBalanceRecord.BurnRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
-            is SolanaBalanceRecord.TransferOutcomeRecord -> isCurrencyAccount(record.from, accountToMints)
-            is SolanaBalanceRecord.TransferIncomeRecord -> isCurrencyAccount(record.to, accountToMints)
+            is SolanaBalanceRecord.TransferOutcomeRecord -> isCurrencyAccount(record.from, record.mint, accountToMints)
+            is SolanaBalanceRecord.TransferIncomeRecord -> isCurrencyAccount(record.to, record.mint, accountToMints)
             is SolanaBalanceRecord.InitializeBalanceAccountRecord -> false // We want to save the account<->mint mapping.
             is SolanaTokenRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
             is SolanaAuctionHouseRecord -> false
@@ -70,9 +70,13 @@ class SolanaLogEventFilter(
         }
     }
 
-    private suspend fun isCurrencyAccount(account: String, accountToMints: Map<String, String>): Boolean {
+    private suspend fun isCurrencyAccount(
+        account: String,
+        knownMint: String?,
+        accountToMints: Map<String, String>
+    ): Boolean {
         // If we can't determine type of mint, we should not skip such events
-        val mint = accountToMints[account] ?: return false
+        val mint = knownMint ?: accountToMints[account] ?: return false
         return accountToMintAssociationService.isCurrencyToken(mint)
     }
 
