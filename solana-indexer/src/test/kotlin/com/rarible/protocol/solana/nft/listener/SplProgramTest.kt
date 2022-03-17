@@ -68,11 +68,11 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaBalanceRecord.InitializeBalanceAccountRecord::log.name,
-                SolanaBalanceRecord.InitializeBalanceAccountRecord::timestamp.name
-            ).isEqualTo(
-                listOf(
+            assertThat(records).anySatisfy { record ->
+                assertThat(record).usingRecursiveComparison().ignoringFields(
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord::log.name,
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord::timestamp.name
+                ).isEqualTo(
                     SolanaBalanceRecord.InitializeBalanceAccountRecord(
                         mint = token,
                         owner = wallet,
@@ -81,7 +81,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         timestamp = Instant.EPOCH
                     )
                 )
-            )
+            }
         }
     }
 

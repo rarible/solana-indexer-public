@@ -45,6 +45,12 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     ) : SolanaBalanceRecord() {
         override val account: String
             get() = to
+
+        /**
+         * Append ':income' to distinguish this
+         * log from [TransferOutcomeRecord] having the same [log].
+         */
+        override val id: String get() = super.id + ":income"
     }
 
     data class TransferOutcomeRecord(
@@ -56,5 +62,11 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     ) : SolanaBalanceRecord() {
         override val account: String
             get() = from
+
+        /**
+         * Append ':outcome' to distinguish this
+         * log from [TransferIncomeRecord] having the same [log].
+         */
+        override val id: String get() = super.id + ":outcome"
     }
 }
