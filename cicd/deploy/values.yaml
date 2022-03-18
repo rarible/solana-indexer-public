@@ -13,8 +13,8 @@ solana-indexer:
     order: stop-first
   resources:
     jvm:
-      xmx_megabytes: 4096
-      max_direct_memory_megabytes: 1024
+      xmx_megabytes: 6096
+      max_direct_memory_megabytes: 1524
   livenessProbe:
     initialDelaySeconds: 180s
   networks:
