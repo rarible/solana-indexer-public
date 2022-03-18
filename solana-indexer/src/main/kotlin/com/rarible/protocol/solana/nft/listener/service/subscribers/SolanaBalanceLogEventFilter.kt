@@ -13,7 +13,7 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecor
 import org.springframework.stereotype.Component
 
 @Component
-class SolanaLogEventFilter(
+class SolanaBalanceLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService
 ) : SolanaLogEventFilter {
 
@@ -24,7 +24,7 @@ class SolanaLogEventFilter(
         return events.map { event ->
             event.copy(
                 logRecordsToInsert = event.logRecordsToInsert.filter {
-                    it !is SolanaBalanceRecord || !shouldIgnore(it, accountToMints)
+                    it !is SolanaBaseLogRecord || !shouldIgnore(it, accountToMints)
                 }
             )
         }
@@ -36,25 +36,43 @@ class SolanaLogEventFilter(
         val accountToMintMapping = HashMap<String, String>()
         val accounts = mutableSetOf<String>()
 
-        events.map { it.logRecordsToInsert }.flatten().forEach {
-            when (it) {
+        events.map { it.logRecordsToInsert }.flatten().forEach { record ->
+            when (record) {
                 // In-memory account mapping
-                is SolanaBalanceRecord.InitializeBalanceAccountRecord -> accountToMintMapping[it.balanceAccount] = it.mint
+                is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
+                    accountToMintMapping[record.balanceAccount] = record.mint
+                }
                 // Accounts without known mint
-                is SolanaBalanceRecord.TransferOutcomeRecord -> accounts.add(it.from)
-                is SolanaBalanceRecord.TransferIncomeRecord -> accounts.add(it.to)
+                is SolanaBalanceRecord.TransferOutcomeRecord -> {
+                    accounts.add(record.from)
+                    record.mint?.let {
+                        // Here we can add both accounts to mapping with same mint
+                        accountToMintMapping[record.from] = record.mint
+                        accountToMintMapping[record.to] = record.mint
+                    }
+                }
+                is SolanaBalanceRecord.TransferIncomeRecord -> {
+                    accounts.add(record.to)
+                    record.mint?.let {
+                        accountToMintMapping[record.from] = record.mint
+                        accountToMintMapping[record.to] = record.mint
+                    }
+                }
             }
         }
 
-        accountToMintAssociationService.saveAccountToMintMapping(accountToMintMapping)
-
         // Remove known mint mapping, we don't need to query them
         accounts.removeAll(accountToMintMapping.keys)
+        val fromCache = accountToMintAssociationService.getMintsByAccounts(accounts)
+
+        // Saving ony non-exiting mapping
+        fromCache.keys.forEach { accountToMintMapping.remove(it) }
+        accountToMintAssociationService.saveAccountToMintMapping(accountToMintMapping)
 
         // Adding mapping from cache/db
-        accountToMintMapping.putAll(accountToMintAssociationService.getMintsByAccounts(accounts))
+        accountToMintMapping.putAll(fromCache)
 
-        return accountToMintMapping
+        return accountToMintMapping + fromCache
     }
 
     private suspend fun shouldIgnore(record: SolanaBaseLogRecord, accountToMints: Map<String, String>): Boolean {
