@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.configuration
 
+import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -17,9 +18,14 @@ class CommonConfiguration(
     private val properties: SolanaIndexerProperties
 ) {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     @Bean
     fun solanaClock(): Clock = Clock.systemUTC()
 
     @Bean
-    fun featureFlags(): FeatureFlags = properties.featureFlags
+    fun featureFlags(): FeatureFlags {
+        logger.info("Activated feature flags: {}", properties.featureFlags)
+        return properties.featureFlags
+    }
 }

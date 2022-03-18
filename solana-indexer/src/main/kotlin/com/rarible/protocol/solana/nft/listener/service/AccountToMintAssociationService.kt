@@ -26,7 +26,7 @@ class AccountToMintAssociationService(
     suspend fun getMintsByAccounts(accounts: Collection<String>): Map<String, String> {
         val fromCache = getCachedMintsByAccounts(accounts)
         if (fromCache.size == accounts.size) {
-            logger.info("Account to mint cache hit: {} of {}", accounts.size, fromCache.size)
+            logger.info("Account to mint cache hit: {} of {}", fromCache.size, accounts.size)
             return fromCache
         }
 
@@ -38,7 +38,7 @@ class AccountToMintAssociationService(
 
         saveAccountToMintMapping(fromDb)
 
-        logger.info("Account to mint cache hit: {} of {}, {} found in DB", accounts.size, fromCache.size, fromDb.size)
+        logger.info("Account to mint cache hit: {} of {}, {} found in DB", fromCache.size, accounts.size, fromDb.size)
         return fromCache + fromDb
     }
 
