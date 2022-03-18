@@ -175,7 +175,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         incomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
-                        mint = "" // TODO
+                        mint = token
                     )
                 )
             )
@@ -198,7 +198,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         outcomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
-                        mint = "" // TODO
+                        mint = token
                     )
                 )
             )
