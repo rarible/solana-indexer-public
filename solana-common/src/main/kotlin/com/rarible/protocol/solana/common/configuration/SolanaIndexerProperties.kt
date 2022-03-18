@@ -10,5 +10,10 @@ const val SOLANA_INDEXER_PROPERTIES_PATH = "common"
 data class SolanaIndexerProperties(
     val kafkaReplicaSet: String,
     val metricRootPath: String,
-    val confirmationBlocks: Int = 100
+    val confirmationBlocks: Int = 100,
+    val featureFlags: FeatureFlags
+)
+
+data class FeatureFlags(
+    val skipTransfersWithUnknownMint: Boolean = false
 )

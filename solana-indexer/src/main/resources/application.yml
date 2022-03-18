@@ -24,6 +24,8 @@ spring:
 
 common:
   metricRootPath: solana-nft-metrics
+  featureFlags:
+    skipTransfersWithUnknownMint: false
 
 rarible:
   core:
