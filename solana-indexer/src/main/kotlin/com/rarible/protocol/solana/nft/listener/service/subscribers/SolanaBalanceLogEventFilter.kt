@@ -32,6 +32,9 @@ class SolanaBalanceLogEventFilter(
         val accountToMints = getAccountToMintMapping(events)
 
         val result = events.map { event ->
+            if (event.logRecordsToInsert.isEmpty()) {
+                return@map event
+            }
             val filteredRecords = event.logRecordsToInsert.filterNot {
                 it is SolanaBaseLogRecord && shouldIgnore(it, accountToMints)
             }
