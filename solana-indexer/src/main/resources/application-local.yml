@@ -6,19 +6,23 @@ application:
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:53511
+      uri: mongodb://localhost:56501
       database: local-solana
 
 blockchain:
   scanner:
     kafka:
-      broker-replica-set: PLAINTEXT://localhost:53502
+      broker-replica-set: PLAINTEXT://localhost:56506
     solana:
       rpcApiUrls: https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/,https://holy-proud-wave.solana-mainnet.quiknode.pro/790699a8dbe2e4f3b6b5593a366664d78646cf95/
 
 common:
   metricRootPath: solana-nft-metrics
-  kafka-replica-set: PLAINTEXT://localhost:53502
+  kafka-replica-set: PLAINTEXT://localhost:56506
+  featureFlags:
+    skipTransfersWithUnknownMint: true
+
+redisUri: redis://localhost:63999
 
 rarible:
   core:
@@ -27,3 +31,8 @@ rarible:
         enabled: false
       annotation:
         enabled: false
+
+management:
+  health:
+    consul:
+      enabled: false
