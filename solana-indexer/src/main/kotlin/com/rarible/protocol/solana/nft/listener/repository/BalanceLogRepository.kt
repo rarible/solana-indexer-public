@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 
 @Component
-@CaptureSpan(SpanType.DB)
+@CaptureSpan(type = SpanType.DB)
 class BalanceLogRepository(
     private val mongo: ReactiveMongoOperations
 ) {
