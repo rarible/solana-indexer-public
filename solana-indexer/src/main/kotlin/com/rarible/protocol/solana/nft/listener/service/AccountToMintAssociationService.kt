@@ -19,7 +19,7 @@ class AccountToMintAssociationService(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.map { it.address }
+    private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
 
     suspend fun getMintByAccount(account: String): String? = getMintsByAccounts(listOf(account))[account]
 
