@@ -10,24 +10,39 @@ import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRec
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
+
 class SolanaBalanceLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService
 ) : SolanaLogEventFilter {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override suspend fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
         val accountToMints = getAccountToMintMapping(events)
-        return events.map { event ->
-            event.copy(
-                logRecordsToInsert = event.logRecordsToInsert.filter {
-                    it !is SolanaBaseLogRecord || !shouldIgnore(it, accountToMints)
+
+        var inputRecords = 0
+        var outputRecords = 0
+
+        val result = events.map { event ->
+            inputRecords += event.logRecordsToInsert.size
+            val filtered = event.copy(
+                logRecordsToInsert = event.logRecordsToInsert.filterNot {
+                    it is SolanaBaseLogRecord && shouldIgnore(it, accountToMints)
                 }
             )
+
+            outputRecords += filtered.logRecordsToInsert.size
+            filtered
         }
+
+        logger.info("Solana event batch filtered: {} of {} records remain", outputRecords, inputRecords)
+        return result
     }
 
     private suspend fun getAccountToMintMapping(
