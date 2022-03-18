@@ -12,6 +12,8 @@ spring:
 
 common:
   metricRootPath: solana-nft-metrics
+  featureFlags:
+    skipTransfersWithUnknownMint: false
 
 mongock:
   change-logs-scan-package:

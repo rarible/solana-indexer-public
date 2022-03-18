@@ -13,7 +13,13 @@ import java.time.Clock
     SolanaMetaConfiguration::class
 )
 @EnableConfigurationProperties(SolanaIndexerProperties::class)
-class CommonConfiguration {
+class CommonConfiguration(
+    private val properties: SolanaIndexerProperties
+) {
+
     @Bean
     fun solanaClock(): Clock = Clock.systemUTC()
+
+    @Bean
+    fun featureFlags(): FeatureFlags = properties.featureFlags
 }

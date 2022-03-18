@@ -5,6 +5,7 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
@@ -23,7 +24,7 @@ class SolanaLogEventFilterTest {
     private val blockEvent: BlockEvent<*> = mockk()
     private val descriptor: SolanaDescriptor = mockk()
 
-    private val filter = SolanaBalanceLogEventFilter(accountToMintAssociationService)
+    private val filter = SolanaBalanceLogEventFilter(accountToMintAssociationService, FeatureFlags())
 
     @BeforeEach
     fun beforeEach() {
