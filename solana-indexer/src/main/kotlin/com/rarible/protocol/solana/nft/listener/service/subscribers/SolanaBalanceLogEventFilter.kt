@@ -55,13 +55,12 @@ class SolanaBalanceLogEventFilter(
         val accountToMintMapping = HashMap<String, String>()
         val accounts = mutableSetOf<String>()
 
-        events.map { it.logRecordsToInsert }.flatten().forEach { record ->
+        events.asSequence().flatMap { it.logRecordsToInsert }.forEach { record ->
             when (record) {
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
                     accountToMintMapping[record.balanceAccount] = record.mint
                 }
-                // Accounts without known mint
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.add(record.from)
                     record.mint?.let {
@@ -112,7 +111,6 @@ class SolanaBalanceLogEventFilter(
         knownMint: String?,
         accountToMints: Map<String, String>
     ): Boolean {
-        // If we can't determine type of mint, we should not skip such events
         val mint = knownMint ?: accountToMints[account] ?: return featureFlags.skipTransfersWithUnknownMint
         return accountToMintAssociationService.isCurrencyToken(mint)
     }
