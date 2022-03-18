@@ -26,24 +26,23 @@ class SolanaBalanceLogEventFilter(
     override suspend fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
+        if (events.isEmpty()) {
+            return emptyList()
+        }
         val accountToMints = getAccountToMintMapping(events)
 
-        var inputRecords = 0
-        var outputRecords = 0
-
         val result = events.map { event ->
-            inputRecords += event.logRecordsToInsert.size
-            val filtered = event.copy(
-                logRecordsToInsert = event.logRecordsToInsert.filterNot {
-                    it is SolanaBaseLogRecord && shouldIgnore(it, accountToMints)
-                }
+            val filteredRecords = event.logRecordsToInsert.filterNot {
+                it is SolanaBaseLogRecord && shouldIgnore(it, accountToMints)
+            }
+            logger.info(
+                "Solana batch event filtering for ${event.blockEvent} of '${event.descriptor.id}': {} of {} records remain",
+                filteredRecords.size,
+                event.logRecordsToInsert.size
             )
-
-            outputRecords += filtered.logRecordsToInsert.size
-            filtered
+            event.copy(logRecordsToInsert = filteredRecords)
         }
 
-        logger.info("Solana event batch filtered: {} of {} records remain", outputRecords, inputRecords)
         return result
     }
 
