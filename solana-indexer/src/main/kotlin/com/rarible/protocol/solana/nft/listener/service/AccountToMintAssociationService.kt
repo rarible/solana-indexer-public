@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.listener.service
 
-import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
 import com.rarible.core.apm.withSpan
 import com.rarible.protocol.solana.nft.listener.repository.BalanceLogRepository
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-@CaptureSpan(SpanType.APP)
 class AccountToMintAssociationService(
     private val balanceLogRepository: BalanceLogRepository,
     private val redis: RedisReactiveCommands<String, String>,
