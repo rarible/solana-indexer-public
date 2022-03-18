@@ -4,6 +4,7 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
+import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
@@ -16,7 +17,8 @@ import org.springframework.stereotype.Component
 @Component
 
 class SolanaBalanceLogEventFilter(
-    private val accountToMintAssociationService: AccountToMintAssociationService
+    private val accountToMintAssociationService: AccountToMintAssociationService,
+    private val featureFlags: FeatureFlags
 ) : SolanaLogEventFilter {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -109,7 +111,7 @@ class SolanaBalanceLogEventFilter(
         accountToMints: Map<String, String>
     ): Boolean {
         // If we can't determine type of mint, we should not skip such events
-        val mint = knownMint ?: accountToMints[account] ?: return false
+        val mint = knownMint ?: accountToMints[account] ?: return featureFlags.skipTransfersWithUnknownMint
         return accountToMintAssociationService.isCurrencyToken(mint)
     }
 
