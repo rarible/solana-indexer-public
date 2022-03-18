@@ -5,6 +5,7 @@ import com.rarible.core.common.nowMillis
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
+import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
@@ -187,3 +188,14 @@ val ANY_SOLANA_LOG = SolanaLog(
     instructionIndex = 0,
     innerInstructionIndex = null
 )
+
+fun randomSolanaLog(): SolanaLog {
+    return SolanaLog(
+        blockNumber = randomLong(1_000_000_000_000),
+        transactionHash = randomString(),
+        blockHash = randomString(),
+        transactionIndex = randomInt(1_000_000),
+        instructionIndex = randomInt(1_000_000),
+        innerInstructionIndex = randomInt(1_000_000)
+    )
+}
