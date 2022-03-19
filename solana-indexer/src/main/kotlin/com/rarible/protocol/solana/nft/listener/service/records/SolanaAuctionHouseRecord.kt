@@ -28,6 +28,7 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
     ) : SolanaAuctionHouseRecord()
 
     data class SellRecord(
+        val maker: String,
         val sellPrice: BigInteger,
         val mint: String,
         val amount: BigInteger,
@@ -37,6 +38,7 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
     ) : SolanaAuctionHouseRecord()
 
     data class BuyRecord(
+        val maker: String,
         val buyPrice: BigInteger,
         val mint: String,
         val amount: BigInteger,
@@ -46,6 +48,8 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
     ) : SolanaAuctionHouseRecord()
 
     data class ExecuteSellRecord(
+        val buyer: String,
+        val seller: String,
         val price: BigInteger,
         val mint: String,
         val amount: BigInteger,

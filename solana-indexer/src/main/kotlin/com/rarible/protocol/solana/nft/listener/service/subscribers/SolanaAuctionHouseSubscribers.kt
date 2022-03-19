@@ -94,6 +94,7 @@ class SellAuctionHouseSubscriber : SolanaLogEventSubscriber {
     ): List<SellRecord> {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Sell -> SellRecord(
+                maker = log.instruction.accounts[0],
                 sellPrice = instruction.price.toBigInteger(),
                 mint = log.instruction.accounts[1],
                 amount = instruction.size.toBigInteger(),
@@ -124,6 +125,7 @@ class BuyAuctionHouseSubscriber : SolanaLogEventSubscriber {
     ): List<BuyRecord> {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Buy -> BuyRecord(
+                maker = log.instruction.accounts[0],
                 buyPrice = instruction.price.toBigInteger(),
                 mint = log.instruction.accounts[4],
                 amount = instruction.size.toBigInteger(),
@@ -154,6 +156,8 @@ class ExecuteSellAuctionHouseSubscriber : SolanaLogEventSubscriber {
     ): List<ExecuteSellRecord> {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is ExecuteSell -> ExecuteSellRecord(
+                buyer = log.instruction.accounts[0],
+                seller = log.instruction.accounts[1],
                 price = instruction.buyerPrice.toBigInteger(),
                 mint = log.instruction.accounts[3],
                 amount = instruction.size.toBigInteger(),

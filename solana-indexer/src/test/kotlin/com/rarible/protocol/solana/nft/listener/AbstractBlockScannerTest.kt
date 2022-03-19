@@ -59,6 +59,8 @@ import java.math.BigInteger
 @RedisTest
 @Testcontainers
 abstract class AbstractBlockScannerTest {
+    protected val baseKeypair = "/home/solana/.config/solana/id.json"
+
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
 
@@ -126,13 +128,11 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(0, -1) }
     }
 
-    protected fun createAuctionHouse(): String {
+    protected fun createAuctionHouse(keypair: String): String {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("create_auction_house")
-            add("-e")
-            add("local")
             add("-sfbp")
             add("1000")
             add("-ccsp")
@@ -140,37 +140,35 @@ abstract class AbstractBlockScannerTest {
             add("-rso")
             add("-false")
             add("--keypair")
-            add("/home/solana/.config/solana/id.json")
+            add(keypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun getFeePayerAccountForAuctionHouse(): String {
+    protected fun getFeePayerAccountForAuctionHouse(auctionHouse: String, keypair: String): String {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("show")
-            add("-e")
-            add("local")
+            add("--auction-house")
+            add(auctionHouse)
             add("--keypair")
-            add("/home/solana/.config/solana/id.json")
+            add(keypair)
         }
 
-        return processOperation(args) { it.parse(8, -1) }
+        return processOperation(args) { it.parse(7, -1) }
     }
 
-    protected fun updateAuctionHouse(auctionHouse: String) {
+    protected fun updateAuctionHouse(auctionHouse: String, keypair: String) {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("update_auction_house")
-            add("-e")
-            add("local")
-            add("-ah")
+            add("--auction-house")
             add(auctionHouse)
             add("--keypair")
-            add("/home/solana/.config/solana/id.json")
+            add(keypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -178,18 +176,16 @@ abstract class AbstractBlockScannerTest {
 
     protected fun sell(
         auctionHouse: String,
+        sellerKeypair: String,
         buyPrice: Long,
         mint: String,
         amount: Long,
-        wallet: String = "/home/solana/.config/solana/id.json"
     ) {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("sell")
-            add("-env")
-            add("local")
-            add("-ah")
+            add("--auction-house")
             add(auctionHouse)
             add("--buy-price")
             add("$buyPrice")
@@ -198,7 +194,7 @@ abstract class AbstractBlockScannerTest {
             add("--token-size")
             add("$amount")
             add("--keypair")
-            add(wallet)
+            add(sellerKeypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -206,18 +202,16 @@ abstract class AbstractBlockScannerTest {
 
     protected fun buy(
         auctionHouse: String,
+        buyerKeypair: String,
         buyPrice: Long,
         mint: String,
-        amount: Long,
-        wallet: String = "/home/solana/.config/solana/id.json"
+        amount: Long
     ) {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("buy")
-            add("-e")
-            add("local")
-            add("-ah")
+            add("--auction-house")
             add(auctionHouse)
             add("--buy-price")
             add("$buyPrice")
@@ -226,7 +220,7 @@ abstract class AbstractBlockScannerTest {
             add("--token-size")
             add("$amount")
             add("--keypair")
-            add(wallet)
+            add(buyerKeypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -234,6 +228,7 @@ abstract class AbstractBlockScannerTest {
 
     protected fun executeSale(
         auctionHouse: String,
+        keypair: String,
         buyPrice: Long,
         mint: String,
         amount: Long,
@@ -244,9 +239,7 @@ abstract class AbstractBlockScannerTest {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("execute_sale")
-            add("-e")
-            add("local")
-            add("-ah")
+            add("--auction-house")
             add(auctionHouse)
             add("--buy-price")
             add("$buyPrice")
@@ -259,7 +252,7 @@ abstract class AbstractBlockScannerTest {
             add("--seller-wallet")
             add(sellerWallet)
             add("--keypair")
-            add("/home/solana/.config/solana/id.json")
+            add(keypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
@@ -270,8 +263,6 @@ abstract class AbstractBlockScannerTest {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
             add("verify-collection")
-            add("-e")
-            add("local")
             add("-m")
             add(mint)
             add("-c")
@@ -283,13 +274,11 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun mintNft(collection: String? = null): String {
+    protected fun mintNft(keypair: String, collection: String? = null): String {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
             add("mint")
-            add("-e")
-            add("local")
             collection?.let {
                 add("-c")
                 add(it)
@@ -297,20 +286,18 @@ abstract class AbstractBlockScannerTest {
             add("-u")
             add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
             add("--keypair")
-            add("/home/solana/.config/solana/id.json")
+            add(keypair)
         }
 
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun getWalletAddress(config: String? = null): String {
+    protected fun getWallet(keypair: String = baseKeypair): String {
         val args = buildList {
             add("solana")
             add("address")
-            config?.let {
-                add("-k")
-                add(it)
-            }
+            add("--keypair")
+            add(keypair)
         }
 
         return processOperation(args) { it.parse(0, -1) }
@@ -322,7 +309,7 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun createFileWallet(name: String): String {
+    protected fun createKeypair(name: String): String {
         val args = listOf("solana-keygen", "new", "--outfile", "/home/solana/.config/solana/$name")
 
         return processOperation(args) { "/home/solana/.config/solana/$name" }

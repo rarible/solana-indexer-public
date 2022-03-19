@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
+import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
@@ -18,7 +19,6 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
 import java.time.Duration
 import java.time.Instant
-import java.util.*
 
 class AuctionHouseTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
@@ -29,8 +29,10 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Test
     fun createAuctionHouseTest() = runBlocking {
-        val house = createAuctionHouse()
-        val wallet = getWalletAddress()
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -58,10 +60,13 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Test
     fun sellTest() = runBlocking {
-        val house = createAuctionHouse()
-        val token = mintNft()
-        airdrop(10, getFeePayerAccountForAuctionHouse())
-        sell(house, 1, token, 1)
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
+        val token = mintNft(baseKeypair)
+        airdrop(10, getFeePayerAccountForAuctionHouse(house, keypair))
+        sell(house, baseKeypair, 1, token, 1)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -76,9 +81,10 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseRecord.SellRecord(
+                        maker = getWallet(baseKeypair),
                         mint = "",
                         amount = 1L.toBigInteger(),
-                        sellPrice =  1.scaleSupply(9),
+                        sellPrice = 1.scaleSupply(9),
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
@@ -90,10 +96,13 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Test
     fun buyTest() = runBlocking {
-        val house = createAuctionHouse()
-        val token = mintNft()
-        airdrop(10, getFeePayerAccountForAuctionHouse())
-        buy(house, 1, token, 1)
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
+        val token = mintNft(baseKeypair)
+        airdrop(10, getFeePayerAccountForAuctionHouse(house, keypair))
+        buy(house, keypair, 1, token, 1)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -108,9 +117,10 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseRecord.BuyRecord(
+                        maker = getWallet(keypair),
                         mint = "",
                         amount = 1L.toBigInteger(),
-                        buyPrice =  1.scaleSupply(9),
+                        buyPrice = 1.scaleSupply(9),
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
@@ -122,17 +132,23 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Test
     fun executeSaleTest() = runBlocking {
-        val aliceWallet = createFileWallet("${UUID.randomUUID()}")
-        val token = mintNft()
-        val house = createAuctionHouse()
+        val auctionHouseKeypair = createKeypair(randomString())
+        airdrop(10, getWallet(auctionHouseKeypair))
+        val house = createAuctionHouse(auctionHouseKeypair)
+        val sellerWallet = getWallet(baseKeypair)
 
-        airdrop(10, getFeePayerAccountForAuctionHouse())
-        airdrop(10, aliceWallet)
+        val buyerKeypair = createKeypair(randomString())
+        airdrop(10, buyerKeypair)
+        val buyerWallet = getWallet(buyerKeypair)
+        val token = mintNft(keypair = baseKeypair)
 
-        sell(house, 1, token, 1)
-        buy(house, 1, token, 1, aliceWallet)
+        airdrop(10, getFeePayerAccountForAuctionHouse(house, auctionHouseKeypair))
+        airdrop(10, buyerKeypair)
 
-        executeSale(house, 1, token, 1, buyerWallet = getWalletAddress(aliceWallet), sellerWallet = getWalletAddress())
+        sell(house, baseKeypair, 1, token, 1)
+        buy(house, buyerKeypair, 1, token, 1)
+
+        executeSale(house, auctionHouseKeypair, 1, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -146,9 +162,11 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseRecord.ExecuteSellRecord(
+                        buyer = buyerWallet,
+                        seller = sellerWallet,
                         mint = token,
                         amount = 1L.toBigInteger(),
-                        price =  1.scaleSupply(9),
+                        price = 1.scaleSupply(9),
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH

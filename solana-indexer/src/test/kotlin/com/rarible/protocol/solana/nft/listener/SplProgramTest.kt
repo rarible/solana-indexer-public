@@ -30,7 +30,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun initializeMint() = runBlocking {
-        val wallet = getWalletAddress()
+        val wallet = getWallet()
         val token = createToken(decimals = 3)
 
         Wait.waitAssert(timeout) {
@@ -58,7 +58,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
 
     @Test
     fun createAccount() = runBlocking {
-        val wallet = getWalletAddress()
+        val wallet = getWallet()
         val token = createToken(decimals = 3)
         val account = createAccount(token)
 
