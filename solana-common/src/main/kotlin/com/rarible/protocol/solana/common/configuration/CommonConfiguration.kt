@@ -34,9 +34,9 @@ class CommonConfiguration(
 
     @Bean
     @ConditionalOnProperty(
-        value = ["common.featureFlags.disableKafkaTopicsForRecords"],
+        value = ["common.feature-flags.disable-kafka-topics-for-records"],
         havingValue = "true",
-        matchIfMissing = true
+        matchIfMissing = false
     )
     fun producer(): LogRecordEventPublisher {
         logger.info("Activated feature: disable Kafka topics for log recods")
