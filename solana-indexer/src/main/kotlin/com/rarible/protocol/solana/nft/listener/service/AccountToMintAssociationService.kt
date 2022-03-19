@@ -47,7 +47,11 @@ class AccountToMintAssociationService(
             return
         }
         withSpan("AccountToMintAssociationService#saveBalanceTokens", SpanType.CACHE) {
-            redis.mset(accountToMints).awaitFirstOrNull()
+            try {
+                redis.mset(accountToMints).awaitFirstOrNull()
+            } catch (e: Exception) {
+                logger.error("Redis error: cannot set account to mint mapping", e)
+            }
         }
     }
 
@@ -58,10 +62,15 @@ class AccountToMintAssociationService(
             return emptyMap()
         }
         return withSpan("AccountToMintAssociationService#getCachedMintsByAccounts", SpanType.CACHE) {
-            redis.mget(*accounts.toTypedArray())
-                .filter { it.hasValue() }
-                .collectMap({ it.key }, { it.value })
-                .awaitFirst()
+            try {
+                redis.mget(*accounts.toTypedArray())
+                    .filter { it.hasValue() }
+                    .collectMap({ it.key }, { it.value })
+                    .awaitFirst()
+            } catch (e: Exception) {
+                logger.error("Redis error: cannot set account to mint mapping", e)
+                emptyMap()
+            }
         }
     }
 }
