@@ -10,6 +10,7 @@ dependencies {
     implementation("com.rarible.core:rarible-core-apm-starter:$raribleCommonVersion")
     implementation("com.rarible.core:rarible-core-lock-redis:$raribleCommonVersion")
     implementation("com.github.cloudyrock.mongock:mongock-spring-v5:$mongockVersion")
+    implementation("com.github.cloudyrock.mongock:mongodb-springdata-v3-driver:$mongockVersion")
 
     testImplementation("com.rarible.solana.protocol:solana-protocol-subscriber-starter:$solanaOpenapiVersion")
     testImplementation(project(":solana-test-common"))
