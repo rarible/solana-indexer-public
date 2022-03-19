@@ -16,5 +16,4 @@ data class SolanaIndexerProperties(
 
 data class FeatureFlags(
     val skipTransfersWithUnknownMint: Boolean = false
-    // implicit 'disableKafkaTopicsForRecords' property
 )
