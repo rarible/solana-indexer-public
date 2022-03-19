@@ -13,15 +13,22 @@ class ManualParserTest : AbstractBlockScannerTest() {
     @Autowired
     private lateinit var subscribers: List<SolanaLogEventSubscriber>
 
-    private val client = SolanaClient(listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"))
+    private val client = SolanaClient(
+        rpcUrls = listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"),
+        timeout = 10000
+    )
 
     @Test
     fun `parse block log records`() = runBlocking<Unit> {
-        val block = client.getBlock(114371726L) ?: return@runBlocking
+        val block = client.getBlock(114371623) ?: return@runBlocking
         for (subscriber in subscribers) {
             for (log in block.logs) {
+                if (log.instruction.programId != subscriber.getDescriptor().programId) {
+                    continue
+                }
+                println("  For ${subscriber.getDescriptor().id} and $log")
                 val records = subscriber.getEventRecords(block, log)
-                println("For log $log: [$records]")
+                println("    Records [$records]")
             }
         }
     }
