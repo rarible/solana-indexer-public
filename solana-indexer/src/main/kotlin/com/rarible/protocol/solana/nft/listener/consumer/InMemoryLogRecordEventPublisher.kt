@@ -25,12 +25,11 @@ class InMemoryLogRecordEventPublisher(
         logger.info("Using InMemoryLogRecordEventPublisher instead of KafkaRecordEventPublisher")
     }
 
-    override suspend fun publish(groupId: String, logRecordEvents: List<LogRecordEvent<*>>) {
-        if (featureFlags.skipInMemoryLogRecordHandling) {
-            // Let's skip event handling in order to reduce them later
-            return
-        }
+    override suspend fun isEnabled(): Boolean {
+        return featureFlags.skipInMemoryLogRecordHandling
+    }
 
+    override suspend fun publish(groupId: String, logRecordEvents: List<LogRecordEvent<*>>) {
         val listener = listenersByGroup[groupId]
         if (listener == null) {
             logger.error("Can't find log LogRecordEventListener with groupId={}", groupId)
