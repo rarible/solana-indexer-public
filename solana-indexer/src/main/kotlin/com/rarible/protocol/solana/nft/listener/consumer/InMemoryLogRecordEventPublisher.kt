@@ -26,7 +26,7 @@ class InMemoryLogRecordEventPublisher(
     }
 
     override suspend fun isEnabled(): Boolean {
-        return featureFlags.skipInMemoryLogRecordHandling
+        return !featureFlags.skipInMemoryLogRecordHandling
     }
 
     override suspend fun publish(groupId: String, logRecordEvents: List<LogRecordEvent<*>>) {
