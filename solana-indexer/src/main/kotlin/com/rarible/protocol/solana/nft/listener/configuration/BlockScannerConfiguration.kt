@@ -11,10 +11,13 @@ import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import io.lettuce.core.api.reactive.RedisReactiveCommands
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
+import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.time.Duration
 
 @Configuration
 @EnableSolanaScanner
@@ -45,5 +48,13 @@ class BlockchainScannerConfiguration(
             applicationEnvironmentInfo = applicationEnvironmentInfo,
             solanaBlockchainScannerProperties = solanaBlockchainScannerProperties
         ).apply { start(logRecordEventListener) }
+    }
+
+    // TODO: until CHARLIE-172 is fixed, let's set a timeout for the Redis.
+    @Bean
+    fun setRedisTimeout(
+        redis: RedisReactiveCommands<String, String>
+    ): CommandLineRunner = CommandLineRunner {
+        redis.setTimeout(Duration.ofSeconds(1))
     }
 }
