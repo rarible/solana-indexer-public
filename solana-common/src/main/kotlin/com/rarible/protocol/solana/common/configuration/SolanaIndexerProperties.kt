@@ -11,9 +11,11 @@ data class SolanaIndexerProperties(
     val kafkaReplicaSet: String,
     val metricRootPath: String,
     val confirmationBlocks: Int = 100,
-    val featureFlags: FeatureFlags
+    val featureFlags: FeatureFlags = FeatureFlags()
 )
 
 data class FeatureFlags(
-    val skipTransfersWithUnknownMint: Boolean = false
+    val skipTransfersWithUnknownMint: Boolean = false,
+    val enableInMemoryLogRecordHandling: Boolean = false,
+    val skipInMemoryLogRecordHandling: Boolean = false
 )
