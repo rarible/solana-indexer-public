@@ -118,7 +118,7 @@ class SolanaBalanceLogEventFilter(
         is SolanaBalanceRecord.TransferIncomeRecord -> {
             keepIfNft(record.to, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
         }
-        is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null // Skipping init records
+        is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
         is SolanaTokenRecord -> keepIfNft(record, record.mint)
         is SolanaAuctionHouseRecord -> record
         is SolanaMetaRecord -> record
