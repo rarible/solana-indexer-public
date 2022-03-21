@@ -4,8 +4,8 @@ import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.event.OrderSellEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.*
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord.*
 import org.springframework.stereotype.Component
 
 @Component

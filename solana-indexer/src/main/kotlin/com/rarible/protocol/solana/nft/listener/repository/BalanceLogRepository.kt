@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.repository
 
 import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow

@@ -4,14 +4,17 @@ import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
-import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
-import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
+import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
+import com.rarible.protocol.solana.borsh.MetaplexMetadata
+import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccount
 import com.rarible.protocol.solana.borsh.SetAndVerifyCollection
 import com.rarible.protocol.solana.borsh.SignMetadata
 import com.rarible.protocol.solana.borsh.UnVerifyCollection
 import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
+import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -30,12 +33,14 @@ class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaMetaRecord> {
         val data = log.instruction.data
-        val metaplexCreateMetadataAccountArgs =
-            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccountArgs ?: return emptyList()
+        val metaplexCreateMetadataAccount =
+            data.parseMetaplexMetadataInstruction() as? MetaplexCreateMetadataAccount ?: return emptyList()
+        val createArgs = metaplexCreateMetadataAccount.createArgs
         val record = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            data = metaplexCreateMetadataAccountArgs,
+            meta = createArgs.metadata.convert(),
+            mutable = createArgs.mutable,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
@@ -59,12 +64,16 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaMetaRecord> {
         val data = log.instruction.data
-        val metaplexUpdateMetadataAccountArgs =
-            data.parseMetaplexMetadataInstruction() as? MetaplexUpdateMetadataAccountArgs ?: return emptyList()
+        val metaplexUpdateMetadataAccount =
+            data.parseMetaplexMetadataInstruction() as? MetaplexUpdateMetadataAccount ?: return emptyList()
+        val updateArgs = metaplexUpdateMetadataAccount.updateArgs
         val record = SolanaMetaRecord.MetaplexUpdateMetadataRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            updateArgs = metaplexUpdateMetadataAccountArgs,
+            updatedMeta = updateArgs.metadata?.convert(),
+            updatedMutable = updateArgs.mutable,
+            updateAuthority = updateArgs.updateAuthority,
+            primarySaleHappened = updateArgs.primarySaleHappened,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
@@ -186,3 +195,23 @@ class SetAndVerifyMetadataSubscriber : SolanaLogEventSubscriber {
         return listOf(record)
     }
 }
+
+private fun MetaplexMetadata.Data.convert() = MetaplexMetaFields(
+    name = name,
+    symbol = symbol,
+    uri = uri,
+    sellerFeeBasisPoints = sellerFeeBasisPoints.toInt(),
+    creators = creators.orEmpty().map {
+        MetaplexTokenCreator(
+            address = it.address,
+            share = it.share.toInt(),
+            verified = it.verified
+        )
+    },
+    collection = collection?.let {
+        MetaplexMetaFields.Collection(
+            address = it.key,
+            verified = it.verified
+        )
+    }
+)

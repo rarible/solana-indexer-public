@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.Flow

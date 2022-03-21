@@ -4,7 +4,7 @@ import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import org.springframework.stereotype.Component
 
 @Component

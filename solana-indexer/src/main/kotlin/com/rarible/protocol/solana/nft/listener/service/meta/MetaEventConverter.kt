@@ -1,16 +1,13 @@
 package com.rarible.protocol.solana.nft.listener.service.meta
 
-import com.rarible.protocol.solana.borsh.MetaplexMetadataProgram
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexSetAndVerifyCollectionEvent
-import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
-import com.rarible.protocol.solana.common.model.MetaplexMetaFields
-import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
+import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import org.springframework.stereotype.Component
 
 @Component
@@ -26,8 +23,8 @@ class MetaEventConverter {
                 reversed = reversed,
                 token = record.mint,
                 timestamp = record.timestamp,
-                metadata = record.data.metadata.convert(),
-                isMutable = record.data.mutable
+                metadata = record.meta,
+                isMutable = record.mutable
             )
         )
         is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> listOf(
@@ -36,8 +33,8 @@ class MetaEventConverter {
                 log = record.log,
                 reversed = reversed,
                 timestamp = record.timestamp,
-                newMetadata = record.updateArgs.metadata?.convert(),
-                newIsMutable = record.updateArgs.mutable
+                newMetadata = record.updatedMeta,
+                newIsMutable = record.updatedMutable
             )
         )
         is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> listOf(
@@ -76,24 +73,4 @@ class MetaEventConverter {
             )
         )
     }
-
-    private fun MetaplexMetadataProgram.Data.convert() = MetaplexMetaFields(
-        name = name,
-        symbol = symbol,
-        uri = uri,
-        sellerFeeBasisPoints = sellerFeeBasisPoints.toInt(),
-        creators = creators.orEmpty().map {
-            MetaplexTokenCreator(
-                address = it.address,
-                share = it.share.toInt(),
-                verified = it.verified
-            )
-        },
-        collection = collection?.let {
-            MetaplexMetaFields.Collection(
-                address = it.key,
-                verified = it.verified
-            )
-        }
-    )
 }

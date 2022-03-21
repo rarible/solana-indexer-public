@@ -6,11 +6,11 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaMetaRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
+import com.rarible.protocol.solana.common.records.SolanaMetaRecord
+import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -63,17 +63,17 @@ class SolanaBalanceLogEventFilter(
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.add(record.from)
-                    record.mint?.let {
+                    record.mint?.let { mint ->
                         // Here we can add both accounts to mapping with same mint
-                        accountToMintMapping[record.from] = record.mint
-                        accountToMintMapping[record.to] = record.mint
+                        accountToMintMapping[record.from] = mint
+                        accountToMintMapping[record.to] = mint
                     }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.add(record.to)
-                    record.mint?.let {
-                        accountToMintMapping[record.from] = record.mint
-                        accountToMintMapping[record.to] = record.mint
+                    record.mint?.let { mint ->
+                        accountToMintMapping[record.from] = mint
+                        accountToMintMapping[record.to] = mint
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.records
+package com.rarible.protocol.solana.common.records
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord

@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener.consumer
 import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
 import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord
+import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component

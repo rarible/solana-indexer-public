@@ -1,8 +1,7 @@
-package com.rarible.protocol.solana.nft.listener.service.records
+package com.rarible.protocol.solana.common.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
-import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccountArgs
-import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccountArgs
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import java.time.Instant
 
 sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
@@ -12,7 +11,8 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexCreateMetadataAccountRecord(
         val mint: String,
-        val data: MetaplexCreateMetadataAccountArgs,
+        val meta: MetaplexMetaFields,
+        val mutable: Boolean,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -20,7 +20,10 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexUpdateMetadataRecord(
         val mint: String,
-        val updateArgs: MetaplexUpdateMetadataAccountArgs,
+        val updatedMeta: MetaplexMetaFields?,
+        val updatedMutable: Boolean?,
+        val updateAuthority: String?,
+        val primarySaleHappened: Boolean?,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant

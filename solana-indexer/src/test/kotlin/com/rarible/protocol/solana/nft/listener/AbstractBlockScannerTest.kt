@@ -15,7 +15,7 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import io.mockk.clearMocks

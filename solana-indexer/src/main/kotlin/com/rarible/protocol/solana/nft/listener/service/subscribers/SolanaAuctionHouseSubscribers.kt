@@ -11,10 +11,10 @@ import com.rarible.protocol.solana.borsh.Sell
 import com.rarible.protocol.solana.borsh.UpdateAuctionHouse
 import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
 import com.rarible.protocol.solana.common.util.toBigInteger
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.BuyRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.ExecuteSaleRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.SellRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord.BuyRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord.ExecuteSaleRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord.SellRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
 

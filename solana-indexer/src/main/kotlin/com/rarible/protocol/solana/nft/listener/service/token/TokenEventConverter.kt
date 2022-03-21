@@ -4,7 +4,7 @@ import com.rarible.protocol.solana.common.event.BurnEvent
 import com.rarible.protocol.solana.common.event.InitializeMintEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
+import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import org.springframework.stereotype.Component
 
 @Component

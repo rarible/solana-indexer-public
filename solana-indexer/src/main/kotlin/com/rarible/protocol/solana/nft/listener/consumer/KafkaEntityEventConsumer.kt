@@ -10,7 +10,7 @@ import com.rarible.core.daemon.sequential.ConsumerWorker
 import com.rarible.core.daemon.sequential.ConsumerWorkerHolder
 import com.rarible.core.kafka.RaribleKafkaConsumer
 import com.rarible.core.kafka.json.JsonDeserializer
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBaseLogRecord
+import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import java.time.Duration

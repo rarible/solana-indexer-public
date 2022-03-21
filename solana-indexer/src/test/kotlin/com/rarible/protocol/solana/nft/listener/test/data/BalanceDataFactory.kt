@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.nft.listener.test.data
 import com.rarible.core.common.nowMillis
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomString
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.test.randomSolanaLog
 
 fun randomBalanceInitRecord(): SolanaBalanceRecord.InitializeBalanceAccountRecord {
@@ -57,4 +57,3 @@ fun randomBalanceOutcomeTransfer(): SolanaBalanceRecord.TransferOutcomeRecord {
         outcomeAmount = randomBigInt()
     )
 }
-
