@@ -5,12 +5,14 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
-import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
+import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -29,14 +31,48 @@ class SolanaBalanceLogEventFilter(
         if (events.isEmpty()) {
             return emptyList()
         }
-        val accountToMints = getAccountToMintMapping(events)
 
-        val result = events.map { event ->
+        val mappingsFromEvents = getAccountToMintMapping(events)
+        val accountToMintMapping = mappingsFromEvents.accountToMintMapping
+
+        // Retrieving mapping for ALL found accounts to know what we really need to update in DB
+        val existMapping = accountToMintAssociationService.getMintsByAccounts(mappingsFromEvents.accounts)
+
+        return coroutineScope {
+            // Saving new mappings in background while filtering event list
+            val mappingToSave = HashMap(accountToMintMapping)
+            val updateMappingDeferred = async {
+                // Saving only non-exiting mapping
+                existMapping.keys.forEach { mappingToSave.remove(it) }
+                accountToMintAssociationService.saveMintsByAccounts(mappingToSave)
+            }
+
+            // Adding mapping from cache/db
+            accountToMintMapping.putAll(existMapping)
+            val result = filter(events, accountToMintMapping)
+
+            updateMappingDeferred.await()
+
+            result
+        }
+    }
+
+    private suspend fun filter(
+        events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
+        accountToMints: Map<String, String>
+    ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
+        return events.map { event ->
             if (event.logRecordsToInsert.isEmpty()) {
                 return@map event
             }
-            val filteredRecords = event.logRecordsToInsert.filterNot {
-                it is SolanaBaseLogRecord && shouldIgnore(it, accountToMints)
+            val filteredRecords = event.logRecordsToInsert.mapNotNull {
+                if (it is SolanaBaseLogRecord) {
+                    // Keep only NFT logs
+                    keepIfNft(it, accountToMints)
+                } else {
+                    // Keep non-target logs
+                    it
+                }
             }
             logger.info(
                 "Solana batch event filtering for ${event.blockEvent} of '${event.descriptor.id}': {} of {} records remain",
@@ -45,13 +81,11 @@ class SolanaBalanceLogEventFilter(
             )
             event.copy(logRecordsToInsert = filteredRecords)
         }
-
-        return result
     }
 
-    private suspend fun getAccountToMintMapping(
+    private fun getAccountToMintMapping(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
-    ): Map<String, String> {
+    ): MappingsFromLogEvents {
         val accountToMintMapping = HashMap<String, String>()
         val accounts = mutableSetOf<String>()
 
@@ -63,56 +97,73 @@ class SolanaBalanceLogEventFilter(
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.add(record.from)
-                    record.mint?.let { mint ->
-                        // Here we can add both accounts to mapping with same mint
-                        accountToMintMapping[record.from] = mint
-                        accountToMintMapping[record.to] = mint
-                    }
+                    record.mint?.let { accountToMintMapping[record.from] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.add(record.to)
-                    record.mint?.let { mint ->
-                        accountToMintMapping[record.from] = mint
-                        accountToMintMapping[record.to] = mint
-                    }
+                    record.mint?.let { accountToMintMapping[record.to] = it }
                 }
             }
         }
+        return MappingsFromLogEvents(accounts, accountToMintMapping)
 
-        // Remove known mint mapping, we don't need to query them
-        accounts.removeAll(accountToMintMapping.keys)
-        val fromCache = accountToMintAssociationService.getMintsByAccounts(accounts)
-
-        // Saving ony non-exiting mapping
-        fromCache.keys.forEach { accountToMintMapping.remove(it) }
-        accountToMintAssociationService.saveAccountToMintMapping(accountToMintMapping)
-
-        // Adding mapping from cache/db
-        accountToMintMapping.putAll(fromCache)
-
-        return accountToMintMapping + fromCache
     }
 
-    private suspend fun shouldIgnore(record: SolanaBaseLogRecord, accountToMints: Map<String, String>): Boolean {
+    private suspend fun keepIfNft(
+        record: SolanaBaseLogRecord, accountToMints: Map<String, String>
+    ): SolanaBaseLogRecord? {
         return when (record) {
-            is SolanaBalanceRecord.MintToRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
-            is SolanaBalanceRecord.BurnRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
-            is SolanaBalanceRecord.TransferOutcomeRecord -> isCurrencyAccount(record.from, record.mint, accountToMints)
-            is SolanaBalanceRecord.TransferIncomeRecord -> isCurrencyAccount(record.to, record.mint, accountToMints)
-            is SolanaBalanceRecord.InitializeBalanceAccountRecord -> false // We want to save the account<->mint mapping.
-            is SolanaTokenRecord -> accountToMintAssociationService.isCurrencyToken(record.mint)
-            is SolanaAuctionHouseRecord -> false
-            is SolanaMetaRecord -> false
+            is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
+            is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
+            is SolanaBalanceRecord.TransferOutcomeRecord -> {
+                keepIfNft(record.from, record.mint, accountToMints, record) { record.copy(mint = it) }
+            }
+            is SolanaBalanceRecord.TransferIncomeRecord -> {
+                keepIfNft(record.to, record.mint, accountToMints, record) { record.copy(mint = it) }
+            }
+            is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null // Skipping init records
+            is SolanaTokenRecord -> keepIfNft(record, record.mint)
+            is SolanaAuctionHouseRecord -> record
+            is SolanaMetaRecord -> record
         }
     }
 
-    private suspend fun isCurrencyAccount(
+    private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
+        return if (accountToMintAssociationService.isCurrencyToken(mint)) {
+            null
+        } else {
+            record
+        }
+    }
+
+    private fun <T> keepIfNft(
         account: String,
         knownMint: String?,
-        accountToMints: Map<String, String>
-    ): Boolean {
-        val mint = knownMint ?: accountToMints[account] ?: return featureFlags.skipTransfersWithUnknownMint
-        return accountToMintAssociationService.isCurrencyToken(mint)
+        accountToMints: Map<String, String>,
+        record: T,
+        updateMint: (String) -> T
+    ): T? {
+
+        val mint = knownMint ?: accountToMints[account]
+        // If mint not found, we can skip record - depends on feature flag
+        ?: return if (featureFlags.skipTransfersWithUnknownMint) null else record
+
+        if (accountToMintAssociationService.isCurrencyToken(mint)) {
+            return null
+        }
+
+        // Update mint field in record if it is not specified,
+        // otherwise return record 'as is' just to save some CPU time
+        return if (knownMint == null) {
+            updateMint(mint)
+        } else {
+            record
+        }
     }
+
+    data class MappingsFromLogEvents(
+        val accounts: Set<String>,
+        val accountToMintMapping: MutableMap<String, String>
+    )
 
 }
