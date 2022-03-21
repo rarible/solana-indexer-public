@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.repository
 
 import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
+import com.rarible.core.common.optimisticLock
 import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
@@ -23,10 +24,10 @@ class AccountToMintAssociationRepository(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun findAll(balanceAccounts: Collection<String>): List<AccountToMintAssociation> {
-        if (balanceAccounts.isEmpty()) return emptyList()
+    suspend fun findAll(accounts: Collection<String>): List<AccountToMintAssociation> {
+        if (accounts.isEmpty()) return emptyList()
 
-        val criteria = Criteria.where("_id").inValues(balanceAccounts)
+        val criteria = Criteria.where("_id").inValues(accounts)
         return mongo.find(Query.query(criteria), AccountToMintAssociation::class.java)
             .collectList().awaitFirst()
     }
@@ -42,9 +43,18 @@ class AccountToMintAssociationRepository(
             insertAll(associations)
         } catch (e: DuplicateKeyException) {
             logger.warn("Duplicate account-to-mint association", e)
-            val exist = findAll(associations.map { it.balanceAccount }).map { it.balanceAccount }.toSet()
-            val toInsert = associations.filter { !exist.contains(it.balanceAccount) }
-            insertAll(toInsert)
+            try {
+                optimisticLock {
+                    val toInsert = associations - findAll(associations.map { it.balanceAccount })
+                    insertAll(toInsert)
+                }
+            } catch (e: DuplicateKeyException) {
+                logger.error("Failed to save account-to-mint association in several attempts, falling back to single saving", e)
+                val toInsert = associations - findAll(associations.map { it.balanceAccount })
+                for (accountToMintAssociation in toInsert) {
+                    mongo.save(accountToMintAssociation)
+                }
+            }
         }
     }
 
