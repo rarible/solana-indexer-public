@@ -156,15 +156,15 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
                 collection = SubscriberGroup.AUCTION_HOUSE.collectionName,
-                type = SolanaAuctionHouseRecord.ExecuteSellRecord::class.java
+                type = SolanaAuctionHouseRecord.ExecuteSaleRecord::class.java
             ).toList()
 
             Assertions.assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaAuctionHouseRecord.ExecuteSellRecord::log.name,
-                SolanaAuctionHouseRecord.ExecuteSellRecord::timestamp.name
+                SolanaAuctionHouseRecord.ExecuteSaleRecord::log.name,
+                SolanaAuctionHouseRecord.ExecuteSaleRecord::timestamp.name
             ).isEqualTo(
                 listOf(
-                    SolanaAuctionHouseRecord.ExecuteSellRecord(
+                    SolanaAuctionHouseRecord.ExecuteSaleRecord(
                         buyer = buyerWallet,
                         seller = sellerWallet,
                         mint = token,

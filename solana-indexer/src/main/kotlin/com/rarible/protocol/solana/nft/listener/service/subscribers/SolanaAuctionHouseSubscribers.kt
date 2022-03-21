@@ -13,7 +13,7 @@ import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
 import com.rarible.protocol.solana.common.util.toBigInteger
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.BuyRecord
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.ExecuteSellRecord
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.ExecuteSaleRecord
 import com.rarible.protocol.solana.nft.listener.service.records.SolanaAuctionHouseRecord.SellRecord
 import org.springframework.stereotype.Component
 import java.time.Instant
@@ -146,16 +146,16 @@ class ExecuteSellAuctionHouseSubscriber : SolanaLogEventSubscriber {
         programId = SolanaProgramId.AUCTION_HOUSE_PROGRAM,
         id = "update_auction_house",
         groupId = SubscriberGroup.AUCTION_HOUSE.id,
-        entityType = ExecuteSellRecord::class.java,
+        entityType = ExecuteSaleRecord::class.java,
         collection = SubscriberGroup.AUCTION_HOUSE.collectionName
     ) {}
 
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<ExecuteSellRecord> {
+    ): List<ExecuteSaleRecord> {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
-            is ExecuteSale -> ExecuteSellRecord(
+            is ExecuteSale -> ExecuteSaleRecord(
                 buyer = log.instruction.accounts[0],
                 seller = log.instruction.accounts[1],
                 price = instruction.buyerPrice.toBigInteger(),

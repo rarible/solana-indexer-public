@@ -25,7 +25,7 @@ class OrderEventConverter {
                 log = record.log
             )
         )
-        is ExecuteSellRecord -> listOf(
+        is ExecuteSaleRecord -> listOf(
             ExecuteSaleEvent(
                 buyPrice = record.price,
                 mint = record.mint,

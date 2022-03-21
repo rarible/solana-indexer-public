@@ -47,7 +47,7 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
         override val auctionHouse: String
     ) : SolanaAuctionHouseRecord()
 
-    data class ExecuteSellRecord(
+    data class ExecuteSaleRecord(
         val buyer: String,
         val seller: String,
         val price: BigInteger,
