@@ -19,7 +19,9 @@ class AccountToMintAssociationCache(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun getMintsByAccounts(accounts: Collection<String>): Map<String, String> {
-        if (accounts.isEmpty() || !featureFlags.enableAccountToMintAssociationCache) return emptyMap()
+        if (accounts.isEmpty() || !featureFlags.enableAccountToMintAssociationCache) {
+            return emptyMap()
+        }
 
         return try {
             redis.mget(*accounts.toTypedArray())
@@ -33,7 +35,9 @@ class AccountToMintAssociationCache(
     }
 
     suspend fun saveMintsByAccounts(accountToMints: Map<String, String>) {
-        if (accountToMints.isEmpty() || !featureFlags.enableAccountToMintAssociationCache) return
+        if (accountToMints.isEmpty() || !featureFlags.enableAccountToMintAssociationCache) {
+            return
+        }
 
         try {
             redis.mset(accountToMints).awaitFirstOrNull()

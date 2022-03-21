@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-
 class SolanaBalanceLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
     private val featureFlags: FeatureFlags
@@ -32,17 +31,16 @@ class SolanaBalanceLogEventFilter(
             return emptyList()
         }
 
-        val mappingsFromEvents = getAccountToMintMapping(events)
-        val accountToMintMapping = mappingsFromEvents.accountToMintMapping
+        val (allAccounts, accountToMintMapping) = getAccountToMintMapping(events)
 
         // Retrieving mapping for ALL found accounts to know what we really need to update in DB
-        val existMapping = accountToMintAssociationService.getMintsByAccounts(mappingsFromEvents.accounts)
+        val existMapping = accountToMintAssociationService.getMintsByAccounts(allAccounts)
 
         return coroutineScope {
             // Saving new mappings in background while filtering event list
             val mappingToSave = HashMap(accountToMintMapping)
             val updateMappingDeferred = async {
-                // Saving only non-exiting mapping
+                // Saving only non-existing mapping
                 existMapping.keys.forEach { mappingToSave.remove(it) }
                 accountToMintAssociationService.saveMintsByAccounts(mappingToSave)
             }
@@ -57,7 +55,7 @@ class SolanaBalanceLogEventFilter(
         }
     }
 
-    private suspend fun filter(
+    private fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
         accountToMints: Map<String, String>
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
@@ -106,26 +104,24 @@ class SolanaBalanceLogEventFilter(
             }
         }
         return MappingsFromLogEvents(accounts, accountToMintMapping)
-
     }
 
-    private suspend fun keepIfNft(
-        record: SolanaBaseLogRecord, accountToMints: Map<String, String>
-    ): SolanaBaseLogRecord? {
-        return when (record) {
-            is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
-            is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
-            is SolanaBalanceRecord.TransferOutcomeRecord -> {
-                keepIfNft(record.from, record.mint, accountToMints, record) { record.copy(mint = it) }
-            }
-            is SolanaBalanceRecord.TransferIncomeRecord -> {
-                keepIfNft(record.to, record.mint, accountToMints, record) { record.copy(mint = it) }
-            }
-            is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null // Skipping init records
-            is SolanaTokenRecord -> keepIfNft(record, record.mint)
-            is SolanaAuctionHouseRecord -> record
-            is SolanaMetaRecord -> record
+    private fun keepIfNft(
+        record: SolanaBaseLogRecord,
+        accountToMintMapping: Map<String, String>
+    ): SolanaBaseLogRecord? = when (record) {
+        is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
+        is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
+        is SolanaBalanceRecord.TransferOutcomeRecord -> {
+            keepIfNft(record.from, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
         }
+        is SolanaBalanceRecord.TransferIncomeRecord -> {
+            keepIfNft(record.to, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
+        }
+        is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null // Skipping init records
+        is SolanaTokenRecord -> keepIfNft(record, record.mint)
+        is SolanaAuctionHouseRecord -> record
+        is SolanaMetaRecord -> record
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
@@ -161,7 +157,7 @@ class SolanaBalanceLogEventFilter(
         }
     }
 
-    data class MappingsFromLogEvents(
+    private data class MappingsFromLogEvents(
         val accounts: Set<String>,
         val accountToMintMapping: MutableMap<String, String>
     )

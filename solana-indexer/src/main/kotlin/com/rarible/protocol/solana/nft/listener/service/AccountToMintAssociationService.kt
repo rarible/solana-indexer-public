@@ -19,8 +19,6 @@ class AccountToMintAssociationService(
 
     private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
 
-    suspend fun getMintByAccount(account: String): String? = getMintsByAccounts(listOf(account))[account]
-
     @CaptureSpan(type = SpanType.APP)
     suspend fun getMintsByAccounts(accounts: Collection<String>): Map<String, String> {
         val fromCache = accountToMintAssociationCache.getMintsByAccounts(accounts)
