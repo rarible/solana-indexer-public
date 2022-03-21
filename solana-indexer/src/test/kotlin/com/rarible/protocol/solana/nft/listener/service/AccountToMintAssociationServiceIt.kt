@@ -38,7 +38,7 @@ class AccountToMintAssociationServiceIt : AbstractBlockScannerTest() {
         val accountDb = randomString()
         val accountNotFound = randomString()
 
-        val dbAssociation = AccountToMintAssociation(balanceAccount = accountDb, mint = "2")
+        val dbAssociation = AccountToMintAssociation(account = accountDb, mint = "2")
 
         accountToMintAssociationRepository.saveAll(listOf(dbAssociation))
         accountToMintAssociationService.saveMintsByAccounts(mapOf(accountCached to "1"))

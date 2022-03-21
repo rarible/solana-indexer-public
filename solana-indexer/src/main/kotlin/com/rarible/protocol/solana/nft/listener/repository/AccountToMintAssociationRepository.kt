@@ -45,12 +45,12 @@ class AccountToMintAssociationRepository(
             logger.warn("Duplicate account-to-mint association", e)
             try {
                 optimisticLock {
-                    val toInsert = associations - findAll(associations.map { it.balanceAccount })
+                    val toInsert = associations - findAll(associations.map { it.account })
                     insertAll(toInsert)
                 }
             } catch (e: DuplicateKeyException) {
                 logger.error("Failed to save account-to-mint association in several attempts, falling back to single saving", e)
-                val toInsert = associations - findAll(associations.map { it.balanceAccount })
+                val toInsert = associations - findAll(associations.map { it.account })
                 for (accountToMintAssociation in toInsert) {
                     mongo.save(accountToMintAssociation)
                 }

@@ -20,12 +20,12 @@ class AccountToMintAssociationRepositoryIt : AbstractBlockScannerTest() {
 
         repository.saveAll(listOf(association1, association2))
 
-        val mapping = repository.findAll(listOf(association1.balanceAccount, association2.balanceAccount))
-            .associateBy { it.balanceAccount }
+        val mapping = repository.findAll(listOf(association1.account, association2.account))
+            .associateBy { it.account }
 
         assertThat(mapping).hasSize(2)
-        assertThat(mapping[association1.balanceAccount]).isEqualTo(association1)
-        assertThat(mapping[association2.balanceAccount]).isEqualTo(association2)
+        assertThat(mapping[association1.account]).isEqualTo(association1)
+        assertThat(mapping[association2.account]).isEqualTo(association2)
     }
 
     @Test
@@ -40,16 +40,16 @@ class AccountToMintAssociationRepositoryIt : AbstractBlockScannerTest() {
 
         val mapping = repository.findAll(
             listOf(
-                association1.balanceAccount,
-                association2.balanceAccount,
-                association3.balanceAccount
+                association1.account,
+                association2.account,
+                association3.account
             )
-        ).associateBy { it.balanceAccount }
+        ).associateBy { it.account }
 
         assertThat(mapping).hasSize(3)
-        assertThat(mapping[association1.balanceAccount]).isEqualTo(association1)
-        assertThat(mapping[association2.balanceAccount]).isEqualTo(association2)
-        assertThat(mapping[association3.balanceAccount]).isEqualTo(association3)
+        assertThat(mapping[association1.account]).isEqualTo(association1)
+        assertThat(mapping[association2.account]).isEqualTo(association2)
+        assertThat(mapping[association3.account]).isEqualTo(association3)
     }
 
 }

@@ -31,7 +31,7 @@ class AccountToMintAssociationService(
 
         val fromDb = HashMap<String, String>()
         accountToMintAssociationRepository.findAll(notCached)
-            .forEach { fromDb[it.balanceAccount] = it.mint }
+            .forEach { fromDb[it.account] = it.mint }
 
         accountToMintAssociationCache.saveMintsByAccounts(fromDb)
 

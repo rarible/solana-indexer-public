@@ -6,6 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document("account_to_mint_association")
 data class AccountToMintAssociation(
     @Id
-    val balanceAccount: String,
+    val account: String,
     val mint: String
 )
