@@ -32,7 +32,7 @@ data class Sell(
     val size: ULong
 ) : AuctionHouseInstruction()
 
-data class ExecuteSell(
+data class ExecuteSale(
     val buyerPrice: ULong,
     val size: ULong
 ) : AuctionHouseInstruction()
@@ -72,12 +72,12 @@ internal fun ByteBuffer.parseSell(): Sell {
     return Sell(price, size)
 }
 
-internal fun ByteBuffer.parseExecuteSell(): ExecuteSell {
+internal fun ByteBuffer.parseExecuteSell(): ExecuteSale {
     repeat(3) { get() } // skipped
     val buyerPrice = getLong().toULong()
     val size = getLong().toULong()
 
-    return ExecuteSell(buyerPrice, size)
+    return ExecuteSale(buyerPrice, size)
 }
 
 fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {

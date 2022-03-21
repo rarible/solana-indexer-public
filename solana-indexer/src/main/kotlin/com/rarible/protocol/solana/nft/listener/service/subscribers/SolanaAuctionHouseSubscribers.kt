@@ -6,7 +6,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.Buy
 import com.rarible.protocol.solana.borsh.CreateAuctionHouse
-import com.rarible.protocol.solana.borsh.ExecuteSell
+import com.rarible.protocol.solana.borsh.ExecuteSale
 import com.rarible.protocol.solana.borsh.Sell
 import com.rarible.protocol.solana.borsh.UpdateAuctionHouse
 import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
@@ -155,7 +155,7 @@ class ExecuteSellAuctionHouseSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<ExecuteSellRecord> {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
-            is ExecuteSell -> ExecuteSellRecord(
+            is ExecuteSale -> ExecuteSellRecord(
                 buyer = log.instruction.accounts[0],
                 seller = log.instruction.accounts[1],
                 price = instruction.buyerPrice.toBigInteger(),

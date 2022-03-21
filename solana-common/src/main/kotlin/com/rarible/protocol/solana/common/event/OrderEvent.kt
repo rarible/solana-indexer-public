@@ -8,6 +8,7 @@ sealed class OrderEvent : EntityEvent {
     abstract val timestamp: Instant
     abstract override val reversed: Boolean
     abstract override val log: SolanaLog
+    open fun invert() : OrderEvent? = null
 }
 
 data class OrderBuyEvent(
@@ -30,7 +31,7 @@ data class OrderSellEvent(
     override val log: SolanaLog
 ) : OrderEvent()
 
-data class ExecuteSellEvent(
+data class ExecuteSaleEvent(
     val buyPrice: BigInteger,
     val mint: String,
     val amount: BigInteger,

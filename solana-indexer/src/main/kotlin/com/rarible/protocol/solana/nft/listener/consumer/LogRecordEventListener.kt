@@ -20,5 +20,8 @@ object LogRecordEventListenerId {
     fun balanceHistoryListenerId(env: String): String =
         "${prefix(env)}.balance.history.listener"
 
+    fun auctionHouseListenerId(env: String): String =
+        "${prefix(env)}.auction.house.listener"
+
     private fun prefix(env: String): String = "$env.protocol.solana.nft"
 }
