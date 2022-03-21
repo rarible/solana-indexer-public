@@ -33,6 +33,7 @@ class TokenEventConverter {
         )
         is SolanaTokenRecord.InitializeMintRecord -> listOf(
             InitializeMintEvent(
+                decimals = record.decimals,
                 log = record.log,
                 reversed = reversed,
                 token = record.mint,

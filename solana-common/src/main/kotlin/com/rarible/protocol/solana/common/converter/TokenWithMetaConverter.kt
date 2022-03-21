@@ -14,7 +14,8 @@ object TokenWithMetaConverter {
             updatedAt = token.updatedAt,
             closed = token.isDeleted,
             collection = tokenMeta?.collection?.let { TokenMetaConverter.convert(it) },
-            creators = tokenMeta?.creators?.map { TokenMetaConverter.convert(it) }
+            creators = tokenMeta?.creators?.map { TokenMetaConverter.convert(it) },
+            decimals = token.decimals
         )
     }
 

@@ -23,6 +23,7 @@ fun createRandomToken(): Token = Token(
     mint = randomString(),
     supply = randomBigInt(),
     revertableEvents = emptyList(),
+    decimals = randomInt(6),
     isDeleted = false,
     createdAt = nowMillis(),
     updatedAt = nowMillis(),

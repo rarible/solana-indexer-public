@@ -16,6 +16,7 @@ data class Token(
     val supply: BigInteger,
     // TODO: probably, can be calculated based on supply = 0
     // TODO: rename to 'closed'?
+    val decimals: Int,
     val isDeleted: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -33,6 +34,7 @@ data class Token(
             supply = BigInteger.ZERO,
             revertableEvents = emptyList(),
             isDeleted = false,
+            decimals = 0,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH
         )

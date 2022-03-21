@@ -12,14 +12,15 @@ import org.springframework.stereotype.Component
 class ForwardValueTokenReducer : Reducer<TokenEvent, Token> {
     override suspend fun reduce(entity: Token, event: TokenEvent): Token {
         return when (event) {
+            is InitializeMintEvent -> entity.copy(
+                createdAt = event.timestamp,
+                decimals = event.decimals
+            )
             is MintEvent -> entity.copy(
                 supply = entity.supply + event.amount
             )
             is BurnEvent -> entity.copy(
                 supply = entity.supply - event.amount
-            )
-            is InitializeMintEvent -> entity.copy(
-                createdAt = event.timestamp
             )
         }.copy(updatedAt = event.timestamp)
     }

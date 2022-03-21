@@ -11,6 +11,7 @@ sealed class TokenEvent : EntityEvent {
 }
 
 data class InitializeMintEvent(
+    val decimals: Int,
     override val log: SolanaLog,
     override val reversed: Boolean,
     override val token: String,
