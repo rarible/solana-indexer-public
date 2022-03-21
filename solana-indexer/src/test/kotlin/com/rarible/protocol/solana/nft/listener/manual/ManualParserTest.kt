@@ -15,7 +15,8 @@ class ManualParserTest : AbstractBlockScannerTest() {
 
     private val client = SolanaClient(
         rpcUrls = listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"),
-        timeout = 10000
+        timeout = 10000,
+        programIds = emptySet() // All programs.
     )
 
     @Test
