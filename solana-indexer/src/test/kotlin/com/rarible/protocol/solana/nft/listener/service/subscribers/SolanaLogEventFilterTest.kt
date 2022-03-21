@@ -7,6 +7,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
+import com.rarible.protocol.solana.nft.listener.service.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer
@@ -22,7 +23,14 @@ class SolanaLogEventFilterTest {
 
     private val accountToMintAssociationService: AccountToMintAssociationService = mockk()
     private val blockEvent: BlockEvent<*> = mockk()
-    private val descriptor: SolanaDescriptor = mockk()
+
+    private val descriptor: SolanaDescriptor = object : SolanaDescriptor(
+        programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
+        id = "test_descriptor",
+        groupId = SubscriberGroup.TOKEN.id,
+        entityType = SolanaTokenRecord.InitializeMintRecord::class.java,
+        collection = SubscriberGroup.TOKEN.collectionName
+    ) {}
 
     private val filter = SolanaBalanceLogEventFilter(accountToMintAssociationService, FeatureFlags())
 
@@ -36,7 +44,7 @@ class SolanaLogEventFilterTest {
         val record: SolanaLogRecord = mockk()
         val event = randomLogEvent(record)
 
-        coEvery { accountToMintAssociationService.saveAccountToMintMapping(any()) } returns Unit
+        coEvery { accountToMintAssociationService.saveMintsByAccounts(any()) } returns Unit
         coEvery { accountToMintAssociationService.getMintsByAccounts(any()) } returns emptyMap()
 
         val result = filter.filter(listOf(event))
@@ -59,18 +67,17 @@ class SolanaLogEventFilterTest {
         val initMint = init.mint
         val mappedMint = randomString()
 
-        // Mapping from Init events should be stored in cache
-        coEvery {
-            accountToMintAssociationService.saveAccountToMintMapping(mapOf(init.balanceAccount to init.mint))
-        } returns Unit
-
-        // Mapped mints should be requested only for 2 transfers, for the first we already have mapping,
-        // only for one mint mapping is found
+        // Mapped mints should be requested only for all transfers
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
-                mutableSetOf(transferWithMapping.from, transferWithoutMapping.to)
+                mutableSetOf(transferWithInitMint.to, transferWithMapping.from, transferWithoutMapping.to)
             )
         } returns mapOf(transferWithMapping.from to mappedMint)
+
+        // Mapping from Init event should be stored in cache
+        coEvery {
+            accountToMintAssociationService.saveMintsByAccounts(mapOf(init.balanceAccount to init.mint))
+        } returns Unit
 
         // Event with currency token should be ignored
         coEvery { accountToMintAssociationService.isCurrencyToken(initMint) } returns true
@@ -81,10 +88,11 @@ class SolanaLogEventFilterTest {
 
         val records = getRecords(result)
 
-        assertThat(records).hasSize(3)
-        assertThat(records[0]).isEqualTo(init) // Passed since type of mint is not a currency
-        assertThat(records[1]).isEqualTo(transferWithMapping) // Passed since type of mint is not a currency
-        assertThat(records[2]).isEqualTo(transferWithoutMapping) // Passed since type of mint not determined
+        assertThat(records).hasSize(2)
+        // Passed since type of mint is not a currency, mint for transfer updated
+        assertThat(records[0]).isEqualTo(transferWithMapping.copy(mint = mappedMint))
+        // Passed since type of mint not determined, mint not updated since it is not found
+        assertThat(records[1]).isEqualTo(transferWithoutMapping)
     }
 
     @Test
@@ -92,22 +100,22 @@ class SolanaLogEventFilterTest {
         val incomeMint = randomString()
         val outcomeMint = randomString()
         val incomeTransfer = randomBalanceIncomeTransfer().copy(mint = incomeMint)
-        val outcomeTransfer = randomBalanceIncomeTransfer().copy(mint = outcomeMint)
+        val outcomeTransfer = randomBalanceOutcomeTransfer().copy(mint = outcomeMint)
+
+        // We're requesting balances in any way in order to determine - should we write new mapping in DB or not
+        coEvery {
+            accountToMintAssociationService.getMintsByAccounts(mutableSetOf(incomeTransfer.to, outcomeTransfer.from))
+        } returns mapOf()
 
         // Mapping from transfer with known mint should be stored in cache
         coEvery {
-            accountToMintAssociationService.saveAccountToMintMapping(
+            accountToMintAssociationService.saveMintsByAccounts(
                 mapOf(
                     incomeTransfer.to to incomeMint,
-                    incomeTransfer.from to incomeMint,
-                    outcomeTransfer.to to outcomeMint,
                     outcomeTransfer.from to outcomeMint
                 )
             )
         } returns Unit
-
-        // Nothing should be requested - we know mint for these transfers
-        coEvery { accountToMintAssociationService.getMintsByAccounts(mutableSetOf()) } returns mapOf()
 
         // Events with currency token should be ignored
         coEvery { accountToMintAssociationService.isCurrencyToken(incomeMint) } returns true

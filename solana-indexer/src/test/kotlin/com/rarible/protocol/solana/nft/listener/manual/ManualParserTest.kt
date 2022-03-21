@@ -14,8 +14,11 @@ class ManualParserTest : AbstractBlockScannerTest() {
     private lateinit var subscribers: List<SolanaLogEventSubscriber>
 
     private val client = SolanaClient(
-        rpcUrls = listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"),
-        timeout = 10000
+        rpcUrls = listOf(
+            "https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"
+        ),
+        timeout = 10000,
+        emptySet()
     )
 
     @Test

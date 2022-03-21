@@ -1,19 +1,17 @@
 package com.rarible.protocol.solana.nft.listener.service
 
+import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
-import com.rarible.core.apm.withSpan
-import com.rarible.protocol.solana.nft.listener.repository.BalanceLogRepository
+import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
+import com.rarible.protocol.solana.nft.listener.repository.AccountToMintAssociationRepository
 import com.rarible.protocol.solana.nft.listener.service.currency.CurrencyTokenReader
-import io.lettuce.core.api.reactive.RedisReactiveCommands
-import kotlinx.coroutines.reactive.awaitFirst
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class AccountToMintAssociationService(
-    private val balanceLogRepository: BalanceLogRepository,
-    private val redis: RedisReactiveCommands<String, String>,
+    private val accountToMintAssociationRepository: AccountToMintAssociationRepository,
+    private val accountToMintAssociationCache: AccountToMintAssociationCache,
     currencyTokenReader: CurrencyTokenReader
 ) {
 
@@ -23,54 +21,32 @@ class AccountToMintAssociationService(
 
     suspend fun getMintByAccount(account: String): String? = getMintsByAccounts(listOf(account))[account]
 
+    @CaptureSpan(type = SpanType.APP)
     suspend fun getMintsByAccounts(accounts: Collection<String>): Map<String, String> {
-        val fromCache = getCachedMintsByAccounts(accounts)
+        val fromCache = accountToMintAssociationCache.getMintsByAccounts(accounts)
         if (fromCache.size == accounts.size) {
             logger.info("Account to mint cache hit: {} of {}", fromCache.size, accounts.size)
             return fromCache
         }
 
         val notCached = accounts.filterNot { fromCache.containsKey(it) }
+
         val fromDb = HashMap<String, String>()
+        accountToMintAssociationRepository.findAll(notCached)
+            .forEach { fromDb[it.balanceAccount] = it.mint }
 
-        balanceLogRepository.findBalanceInitializationRecords(notCached)
-            .collect { fromDb[it.balanceAccount] = it.mint }
-
-        saveAccountToMintMapping(fromDb)
+        accountToMintAssociationCache.saveMintsByAccounts(fromDb)
 
         logger.info("Account to mint cache hit: {} of {}, {} found in DB", fromCache.size, accounts.size, fromDb.size)
         return fromCache + fromDb
     }
 
-    suspend fun saveAccountToMintMapping(accountToMints: Map<String, String>) {
-        if (accountToMints.isEmpty()) {
-            return
-        }
-        withSpan("AccountToMintAssociationService#saveBalanceTokens", SpanType.CACHE) {
-            try {
-                redis.mset(accountToMints).awaitFirstOrNull()
-            } catch (e: Exception) {
-                logger.error("Redis error: cannot set account to mint mapping", e)
-            }
-        }
+    @CaptureSpan(type = SpanType.APP)
+    suspend fun saveMintsByAccounts(associations: Map<String, String>) {
+        accountToMintAssociationRepository.saveAll(associations.map { AccountToMintAssociation(it.key, it.value) })
+        accountToMintAssociationCache.saveMintsByAccounts(associations)
     }
 
-    suspend fun isCurrencyToken(mint: String): Boolean = currencyTokens.contains(mint)
+    fun isCurrencyToken(mint: String): Boolean = currencyTokens.contains(mint)
 
-    private suspend fun getCachedMintsByAccounts(accounts: Collection<String>): Map<String, String> {
-        if (accounts.isEmpty()) {
-            return emptyMap()
-        }
-        return withSpan("AccountToMintAssociationService#getCachedMintsByAccounts", SpanType.CACHE) {
-            try {
-                redis.mget(*accounts.toTypedArray())
-                    .filter { it.hasValue() }
-                    .collectMap({ it.key }, { it.value })
-                    .awaitFirst()
-            } catch (e: Exception) {
-                logger.error("Redis error: cannot set account to mint mapping", e)
-                emptyMap()
-            }
-        }
-    }
 }

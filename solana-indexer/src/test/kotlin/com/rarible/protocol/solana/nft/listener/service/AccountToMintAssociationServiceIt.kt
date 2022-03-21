@@ -2,7 +2,8 @@ package com.rarible.protocol.solana.nft.listener.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
-import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
+import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
+import com.rarible.protocol.solana.nft.listener.repository.AccountToMintAssociationRepository
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -13,26 +14,22 @@ class AccountToMintAssociationServiceIt : AbstractBlockScannerTest() {
     @Autowired
     lateinit var accountToMintAssociationService: AccountToMintAssociationService
 
+    @Autowired
+    lateinit var accountToMintAssociationRepository: AccountToMintAssociationRepository
+
     @Test
-    fun `save mapping`() = runBlocking<Unit> {
+    fun `save and get mapping`() = runBlocking<Unit> {
         val account1 = randomString()
         val account2 = randomString()
         val account3 = randomString()
-        accountToMintAssociationService.saveAccountToMintMapping(mapOf(account1 to "1", account2 to "2"))
 
-        val first = accountToMintAssociationService.getMintByAccount(account1)
-        val second = accountToMintAssociationService.getMintByAccount(account2)
-        val notFound = accountToMintAssociationService.getMintByAccount(account3)
+        accountToMintAssociationService.saveMintsByAccounts(mapOf(account1 to "1", account2 to "2"))
 
-        assertThat(first).isEqualTo("1")
-        assertThat(second).isEqualTo("2")
-        assertThat(notFound).isNull()
-    }
+        val cached = accountToMintAssociationService.getMintsByAccounts(listOf(account1, account2, account3))
 
-    @Test
-    fun `save mapping - empty map`() = runBlocking<Unit> {
-        // Should not throw an exception
-        accountToMintAssociationService.saveAccountToMintMapping(emptyMap())
+        assertThat(cached[account1]).isEqualTo("1")
+        assertThat(cached[account2]).isEqualTo("2")
+        assertThat(cached[account3]).isNull()
     }
 
     @Test
@@ -41,8 +38,10 @@ class AccountToMintAssociationServiceIt : AbstractBlockScannerTest() {
         val accountDb = randomString()
         val accountNotFound = randomString()
 
-        saveBalanceRecord(randomBalanceInitRecord().copy(balanceAccount = accountDb, mint = "2"))
-        accountToMintAssociationService.saveAccountToMintMapping(mapOf(accountCached to "1"))
+        val dbAssociation = AccountToMintAssociation(balanceAccount = accountDb, mint = "2")
+
+        accountToMintAssociationRepository.saveAll(listOf(dbAssociation))
+        accountToMintAssociationService.saveMintsByAccounts(mapOf(accountCached to "1"))
 
         val mints = accountToMintAssociationService.getMintsByAccounts(
             listOf(accountCached, accountDb, accountNotFound)
@@ -51,13 +50,6 @@ class AccountToMintAssociationServiceIt : AbstractBlockScannerTest() {
         assertThat(mints[accountCached]).isEqualTo("1")
         assertThat(mints[accountDb]).isEqualTo("2")
         assertThat(mints[accountNotFound]).isNull()
-    }
-
-    @Test
-    fun `get mapping - empty map`() = runBlocking<Unit> {
-        val result = accountToMintAssociationService.getMintsByAccounts(emptyList())
-
-        assertThat(result).hasSize(0)
     }
 
 }

@@ -17,5 +17,6 @@ data class SolanaIndexerProperties(
 data class FeatureFlags(
     val skipTransfersWithUnknownMint: Boolean = false,
     val enableInMemoryLogRecordHandling: Boolean = false,
-    val skipInMemoryLogRecordHandling: Boolean = false
+    val skipInMemoryLogRecordHandling: Boolean = false,
+    val enableAccountToMintAssociationCache: Boolean = true
 )

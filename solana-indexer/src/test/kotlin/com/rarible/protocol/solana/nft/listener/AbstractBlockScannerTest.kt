@@ -15,14 +15,11 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.nft.listener.service.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -352,10 +349,6 @@ abstract class AbstractBlockScannerTest {
         val args = listOf("spl-token", "transfer", token, "$amount", wallet)
 
         return processOperation(args) { it.parse(0, -1) }
-    }
-
-    protected suspend fun saveBalanceRecord(record: SolanaBalanceRecord): SolanaBalanceRecord {
-        return mongo.save(record, SubscriberGroup.BALANCE.collectionName).awaitFirst()
     }
 
     private fun <T> processOperation(args: List<String>, parser: (String) -> T): T {
