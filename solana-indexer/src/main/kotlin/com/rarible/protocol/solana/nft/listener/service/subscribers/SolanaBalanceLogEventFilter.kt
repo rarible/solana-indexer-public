@@ -34,10 +34,11 @@ class SolanaBalanceLogEventFilter(
 
         val accountGroups = getAccountToMintMapping(events)
 
-        // Retrieving mapping for ALL found accounts to know what we really need to update in DB
+        // Retrieving mapping for ALL found non-currency accounts to know what we really need to update in DB
         // TODO here we can query only accounts without known mint if we sure all mapping from init records already in DB
         // TODO If we are not starting to index from the 1st block, we MUST query mints for all accounts here
-        val existMapping = accountToMintAssociationService.getMintsByAccounts(accountGroups.keys)
+        val withoutCurrency = filterCurrencyBalances(accountGroups)
+        val existMapping = accountToMintAssociationService.getMintsByAccounts(withoutCurrency)
 
         // Set mint for groups - since reference of AccountGroup is the same for all mapped accounts,
         // it will be automatically referenced for each account of the group
@@ -51,8 +52,10 @@ class SolanaBalanceLogEventFilter(
         }
 
         return coroutineScope {
-            // Saving new mappings in background while filtering event list
-            val mappingToSave = HashMap(accountToMintMapping)
+            // Saving new non-currency mappings in background while filtering event list
+            val mappingToSave = HashMap(accountToMintMapping.filter {
+                !accountToMintAssociationService.isCurrencyToken(it.value)
+            })
             val updateMappingDeferred = async {
                 // Saving only non-existing mapping, including account references
                 existMapping.keys.forEach { mappingToSave.remove(it) }
@@ -179,5 +182,17 @@ class SolanaBalanceLogEventFilter(
         } else {
             record
         }
+    }
+
+    private fun filterCurrencyBalances(groups: Map<String, AccountGraph.AccountGroup>): Set<String> {
+        return groups.mapNotNull {
+            val account = it.key
+            val mint = it.value.mint
+            if (mint == null || !accountToMintAssociationService.isCurrencyToken(mint)) {
+                account
+            } else {
+                null
+            }
+        }.toMutableSet()
     }
 }

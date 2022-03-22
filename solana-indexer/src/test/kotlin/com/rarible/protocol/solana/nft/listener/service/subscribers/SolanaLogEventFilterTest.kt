@@ -67,24 +67,20 @@ class SolanaLogEventFilterTest {
         val initMint = init.mint
         val mappedMint = randomString()
 
-        // Mapped mints should be requested for all transfers
+        // Mapped mints should be requested for all non-currency transfers
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
-                    transferWithInitMint.to, transferWithInitMint.from,
                     transferWithMapping.to, transferWithMapping.from,
                     transferWithoutMapping.to, transferWithoutMapping.from
                 )
             )
         } returns mapOf(transferWithMapping.from to mappedMint)
 
-        // Mapping from Init event should be stored in cache
+        // Mapping should be same only for non-existing non-currency associations
         coEvery {
             accountToMintAssociationService.saveMintsByAccounts(
                 mapOf(
-                    // Both unknown mapping from init event should be stored
-                    transferWithInitMint.from to init.mint,
-                    transferWithInitMint.to to init.mint,
                     // for this transfer we know TO now, should be stored too
                     transferWithMapping.to to mappedMint,
                 )
@@ -118,21 +114,17 @@ class SolanaLogEventFilterTest {
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
-                    incomeTransfer.to,
-                    incomeTransfer.from,
                     outcomeTransfer.to,
                     outcomeTransfer.from
                 )
             )
         } returns mapOf()
 
-        // Mapping from transfer with known mint should be stored in cache
+        // Mapping from transfer of NFT with known mint should be stored in cache
         coEvery {
             accountToMintAssociationService.saveMintsByAccounts(
                 // Since we have no known mappings, all of them should be saved
                 mapOf(
-                    incomeTransfer.to to incomeMint,
-                    incomeTransfer.from to incomeMint,
                     outcomeTransfer.to to outcomeMint,
                     outcomeTransfer.from to outcomeMint
                 )
@@ -141,13 +133,14 @@ class SolanaLogEventFilterTest {
 
         // Events with currency token should be ignored
         coEvery { accountToMintAssociationService.isCurrencyToken(incomeMint) } returns true
-        coEvery { accountToMintAssociationService.isCurrencyToken(outcomeMint) } returns true
+        coEvery { accountToMintAssociationService.isCurrencyToken(outcomeMint) } returns false
 
         val event = randomLogEvent(incomeTransfer, outcomeTransfer)
         val result = filter.filter(listOf(event))
 
         val records = getRecords(result)
-        assertThat(records).hasSize(0)
+        assertThat(records).hasSize(1)
+        assertThat(records[0]).isEqualTo(outcomeTransfer)
 
     }
 
