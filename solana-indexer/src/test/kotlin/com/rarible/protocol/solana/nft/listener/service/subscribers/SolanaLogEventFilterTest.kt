@@ -67,16 +67,28 @@ class SolanaLogEventFilterTest {
         val initMint = init.mint
         val mappedMint = randomString()
 
-        // Mapped mints should be requested only for all transfers
+        // Mapped mints should be requested for all transfers
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
-                mutableSetOf(transferWithInitMint.to, transferWithMapping.from, transferWithoutMapping.to)
+                mutableSetOf(
+                    transferWithInitMint.to, transferWithInitMint.from,
+                    transferWithMapping.to, transferWithMapping.from,
+                    transferWithoutMapping.to, transferWithoutMapping.from
+                )
             )
         } returns mapOf(transferWithMapping.from to mappedMint)
 
         // Mapping from Init event should be stored in cache
         coEvery {
-            accountToMintAssociationService.saveMintsByAccounts(mapOf(init.balanceAccount to init.mint))
+            accountToMintAssociationService.saveMintsByAccounts(
+                mapOf(
+                    // Both unknown mapping from init event should be stored
+                    transferWithInitMint.from to init.mint,
+                    transferWithInitMint.to to init.mint,
+                    // for this transfer we know TO now, should be stored too
+                    transferWithMapping.to to mappedMint,
+                )
+            )
         } returns Unit
 
         // Event with currency token should be ignored
@@ -104,14 +116,24 @@ class SolanaLogEventFilterTest {
 
         // We're requesting balances in any way in order to determine - should we write new mapping in DB or not
         coEvery {
-            accountToMintAssociationService.getMintsByAccounts(mutableSetOf(incomeTransfer.to, outcomeTransfer.from))
+            accountToMintAssociationService.getMintsByAccounts(
+                mutableSetOf(
+                    incomeTransfer.to,
+                    incomeTransfer.from,
+                    outcomeTransfer.to,
+                    outcomeTransfer.from
+                )
+            )
         } returns mapOf()
 
         // Mapping from transfer with known mint should be stored in cache
         coEvery {
             accountToMintAssociationService.saveMintsByAccounts(
+                // Since we have no known mappings, all of them should be saved
                 mapOf(
                     incomeTransfer.to to incomeMint,
+                    incomeTransfer.from to incomeMint,
+                    outcomeTransfer.to to outcomeMint,
                     outcomeTransfer.from to outcomeMint
                 )
             )

@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
+import com.rarible.protocol.solana.nft.listener.util.AccountGraph
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
@@ -31,16 +32,29 @@ class SolanaBalanceLogEventFilter(
             return emptyList()
         }
 
-        val (allAccounts, accountToMintMapping) = getAccountToMintMapping(events)
+        val accountGroups = getAccountToMintMapping(events)
 
         // Retrieving mapping for ALL found accounts to know what we really need to update in DB
-        val existMapping = accountToMintAssociationService.getMintsByAccounts(allAccounts)
+        // TODO here we can query only accounts without known mint if we sure all mapping from init records already in DB
+        // TODO If we are not starting to index from the 1st block, we MUST query mints for all accounts here
+        val existMapping = accountToMintAssociationService.getMintsByAccounts(accountGroups.keys)
+
+        // Set mint for groups - since reference of AccountGroup is the same for all mapped accounts,
+        // it will be automatically referenced for each account of the group
+        existMapping.forEach { accountGroups[it.key]!!.mint = it.value }
+
+        // Now we have full mapping account->mint from events and DB
+        val accountToMintMapping = HashMap<String, String>()
+        accountGroups.forEach { group ->
+            val account = group.key
+            group.value.mint?.let { accountToMintMapping[account] = it }
+        }
 
         return coroutineScope {
             // Saving new mappings in background while filtering event list
             val mappingToSave = HashMap(accountToMintMapping)
             val updateMappingDeferred = async {
-                // Saving only non-existing mapping
+                // Saving only non-existing mapping, including account references
                 existMapping.keys.forEach { mappingToSave.remove(it) }
                 accountToMintAssociationService.saveMintsByAccounts(mappingToSave)
             }
@@ -83,9 +97,9 @@ class SolanaBalanceLogEventFilter(
 
     private fun getAccountToMintMapping(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
-    ): MappingsFromLogEvents {
+    ): Map<String, AccountGraph.AccountGroup> {
         val accountToMintMapping = HashMap<String, String>()
-        val accounts = mutableSetOf<String>()
+        val accounts = AccountGraph()
 
         events.asSequence().flatMap { it.logRecordsToInsert }.forEach { record ->
             when (record) {
@@ -94,16 +108,24 @@ class SolanaBalanceLogEventFilter(
                     accountToMintMapping[record.balanceAccount] = record.mint
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
-                    accounts.add(record.from)
+                    accounts.addRib(record.from, record.to)
                     record.mint?.let { accountToMintMapping[record.from] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
-                    accounts.add(record.to)
+                    accounts.addRib(record.from, record.to)
                     record.mint?.let { accountToMintMapping[record.to] = it }
                 }
             }
         }
-        return MappingsFromLogEvents(accounts, accountToMintMapping)
+
+        val accountGroups = accounts.findGroups()
+
+        // Set mints known from log events
+        accountToMintMapping.forEach {
+            accountGroups[it.key]!!.mint = it.value
+        }
+
+        return accountGroups
     }
 
     private fun keepIfNft(
@@ -156,10 +178,4 @@ class SolanaBalanceLogEventFilter(
             record
         }
     }
-
-    private data class MappingsFromLogEvents(
-        val accounts: Set<String>,
-        val accountToMintMapping: MutableMap<String, String>
-    )
-
 }
