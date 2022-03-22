@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.subscribers
+package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
 import com.rarible.blockchain.scanner.framework.data.BlockEvent
 import com.rarible.blockchain.scanner.framework.data.LogEvent
@@ -8,6 +8,8 @@ import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer
@@ -32,7 +34,13 @@ class SolanaLogEventFilterTest {
         collection = SubscriberGroup.TOKEN.collectionName
     ) {}
 
-    private val filter = SolanaBalanceLogEventFilter(accountToMintAssociationService, FeatureFlags())
+    private val blackListedToken = randomString()
+
+    private val filter = SolanaBalanceLogEventFilter(
+        accountToMintAssociationService,
+        SolanaBlackListTokenFilter(setOf(blackListedToken)),
+        FeatureFlags()
+    )
 
     @BeforeEach
     fun beforeEach() {
@@ -141,7 +149,29 @@ class SolanaLogEventFilterTest {
         val records = getRecords(result)
         assertThat(records).hasSize(1)
         assertThat(records[0]).isEqualTo(outcomeTransfer)
+    }
 
+    @Test
+    fun `transfer with blacklisted mint`() = runBlocking<Unit> {
+        val incomeTransfer = randomBalanceIncomeTransfer().copy(
+            mint = blackListedToken
+        )
+
+        coEvery {
+            accountToMintAssociationService.getMintsByAccounts(mutableSetOf())
+        } returns mapOf()
+
+        coEvery {
+            accountToMintAssociationService.saveMintsByAccounts(mapOf())
+        } returns Unit
+
+        coEvery { accountToMintAssociationService.isCurrencyToken(blackListedToken) } returns false
+
+        val event = randomLogEvent(incomeTransfer)
+        val result = filter.filter(listOf(event))
+
+        val records = getRecords(result)
+        assertThat(records).hasSize(0)
     }
 
     private fun randomLogEvent(vararg records: SolanaLogRecord): LogEvent<SolanaLogRecord, SolanaDescriptor> {

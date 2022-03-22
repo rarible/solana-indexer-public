@@ -4,7 +4,7 @@ import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.repository.AccountToMintAssociationRepository
-import com.rarible.protocol.solana.nft.listener.service.currency.CurrencyTokenReader
+import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.CurrencyTokenReader
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

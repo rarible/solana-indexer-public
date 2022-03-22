@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.currency
+package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper

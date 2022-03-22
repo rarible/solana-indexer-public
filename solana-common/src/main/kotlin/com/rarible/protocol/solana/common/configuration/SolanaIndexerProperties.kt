@@ -18,5 +18,12 @@ data class FeatureFlags(
     val skipTransfersWithUnknownMint: Boolean = false,
     val enableInMemoryLogRecordHandling: Boolean = false,
     val skipInMemoryLogRecordHandling: Boolean = false,
-    val enableAccountToMintAssociationCache: Boolean = true
+    val enableAccountToMintAssociationCache: Boolean = true,
+    val tokenFilter: TokenFilterType = TokenFilterType.NONE,
 )
+
+enum class TokenFilterType {
+    WHITELIST,
+    BLACKLIST,
+    NONE
+}

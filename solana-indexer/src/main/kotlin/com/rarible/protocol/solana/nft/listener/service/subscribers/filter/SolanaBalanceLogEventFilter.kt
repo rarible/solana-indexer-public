@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.subscribers
+package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
 import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component
 @Component
 class SolanaBalanceLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
+    private val tokenFilter: SolanaTokenFilter,
     private val featureFlags: FeatureFlags
 ) : SolanaLogEventFilter {
 
@@ -54,7 +55,7 @@ class SolanaBalanceLogEventFilter(
         return coroutineScope {
             // Saving new non-currency mappings in background while filtering event list
             val mappingToSave = HashMap(accountToMintMapping.filter {
-                !accountToMintAssociationService.isCurrencyToken(it.value)
+                isAcceptableToken(it.value)
             })
             val updateMappingDeferred = async {
                 // Saving only non-existing mapping, including account references
@@ -152,10 +153,10 @@ class SolanaBalanceLogEventFilter(
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
-        return if (accountToMintAssociationService.isCurrencyToken(mint)) {
-            null
-        } else {
+        return if (isAcceptableToken(mint)) {
             record
+        } else {
+            null
         }
     }
 
@@ -171,7 +172,7 @@ class SolanaBalanceLogEventFilter(
         // If mint not found, we can skip record - depends on feature flag
         ?: return if (featureFlags.skipTransfersWithUnknownMint) null else record
 
-        if (accountToMintAssociationService.isCurrencyToken(mint)) {
+        if (!isAcceptableToken(mint)) {
             return null
         }
 
@@ -188,11 +189,16 @@ class SolanaBalanceLogEventFilter(
         return groups.mapNotNull {
             val account = it.key
             val mint = it.value.mint
-            if (mint == null || !accountToMintAssociationService.isCurrencyToken(mint)) {
+            if (mint == null || isAcceptableToken(mint)) {
                 account
             } else {
                 null
             }
         }.toMutableSet()
+    }
+
+    private fun isAcceptableToken(mint: String): Boolean {
+        return !accountToMintAssociationService.isCurrencyToken(mint)
+            && tokenFilter.isAcceptableToken(mint)
     }
 }
