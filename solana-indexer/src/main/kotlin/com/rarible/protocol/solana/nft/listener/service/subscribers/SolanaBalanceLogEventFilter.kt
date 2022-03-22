@@ -105,6 +105,8 @@ class SolanaBalanceLogEventFilter(
             when (record) {
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
+                    // Artificial reference for init-record
+                    accounts.addRib(record.balanceAccount, record.balanceAccount)
                     accountToMintMapping[record.balanceAccount] = record.mint
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
