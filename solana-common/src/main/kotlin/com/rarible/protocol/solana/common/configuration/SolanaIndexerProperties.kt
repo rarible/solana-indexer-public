@@ -20,6 +20,7 @@ data class FeatureFlags(
     val skipInMemoryLogRecordHandling: Boolean = false,
     val enableAccountToMintAssociationCache: Boolean = true,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
+    val blacklistTokens: Set<String> = emptySet()
 )
 
 enum class TokenFilterType {

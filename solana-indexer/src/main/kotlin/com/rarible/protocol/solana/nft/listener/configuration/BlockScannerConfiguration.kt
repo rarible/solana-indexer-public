@@ -86,7 +86,7 @@ class BlockchainScannerConfiguration(
                 SolanaWhiteListTokenFilter(tokens)
             }
             TokenFilterType.BLACKLIST -> {
-                val tokens = NftTokenReader("/blacklist").readTokens(BLACKLIST_FILES)
+                val tokens = NftTokenReader("/blacklist").readTokens(BLACKLIST_FILES) + featureFlags.blacklistTokens
                 SolanaBlackListTokenFilter(tokens)
             }
         }
