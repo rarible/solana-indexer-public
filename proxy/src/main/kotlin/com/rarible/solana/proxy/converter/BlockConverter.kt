@@ -13,33 +13,28 @@ object SolanaProgramId {
 }
 
 object BlockConverter {
+    private fun SolanaTransactionDto.Instruction?.isOk(programId: String): SolanaTransactionDto.Instruction? {
+        return takeIf { programId in SolanaProgramId.programs }
+    }
+
     fun convert(response: ApiResponse<SolanaBlockDto>) : ApiResponse<SolanaBlockDto>{
         val block = response.result!!
         val newTransactions = block.transactions.map { transactionDto ->
             val accountKeys = transactionDto.transaction!!.message.accountKeys
-            val newInstructions = transactionDto.transaction!!.message.instructions.filter { instruction ->
-                val programId = accountKeys[instruction.programIdIndex]
-
-                programId in SolanaProgramId.programs
-            }
-
+            val newInstructions = transactionDto.transaction!!.message.instructions.map { it.isOk(accountKeys[it!!.programIdIndex]) }
             val newInnerInstructions = transactionDto.meta?.innerInstructions?.map { innerInstruction ->
                 SolanaTransactionDto.InnerInstruction(
                     index = innerInstruction.index,
-                    instructions = innerInstruction.instructions.filter { instruction ->
-                        val programId = accountKeys[instruction.programIdIndex]
-
-                        programId in SolanaProgramId.programs
-                    }
+                    instructions = innerInstruction.instructions.map { it.isOk(accountKeys[it!!.programIdIndex]) }
                 )
             }
 
             transactionDto.copy(
                 meta = SolanaTransactionDto.Meta(
-                    err = transactionDto.meta?.err,
+                    err = transactionDto.meta?.err?.let { true },
                     innerInstructions = newInnerInstructions ?: emptyList()
                 ),
-                transaction = if (newInstructions.isEmpty()) {
+                transaction = if (newInstructions.all { it == null }) {
                     null
                 } else
                     transactionDto.transaction!!.copy(
