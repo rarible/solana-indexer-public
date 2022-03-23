@@ -20,7 +20,7 @@ class AccountToMintAssociationRepositoryIt : AbstractBlockScannerTest() {
 
         repository.saveAll(listOf(association1, association2))
 
-        val mapping = repository.findAll(listOf(association1.account, association2.account))
+        val mapping = repository.findAll(listOf(association1.account, association2.account), 1)
             .associateBy { it.account }
 
         assertThat(mapping).hasSize(2)
@@ -43,7 +43,8 @@ class AccountToMintAssociationRepositoryIt : AbstractBlockScannerTest() {
                 association1.account,
                 association2.account,
                 association3.account
-            )
+            ),
+            2
         ).associateBy { it.account }
 
         assertThat(mapping).hasSize(3)
