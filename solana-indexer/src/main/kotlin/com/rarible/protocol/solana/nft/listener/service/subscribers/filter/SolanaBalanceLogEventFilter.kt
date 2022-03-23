@@ -105,6 +105,9 @@ class SolanaBalanceLogEventFilter(
         val accountToMintMapping = HashMap<String, String>()
         val accounts = AccountGraph()
 
+        var withMint = 0
+        var withoutMint = 0
+
         events.asSequence().flatMap { it.logRecordsToInsert }.forEach { record ->
             when (record) {
                 // In-memory account mapping
@@ -116,13 +119,20 @@ class SolanaBalanceLogEventFilter(
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.addRib(record.from, record.to)
                     record.mint?.let { accountToMintMapping[record.from] = it }
+                    if (record.mint == null) withMint++ else withoutMint++
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.addRib(record.from, record.to)
                     record.mint?.let { accountToMintMapping[record.to] = it }
+                    if (record.mint == null) withMint++ else withoutMint++
                 }
             }
         }
+
+        logger.info(
+            "Checked {} transfer events, {} with mint, {} without mint",
+            withMint + withoutMint, withMint, withoutMint
+        )
 
         val accountGroups = accounts.findGroups()
 
