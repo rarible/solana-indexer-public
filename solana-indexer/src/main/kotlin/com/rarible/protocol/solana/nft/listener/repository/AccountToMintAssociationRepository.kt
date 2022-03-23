@@ -4,9 +4,6 @@ import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
 import com.rarible.core.common.optimisticLock
 import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -27,18 +24,7 @@ class AccountToMintAssociationRepository(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun findAll(accounts: Collection<String>, batchCount: Int): List<AccountToMintAssociation> {
-        if (batchCount == 1) return findAll(accounts)
-
-        val batchSize = (accounts.size / batchCount) + 1
-        return coroutineScope {
-            accounts.chunked(batchSize).map {
-                async { findAll(it) }
-            }.awaitAll().flatten()
-        }
-    }
-
-    private suspend fun findAll(accounts: Collection<String>): List<AccountToMintAssociation> {
+    suspend fun findAll(accounts: Collection<String>): List<AccountToMintAssociation> {
         if (accounts.isEmpty()) return emptyList()
 
         val criteria = Criteria.where("_id").inValues(accounts)

@@ -17,9 +17,6 @@ class AccountToMintAssociationService(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    // Split IN query into 'batchCount' parallel queries
-    private val batchCount = 8
-
     private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
 
     @CaptureSpan(type = SpanType.APP)
@@ -33,7 +30,7 @@ class AccountToMintAssociationService(
         val notCached = accounts.filterNot { fromCache.containsKey(it) }
 
         val fromDb = HashMap<String, String>()
-        accountToMintAssociationRepository.findAll(notCached, batchCount)
+        accountToMintAssociationRepository.findAll(notCached)
             .forEach { fromDb[it.account] = it.mint }
 
         accountToMintAssociationCache.saveMintsByAccounts(fromDb)
