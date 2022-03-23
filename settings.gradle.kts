@@ -5,5 +5,6 @@ include(
     "solana-api",
     "solana-indexer",
     "solana-test-common",
+    "proxy",
     "util-borsh"
 )
