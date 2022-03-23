@@ -114,12 +114,12 @@ class SolanaBalanceLogEventFilter(
                     accountToMintMapping[record.balanceAccount] = record.mint
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
-                    accounts.addRib(record.from, record.to)
-                    record.mint?.let { accountToMintMapping[record.from] = it }
+                    accounts.addRib(record.owner, record.to)
+                    record.mint?.let { accountToMintMapping[record.owner] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
-                    accounts.addRib(record.from, record.to)
-                    record.mint?.let { accountToMintMapping[record.to] = it }
+                    accounts.addRib(record.from, record.owner)
+                    record.mint?.let { accountToMintMapping[record.owner] = it }
                 }
             }
         }
@@ -141,10 +141,10 @@ class SolanaBalanceLogEventFilter(
         is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.TransferOutcomeRecord -> {
-            keepIfNft(record.from, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
+            keepIfNft(record.owner, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
         }
         is SolanaBalanceRecord.TransferIncomeRecord -> {
-            keepIfNft(record.to, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
+            keepIfNft(record.owner, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
         }
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
         is SolanaTokenRecord -> keepIfNft(record, record.mint)

@@ -42,18 +42,18 @@ fun randomBalanceIncomeTransfer(): SolanaBalanceRecord.TransferIncomeRecord {
         log = randomSolanaLog(),
         timestamp = nowMillis(),
         from = randomString(),
-        to = randomString(),
+        owner = randomString(),
         incomeAmount = randomBigInt()
     )
 }
 
 fun randomBalanceOutcomeTransfer(): SolanaBalanceRecord.TransferOutcomeRecord {
     return SolanaBalanceRecord.TransferOutcomeRecord(
-        mint = null,
-        log = randomSolanaLog(),
-        timestamp = nowMillis(),
-        from = randomString(),
         to = randomString(),
-        outcomeAmount = randomBigInt()
+        owner = randomString(),
+        mint = null,
+        outcomeAmount = randomBigInt(),
+        log = randomSolanaLog(),
+        timestamp = nowMillis()
     )
 }
