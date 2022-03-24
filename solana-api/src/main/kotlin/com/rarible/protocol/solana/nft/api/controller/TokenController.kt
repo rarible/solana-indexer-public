@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.solana.nft.api.service.TokenApiService
 import com.rarible.solana.protocol.api.controller.TokenControllerApi
+import com.rarible.solana.protocol.dto.RoyaltiesDto
 import com.rarible.solana.protocol.dto.TokenDto
 import com.rarible.solana.protocol.dto.TokenMetaDto
 import com.rarible.solana.protocol.dto.TokensDto
@@ -41,6 +42,16 @@ class TokenController(
         val tokenMeta = tokenMetaService.loadTokenMeta(tokenAddress)
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(TokenMetaConverter.convert(tokenMeta))
+    }
+
+    override suspend fun resetTokenMeta(tokenAddress: String): ResponseEntity<Unit> {
+        // TODO implement
+        return ResponseEntity.ok().build()
+    }
+
+    override suspend fun getTokenRoyaltiesByAddress(tokenAddress: String): ResponseEntity<RoyaltiesDto> {
+        // TODO implement
+        return ResponseEntity.ok(RoyaltiesDto(emptyList()))
     }
 
     override suspend fun getTokensByAddresses(tokenAddresses: List<String>): ResponseEntity<TokensDto> {
