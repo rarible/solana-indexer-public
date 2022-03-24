@@ -5,6 +5,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
@@ -128,6 +129,15 @@ class SolanaBalanceLogEventFilter(
                     accounts.addRib(record.from, record.owner)
                     record.mint?.let { accountToMintMapping[record.owner] = it }
                 }
+                is SolanaAuctionHouseOrderRecord -> when (record) {
+                    is SolanaAuctionHouseOrderRecord.BuyRecord -> {
+                        accounts.addRib(record.tokenAccount, record.tokenAccount)
+                    }
+                    is SolanaAuctionHouseOrderRecord.SellRecord -> {
+                        accounts.addRib(record.tokenAccount, record.tokenAccount)
+                    }
+                    is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
+                }
             }
         }
 
@@ -157,6 +167,13 @@ class SolanaBalanceLogEventFilter(
         is SolanaTokenRecord -> keepIfNft(record, record.mint)
         is SolanaAuctionHouseRecord -> record
         is SolanaMetaRecord -> record
+        is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
+        is SolanaAuctionHouseOrderRecord.BuyRecord -> {
+            accountToMintMapping[record.tokenAccount]?.let { mint -> record.copy(mint = mint) }
+        }
+        is SolanaAuctionHouseOrderRecord.SellRecord -> {
+            accountToMintMapping[record.tokenAccount]?.let { mint -> record.copy(mint = mint) }
+        }
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {

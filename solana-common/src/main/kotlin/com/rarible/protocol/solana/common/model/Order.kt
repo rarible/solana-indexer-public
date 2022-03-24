@@ -35,9 +35,9 @@ data class Asset(
 
 @Document(COLLECTION)
 data class Order(
+    val auctionHouse: String,
     val maker: String,
     val status: OrderStatus,
-    val salt: String,
     val type: OrderType,
     val make: Asset,
     val cancelled: Boolean,
@@ -45,8 +45,9 @@ data class Order(
     val updatedAt: Instant,
     override val revertableEvents: List<OrderEvent>,
 ) : Entity<OrderId, OrderEvent, Order> {
+
     @Id
-    override val id = Hash.keccak256(maker + make + salt)
+    override val id = calculateAuctionHouseOrderId(maker, make.type, auctionHouse)
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order {
         return copy(revertableEvents = events)
@@ -56,15 +57,30 @@ data class Order(
         const val COLLECTION = "order"
 
         fun empty(): Order = Order(
+            auctionHouse = "",
             maker = "",
             status = OrderStatus.ENDED,
             type = OrderType.BUY,
             make = Asset(TokenAssetType(tokenAddress = ""), BigInteger.ZERO),
-            salt = "",
             cancelled = false,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList()
         )
+
+        // hash
+        // ACTIVE
+        // FILLED
+        // ACTIVE
+
+        fun calculateAuctionHouseOrderId(
+            maker: String,
+            make: AssetType,
+            auctionHouse: String
+        ): String = Hash.keccak256(maker + make.hash() + auctionHouse)
+
+        private fun AssetType.hash() = when (this) {
+            is TokenAssetType -> tokenAddress
+        }
     }
 }

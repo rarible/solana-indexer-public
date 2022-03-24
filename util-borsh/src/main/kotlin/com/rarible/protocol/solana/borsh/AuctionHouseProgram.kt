@@ -32,6 +32,11 @@ data class Sell(
     val size: ULong
 ) : AuctionHouseInstruction()
 
+data class Cancel(
+    val price: ULong,
+    val size: ULong
+) : AuctionHouseInstruction()
+
 data class ExecuteSale(
     val buyerPrice: ULong,
     val size: ULong
@@ -80,7 +85,13 @@ internal fun ByteBuffer.parseExecuteSell(): ExecuteSale {
     return ExecuteSale(buyerPrice, size)
 }
 
-fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {
+internal fun ByteBuffer.parseCancel(): Cancel {
+    val price = getLong().toULong()
+    val size = getLong().toULong()
+    return Cancel(price = price, size = size)
+}
+
+fun String.parseAuctionHouseInstruction(numberOfAccounts: Int): AuctionHouseInstruction? {
     val bytes = Base58.decode(this)
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
 
@@ -90,7 +101,12 @@ fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {
         -1042918692164058403L -> ByteBuffer::parseCreateAuctionHouse
         -2597168572136237228L -> ByteBuffer::parseUpdateAuctionHouse
         442251406432881189L -> ByteBuffer::parseExecuteSell
-        else -> return null
+        else -> if (numberOfAccounts == 8) {
+            // TODO: We don't know the discriminator of the cancel instruction yet :(
+            ByteBuffer::parseCancel
+        } else {
+            return null
+        }
     }
 
     return decoder(buffer)

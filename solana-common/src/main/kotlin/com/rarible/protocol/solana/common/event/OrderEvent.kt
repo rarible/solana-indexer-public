@@ -5,6 +5,9 @@ import java.math.BigInteger
 import java.time.Instant
 
 sealed class OrderEvent : EntityEvent {
+    abstract val maker: String
+    abstract val mint: String
+
     abstract val timestamp: Instant
     abstract override val reversed: Boolean
     abstract override val log: SolanaLog
@@ -12,9 +15,9 @@ sealed class OrderEvent : EntityEvent {
 }
 
 data class OrderBuyEvent(
-    val maker: String,
+    override val maker: String,
     val buyPrice: BigInteger,
-    val mint: String,
+    override val mint: String,
     val amount: BigInteger,
     override val timestamp: Instant,
     override val reversed: Boolean,
@@ -22,9 +25,9 @@ data class OrderBuyEvent(
 ) : OrderEvent()
 
 data class OrderSellEvent(
-    val maker: String,
+    override val maker: String,
     val sellPrice: BigInteger,
-    val mint: String,
+    override val mint: String,
     val amount: BigInteger,
     override val timestamp: Instant,
     override val reversed: Boolean,
@@ -32,10 +35,16 @@ data class OrderSellEvent(
 ) : OrderEvent()
 
 data class ExecuteSaleEvent(
-    val buyPrice: BigInteger,
-    val mint: String,
+    override val maker: String,
+    val price: BigInteger,
+    override val mint: String,
     val amount: BigInteger,
+    val direction: Direction,
     override val timestamp: Instant,
     override val reversed: Boolean,
     override val log: SolanaLog
-) : OrderEvent()
+) : OrderEvent() {
+    enum class Direction {
+        BUY, SELL
+    }
+}

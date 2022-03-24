@@ -4,7 +4,8 @@ enum class SubscriberGroup {
     TOKEN,
     BALANCE,
     METAPLEX_META,
-    AUCTION_HOUSE;
+    AUCTION_HOUSE,
+    AUCTION_HOUSE_ORDER;
 
     val id: String get() = name.lowercase()
 

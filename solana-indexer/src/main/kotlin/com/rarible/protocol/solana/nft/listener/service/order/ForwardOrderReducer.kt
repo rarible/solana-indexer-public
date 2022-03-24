@@ -11,7 +11,6 @@ import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.OrderType
 import com.rarible.protocol.solana.common.model.TokenAssetType
 import org.springframework.stereotype.Component
-import java.util.*
 
 @Component
 class ForwardOrderReducer : Reducer<OrderEvent, Order> {
@@ -24,7 +23,6 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 maker = event.maker,
                 status = OrderStatus.ACTIVE,
                 type = OrderType.BUY,
-                salt = UUID.randomUUID().toString(), // TODO is it ok ?
                 cancelled = false,
                 make = Asset(
                     type = TokenAssetType(tokenAddress = event.mint),
@@ -36,7 +34,6 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 maker = event.maker,
                 status = OrderStatus.ACTIVE,
                 type = OrderType.SELL,
-                salt = UUID.randomUUID().toString(), // TODO is it ok ?
                 cancelled = false,
                 make = Asset(
                     type = TokenAssetType(tokenAddress = event.mint),

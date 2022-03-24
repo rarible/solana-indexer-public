@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
@@ -59,8 +60,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         }
     }
 
+    // NOTE! this test may be very slow (3+ minutes), it is OK.
     @Test
-    @Disabled //TODO endless test
     fun sellTest() = runBlocking {
         val keypair = createKeypair(randomString())
         val wallet = getWallet(keypair)
@@ -72,19 +73,20 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                collection = SubscriberGroup.AUCTION_HOUSE.collectionName,
-                type = SolanaAuctionHouseRecord.SellRecord::class.java
+                collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
+                type = SolanaAuctionHouseOrderRecord.SellRecord::class.java
             ).toList()
 
             Assertions.assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaAuctionHouseRecord.SellRecord::log.name,
-                SolanaAuctionHouseRecord.SellRecord::timestamp.name,
-                SolanaAuctionHouseRecord.SellRecord::mint.name
+                SolanaAuctionHouseOrderRecord.SellRecord::log.name,
+                SolanaAuctionHouseOrderRecord.SellRecord::timestamp.name,
+                SolanaAuctionHouseOrderRecord.SellRecord::tokenAccount.name // TODO: do not ignore. We can calculate this field by [token] and [baseKeyPair]
             ).isEqualTo(
                 listOf(
-                    SolanaAuctionHouseRecord.SellRecord(
+                    SolanaAuctionHouseOrderRecord.SellRecord(
                         maker = getWallet(baseKeypair),
-                        mint = "",
+                        tokenAccount = "",
+                        mint = token,
                         amount = 1L.toBigInteger(),
                         sellPrice = 1.scaleSupply(9),
                         auctionHouse = house,
@@ -108,19 +110,20 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                collection = SubscriberGroup.AUCTION_HOUSE.collectionName,
-                type = SolanaAuctionHouseRecord.BuyRecord::class.java
+                collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
+                type = SolanaAuctionHouseOrderRecord.BuyRecord::class.java
             ).toList()
 
             Assertions.assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaAuctionHouseRecord.BuyRecord::log.name,
-                SolanaAuctionHouseRecord.BuyRecord::timestamp.name,
-                SolanaAuctionHouseRecord.BuyRecord::mint.name
+                SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
+                SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
+                SolanaAuctionHouseOrderRecord.BuyRecord::tokenAccount.name // TODO: do not ignore. We can calculate this field by [token] and [baseKeyPair]
             ).isEqualTo(
                 listOf(
-                    SolanaAuctionHouseRecord.BuyRecord(
+                    SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = getWallet(keypair),
-                        mint = "",
+                        tokenAccount = "",
+                        mint = token,
                         amount = 1L.toBigInteger(),
                         buyPrice = 1.scaleSupply(9),
                         auctionHouse = house,
@@ -155,25 +158,29 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
-                collection = SubscriberGroup.AUCTION_HOUSE.collectionName,
-                type = SolanaAuctionHouseRecord.ExecuteSaleRecord::class.java
+                collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
+                type = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::class.java
             ).toList()
 
+            val sellRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
+                buyer = buyerWallet,
+                seller = sellerWallet,
+                mint = token,
+                amount = 1L.toBigInteger(),
+                price = 1.scaleSupply(9),
+                auctionHouse = house,
+                log = ANY_SOLANA_LOG,
+                timestamp = Instant.EPOCH,
+                direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.SELL,
+                treasuryMint = wrappedSol
+            )
             Assertions.assertThat(records).usingElementComparatorIgnoringFields(
-                SolanaAuctionHouseRecord.ExecuteSaleRecord::log.name,
-                SolanaAuctionHouseRecord.ExecuteSaleRecord::timestamp.name
+                SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
+                SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::timestamp.name
             ).isEqualTo(
                 listOf(
-                    SolanaAuctionHouseRecord.ExecuteSaleRecord(
-                        buyer = buyerWallet,
-                        seller = sellerWallet,
-                        mint = token,
-                        amount = 1L.toBigInteger(),
-                        price = 1.scaleSupply(9),
-                        auctionHouse = house,
-                        log = ANY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH
-                    )
+                    sellRecord,
+                    sellRecord.copy(direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.BUY)
                 )
             )
         }
