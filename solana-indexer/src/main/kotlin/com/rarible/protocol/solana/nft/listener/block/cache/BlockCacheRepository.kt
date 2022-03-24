@@ -4,7 +4,10 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.Binary
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.count
 import org.springframework.data.mongodb.core.findById
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
@@ -16,6 +19,11 @@ class BlockCacheRepository(
     @Resource(name = "reactiveMongoTemplateBlockCache")
     private val mongo: ReactiveMongoOperations
 ) {
+    suspend fun isPresent(id: Long): Boolean {
+        val cnt = mongo.count<BlockCache>(Query(Criteria.where("id").`is`(id))).awaitFirst()
+        return cnt > 0
+    }
+
     suspend fun save(id: Long, content: ByteArray) {
         mongo.save(BlockCache(id, Binary(gzip(content)))).awaitFirst()
     }
