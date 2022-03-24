@@ -36,7 +36,7 @@ class BalanceControllerIt : AbstractControllerTest() {
             balanceWithMeta,
             balanceWithMeta2
         )
-        assertThat(balanceControllerApi.getBalanceByOwner(balance.owner).awaitFirst())
+        assertThat(balanceControllerApi.getBalanceByOwner(balance.owner, null, 50).awaitFirst())
             .isEqualTo(
                 BalanceWithMetaConverter.convert(
                     listOf(balanceWithMeta, balanceWithMeta2)

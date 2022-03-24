@@ -19,8 +19,8 @@ object BalanceWithMetaConverter {
     }
 
     fun convert(balances: List<BalanceWithMeta>): BalancesDto = BalancesDto(
-        total = balances.size.toLong(),
         balances = balances.map { convert(it) }
+        // TODO add continuation
     )
 
 }

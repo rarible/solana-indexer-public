@@ -2,10 +2,7 @@ package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.solana.protocol.dto.CollectionDto
 import com.rarible.solana.protocol.dto.ImageContentDto
-import com.rarible.solana.protocol.dto.JsonCollectionDto
-import com.rarible.solana.protocol.dto.OnChainCollectionDto
 import com.rarible.solana.protocol.dto.TokenCreatorPartDto
 import com.rarible.solana.protocol.dto.TokenMetaAttributeDto
 import com.rarible.solana.protocol.dto.TokenMetaContentDto
@@ -13,10 +10,10 @@ import com.rarible.solana.protocol.dto.TokenMetaDto
 import com.rarible.solana.protocol.dto.VideoContentDto
 
 object TokenMetaConverter {
+
     fun convert(tokenMeta: TokenMeta): TokenMetaDto =
         TokenMetaDto(
             name = tokenMeta.name,
-            collection = tokenMeta.collection?.let { convert(it) },
             description = tokenMeta.description,
             attributes = tokenMeta.attributes.map { it.convert() },
             content = tokenMeta.contents.map { it.convert() },
@@ -57,7 +54,7 @@ object TokenMetaConverter {
             key = key
         )
 
-    fun convert(collection: TokenMeta.Collection): CollectionDto =
+    /*fun convert(collection: TokenMeta.Collection): CollectionDto =
         when (collection) {
             is TokenMeta.Collection.OffChain -> JsonCollectionDto(
                 name = collection.name,
@@ -68,5 +65,11 @@ object TokenMetaConverter {
                 address = collection.address,
                 verified = collection.verified
             )
+        }*/
+
+    fun convert(collection: TokenMeta.Collection): String =
+        when (collection) {
+            is TokenMeta.Collection.OffChain -> collection.hash
+            is TokenMeta.Collection.OnChain -> collection.address
         }
 }

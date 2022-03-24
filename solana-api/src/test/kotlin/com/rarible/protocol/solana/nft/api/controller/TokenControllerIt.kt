@@ -1,14 +1,13 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.core.test.data.randomString
-import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
+import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomToken
 import com.rarible.protocol.solana.test.createRandomTokenMeta
 import com.rarible.protocol.solana.test.createRandomTokenWithMeta
 import io.mockk.coEvery
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -30,7 +29,7 @@ class TokenControllerIt : AbstractControllerTest() {
         val tokenWithMeta = createRandomTokenWithMeta()
         val collectionAddress = randomString()
         coEvery { testTokenApiService.getTokensWithMetaByCollection(collectionAddress) } returns flowOf(tokenWithMeta)
-        assertThat(tokenControllerApi.getTokensByCollection(collectionAddress).awaitFirst())
+        assertThat(tokenControllerApi.getTokensByCollection(collectionAddress, null, 50).awaitFirst())
             .isEqualTo(TokenWithMetaConverter.convert(listOf(tokenWithMeta)))
     }
 
