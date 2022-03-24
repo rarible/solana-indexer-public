@@ -60,8 +60,13 @@ class BalanceLogRepository(
             .sparse()
             .background()
 
+        private val BALANCE_CLASS: Index = Index()
+            .on("_class", Sort.Direction.ASC)
+            .background()
+
         val ALL = listOf(
             BALANCE_ACCOUNT,
+            BALANCE_CLASS,
         )
     }
 }
