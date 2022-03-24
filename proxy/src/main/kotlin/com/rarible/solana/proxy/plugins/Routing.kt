@@ -1,7 +1,9 @@
 package com.rarible.solana.proxy.plugins
 
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
+import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
+import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
 import com.rarible.solana.proxy.converter.BlockConverter
 import io.ktor.application.*
 import io.ktor.http.*
@@ -28,7 +30,19 @@ fun Application.configureRouting() {
                     val slot = params[0] as Int
                     val response = solanaClient.getBlock(slot.toLong(), GetBlockRequest.TransactionDetails.Full)
 
-                    call.respond(BlockConverter.convert(response))
+                    if (response.error != null) {
+                        call.respond(
+                            ApiResponse(
+                                result = null,
+                                error = ApiResponse.Error(
+                                    "",
+                                    response.error!!.code
+                                )
+                            )
+                        )
+                    } else {
+                        call.respond(BlockConverter.convert(response))
+                    }
                 }
                 "getSlot" -> {
                     val response = solanaClient.getLatestSlot()
