@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.meta
 
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
@@ -17,12 +18,10 @@ class MetaplexOffChainMetaLoader(
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
     private val externalHttpClient: ExternalHttpClient,
     private val metaMetrics: MetaMetrics,
+    private val solanaIndexerProperties: SolanaIndexerProperties,
     private val clock: Clock
 ) {
     private companion object {
-        // TODO[meta]: add a configuration for this field.
-        private val metadataRequestTimeout = Duration.ofSeconds(10)
-
         private val logger = LoggerFactory.getLogger(MetaplexOffChainMetaLoader::class.java)
     }
 
@@ -31,7 +30,7 @@ class MetaplexOffChainMetaLoader(
             .get(metadataUrl)
             .bodyToMono<String>()
             // TODO[meta]: limit the size of the loaded JSON.
-            .timeout(metadataRequestTimeout)
+            .timeout(Duration.ofMillis(solanaIndexerProperties.metaplexOffChainMetaLoadingTimeout))
             .awaitFirst()
 
     suspend fun loadMetaplexOffChainMeta(tokenAddress: TokenId, metadataUrl: URL): MetaplexOffChainMeta? {
