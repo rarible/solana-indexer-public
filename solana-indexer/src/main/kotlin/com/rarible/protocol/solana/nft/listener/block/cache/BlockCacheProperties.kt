@@ -9,5 +9,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class BlockCacheProperties(
     val enabled: Boolean = false,
     val rpcApiUrls: List<String> = listOf(),
+    val timeout: Long = 30000,
     val mongo: MongoProperties?,
 )

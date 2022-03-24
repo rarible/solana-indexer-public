@@ -10,5 +10,5 @@ class BlockCacheConfiguration(
     private val blockCacheProperties: BlockCacheProperties,
 ) {
     @Bean
-    fun blockCacheClient() = BlockCacheClient(blockCacheProperties.rpcApiUrls)
+    fun blockCacheClient() = BlockCacheClient(blockCacheProperties.rpcApiUrls, blockCacheProperties.timeout)
 }
