@@ -4,7 +4,9 @@ import com.rarible.solana.protocol.api.controller.CollectionControllerApi
 import com.rarible.solana.protocol.dto.CollectionDto
 import com.rarible.solana.protocol.dto.CollectionsDto
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.RestController
 
+@RestController
 class CollectionController : CollectionControllerApi {
 
     override suspend fun getAllCollections(continuation: String?, size: Int?): ResponseEntity<CollectionsDto> {
