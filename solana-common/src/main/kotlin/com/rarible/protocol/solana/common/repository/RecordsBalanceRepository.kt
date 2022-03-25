@@ -88,11 +88,15 @@ class RecordsBalanceRepository(
     private fun Criteria.addContinuation(continuation: Pair<Instant, String>?, sort: ActivitySortDto) =
         continuation?.let {
             if (sort == ActivitySortDto.LATEST_FIRST) {
-                and("timestamp").lte(continuation.first)
-                and("_id").lt(continuation.second)
+                orOperator(
+                    Criteria("timestamp").isEqualTo(continuation.first).and("_id").lt(continuation.second),
+                    Criteria("timestamp").lt(continuation.first)
+                )
             } else {
-                and("timestamp").gte(continuation.first)
-                and("_id").gt(continuation.second)
+                orOperator(
+                    Criteria("timestamp").isEqualTo(continuation.first).and("_id").gt(continuation.second),
+                    Criteria("timestamp").gt(continuation.first)
+                )
             }
         } ?: this
 
