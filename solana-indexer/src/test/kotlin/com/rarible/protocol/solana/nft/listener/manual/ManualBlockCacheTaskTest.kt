@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.manual
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCachTaskHandler
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheClient
+import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheProperties
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
@@ -21,7 +22,7 @@ class ManualBlockCacheTaskTest : AbstractBlockScannerTest() {
         val client = BlockCacheClient(
             urls = listOf("https://holy-proud-wave.solana-mainnet.quiknode.pro/790699a8dbe2e4f3b6b5593a366664d78646cf95/")
         )
-        val handler = BlockCachTaskHandler(client, repository)
+        val handler = BlockCachTaskHandler(client, repository, BlockCacheProperties(mongo = null))
         handler.runLongTask(10, "20").collect()
 
         (10L..20L).forEach {
