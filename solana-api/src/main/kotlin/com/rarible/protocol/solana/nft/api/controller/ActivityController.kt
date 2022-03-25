@@ -12,6 +12,20 @@ import org.springframework.web.bind.annotation.RestController
 class ActivityController(
     private val activityApiService: ActivityApiService,
 ) : ActivityControllerApi {
+    override suspend fun getActivitiesByCollection(
+        type: List<ActivityTypeDto>,
+        collection: String,
+        continuation: String?,
+        size: Int?,
+        sort: ActivitySortDto?,
+    ): ResponseEntity<ActivitiesDto> {
+        val activities = activityApiService.getActivitiesByCollection(
+            type, collection, continuation, size,
+            sort ?: ActivitySortDto.LATEST_FIRST
+        )
+        return ResponseEntity.ok(activities)
+    }
+
     override suspend fun getActivitiesByItem(
         type: List<ActivityTypeDto>,
         tokenAddress: String,
@@ -21,6 +35,19 @@ class ActivityController(
     ): ResponseEntity<ActivitiesDto> {
         val activities = activityApiService.getActivitiesByItem(
             type, tokenAddress, continuation, size,
+            sort ?: ActivitySortDto.LATEST_FIRST
+        )
+        return ResponseEntity.ok(activities)
+    }
+
+    override suspend fun getAllActivities(
+        type: List<ActivityTypeDto>,
+        continuation: String?,
+        size: Int?,
+        sort: ActivitySortDto?,
+    ): ResponseEntity<ActivitiesDto> {
+        val activities = activityApiService.getAllActivities(
+            type, continuation, size,
             sort ?: ActivitySortDto.LATEST_FIRST
         )
         return ResponseEntity.ok(activities)

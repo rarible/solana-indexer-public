@@ -11,9 +11,11 @@ import com.rarible.solana.protocol.dto.ActivityTypeDto
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
 import java.time.ZonedDateTime
 
 internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
@@ -22,34 +24,35 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `type logic`() = runBlocking<Unit> {
-        val mint = randomString()
-        listOf(
-            randomMint().copy(mint = mint),
-            randomBurn().copy(mint = mint),
-            randomIncome().copy(mint = mint),
-            randomOutcome().copy(mint = mint)
-        ).forEach { recordsBalanceRepository.save(it) }
 
-        recordsBalanceRepository.findByItem(listOf(ActivityTypeDto.MINT), mint).toList().let { records ->
+        val mint = randomString()
+        listOf(randomMint())
+            .sortedBy { it.id }
+            .mapIndexed { index, it ->
+                it.copy(mint = mint, timestamp = baseTimestamp + Duration.ofMinutes(index.toLong()))
+            }
+            .forEach { recordsBalanceRepository.save(it) }
+
+        findByItem(listOf(ActivityTypeDto.MINT), mint).toList().let { records ->
             assertEquals(1, records.size)
             assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.MintToRecord::class.java)
         }
 
-        recordsBalanceRepository.findByItem(listOf(ActivityTypeDto.BURN), mint).toList().let { records ->
+        findByItem(listOf(ActivityTypeDto.BURN), mint).toList().let { records ->
             assertEquals(1, records.size)
             assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.BurnRecord::class.java)
         }
 
-        recordsBalanceRepository.findByItem(listOf(ActivityTypeDto.TRANSFER), mint).toList().let { records ->
+        findByItem(listOf(ActivityTypeDto.TRANSFER), mint).toList().let { records ->
             assertEquals(1, records.size)
             assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.TransferIncomeRecord::class.java)
         }
 
-        recordsBalanceRepository.findByItem(ActivityTypeDto.values().toList(), mint).toList().let { records ->
+        findByItem(ActivityTypeDto.values().toList(), mint).toList().let { records ->
             assertEquals(3, records.size)
         }
 
-        recordsBalanceRepository.findByItem(emptyList(), mint).toList().let { records ->
+        findByItem(emptyList(), mint).toList().let { records ->
             assert(records.isEmpty())
         }
     }
@@ -63,52 +66,66 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
                 (1..4).map { randomIncome().copy(mint = mint) }
         data.forEach { recordsBalanceRepository.save(it) }
 
-        val c1 = recordsBalanceRepository.findByItem(types, mint, size = 4).toList().let { records ->
+        val c1 = findByItem(types, mint, size = 4).toList().let { records ->
+            println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
             assertEquals(4, records.size)
             assertThat(records.first().id > records.last().id)
             assertNotNull(records.last().id)
-            records.last().id
+            makeContinuation(records.last())
         }
 
-        val c2 = recordsBalanceRepository.findByItem(types, mint, continuation = c1, size = 4).toList().let { records ->
+        val c2 = findByItem(types, mint, continuation = c1, size = 4).toList().let { records ->
+            println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
             assertEquals(4, records.size)
             assertThat(records.first().id > records.last().id)
             assertNotNull(records.last().id)
-            records.last().id
+            makeContinuation(records.last())
         }
 
-        recordsBalanceRepository.findByItem(types, mint, continuation = c2, size = 4).toList().let { records ->
+        findByItem(types, mint, continuation = c2, size = 4).toList().let { records ->
+            println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
             assertEquals(2, records.size)
             assertThat(records.first().id > records.last().id)
-            assertNull(records.last().id)
         }
 
-        val c3 = recordsBalanceRepository.findByItem(types, mint, null, 4, ActivitySortDto.EARLIEST_FIRST).toList()
+        val c3 = findByItem(types, mint, null, 4, ActivitySortDto.EARLIEST_FIRST).toList()
             .let { records ->
+                println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
                 assertEquals(4, records.size)
                 assertThat(records.first().id < records.last().id)
                 assertNotNull(records.last().id)
-                records.last().id
+                makeContinuation(records.last())
             }
 
-        val c4 = recordsBalanceRepository.findByItem(types, mint, c3, 4, ActivitySortDto.EARLIEST_FIRST).toList()
+        val c4 = findByItem(types, mint, c3, 4, ActivitySortDto.EARLIEST_FIRST).toList()
             .let { records ->
+                println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
                 assertEquals(4, records.size)
                 assertThat(records.first().id < records.last().id)
                 assertNotNull(records.last().id)
-                records.last().id
+                makeContinuation(records.last())
             }
 
-        recordsBalanceRepository.findByItem(types, mint, c4, 4, ActivitySortDto.EARLIEST_FIRST).toList()
+        findByItem(types, mint, c4, 4, ActivitySortDto.EARLIEST_FIRST).toList()
             .let { records ->
+                println("\n${records.joinToString("\n") { "${it.timestamp}_${it.id}" }}")
                 assertEquals(2, records.size)
                 assertThat(records.first().id < records.last().id)
-                assertNull(records.last().id)
             }
     }
 
+    fun findByItem(
+        type: Collection<ActivityTypeDto>,
+        tokenAddress: String,
+        continuation: String? = null,
+        size: Int = 50,
+        sort: ActivitySortDto = ActivitySortDto.LATEST_FIRST,
+    ) = recordsBalanceRepository.findByItem(type, tokenAddress, continuation, size, sort)
+
     companion object {
         private val baseTimestamp = ZonedDateTime.parse("2022-01-03T22:26:07.000+00:00").toInstant()
+
+        private fun makeContinuation(last: SolanaBalanceRecord) = "${last.timestamp.toEpochMilli()}_${last.id}"
 
         private fun randomMint() = SolanaBalanceRecord.MintToRecord(
             mintAmount = randomBigInt(),

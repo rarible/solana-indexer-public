@@ -60,13 +60,23 @@ class BalanceLogRepository(
             .sparse()
             .background()
 
-        private val BALANCE_CLASS: Index = Index()
-            .on("_class", Sort.Direction.ASC)
+        private val BALANCE_ACTIVITY_BY_ITEM: Index = Index()
+            .on("mint", Sort.Direction.DESC)
+            .on("_class", Sort.Direction.DESC)
+            .on("timestamp", Sort.Direction.DESC)
+            .on("_id", Sort.Direction.DESC)
+            .background()
+
+        private val BALANCE_ACTIVITY_ALL: Index = Index()
+            .on("_class", Sort.Direction.DESC)
+            .on("timestamp", Sort.Direction.DESC)
+            .on("_id", Sort.Direction.DESC)
             .background()
 
         val ALL = listOf(
             BALANCE_ACCOUNT,
-            BALANCE_CLASS,
+            BALANCE_ACTIVITY_BY_ITEM,
+            BALANCE_ACTIVITY_ALL,
         )
     }
 }
