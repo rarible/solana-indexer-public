@@ -77,7 +77,11 @@ class SolanaBalanceLogEventFilter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
         accountToMints: Map<String, String>
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
-        return events.map { event ->
+
+        var total = 0
+        var filtered = 0
+
+        val result = events.map { event ->
             if (event.logRecordsToInsert.isEmpty()) {
                 return@map event
             }
@@ -90,13 +94,16 @@ class SolanaBalanceLogEventFilter(
                     it
                 }
             }
-            logger.info(
-                "Solana batch event filtering for ${event.blockEvent} of '${event.descriptor.id}': {} of {} records remain",
-                filteredRecords.size,
-                event.logRecordsToInsert.size
-            )
+
+            total += event.logRecordsToInsert.size
+            filtered += filteredRecords.size
+
             event.copy(logRecordsToInsert = filteredRecords)
         }
+
+        logger.info("Solana batch event filtered: {} of {} records to insert remain", filtered, total)
+
+        return result
     }
 
     private fun getAccountToMintMapping(
@@ -104,9 +111,6 @@ class SolanaBalanceLogEventFilter(
     ): Map<String, AccountGraph.AccountGroup> {
         val accountToMintMapping = HashMap<String, String>()
         val accounts = AccountGraph()
-
-        var withMint = 0
-        var withoutMint = 0
 
         events.asSequence().flatMap { it.logRecordsToInsert }.forEach { record ->
             when (record) {
@@ -119,20 +123,13 @@ class SolanaBalanceLogEventFilter(
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.addRib(record.owner, record.to)
                     record.mint?.let { accountToMintMapping[record.from] = it }
-                    if (record.mint == null) withMint++ else withoutMint++
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.addRib(record.from, record.owner)
                     record.mint?.let { accountToMintMapping[record.to] = it }
-                    if (record.mint == null) withMint++ else withoutMint++
                 }
             }
         }
-
-        logger.info(
-            "Checked {} transfer events, {} with mint, {} without mint",
-            withMint + withoutMint, withMint, withoutMint
-        )
 
         val accountGroups = accounts.findGroups()
 

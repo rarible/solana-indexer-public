@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.solana.nft.api.service.TokenApiService
 import com.rarible.solana.protocol.api.controller.TokenControllerApi
+import com.rarible.solana.protocol.dto.RoyaltiesDto
 import com.rarible.solana.protocol.dto.TokenDto
 import com.rarible.solana.protocol.dto.TokenMetaDto
 import com.rarible.solana.protocol.dto.TokensDto
@@ -20,6 +21,18 @@ class TokenController(
     private val tokenMetaService: TokenMetaService,
     private val balanceApiService: BalanceApiService
 ) : TokenControllerApi {
+
+    override suspend fun getAllTokens(
+        showDeleted: Boolean?,
+        lastUpdatedFrom: Long?,
+        lastUpdatedTo: Long?,
+        continuation: String?,
+        size: Int?
+    ): ResponseEntity<TokensDto> {
+        // TODO implement
+        return ResponseEntity.ok(TokensDto())
+    }
+
     override suspend fun getTokenByAddress(tokenAddress: String): ResponseEntity<TokenDto> {
         val tokenWithMeta = tokenApiService.getTokenWithMeta(tokenAddress)
         return ResponseEntity.ok(TokenWithMetaConverter.convert(tokenWithMeta))
@@ -31,24 +44,51 @@ class TokenController(
         return ResponseEntity.ok(TokenMetaConverter.convert(tokenMeta))
     }
 
+    override suspend fun resetTokenMeta(tokenAddress: String): ResponseEntity<Unit> {
+        // TODO implement
+        return ResponseEntity.ok().build()
+    }
+
+    override suspend fun getTokenRoyaltiesByAddress(tokenAddress: String): ResponseEntity<RoyaltiesDto> {
+        // TODO implement
+        return ResponseEntity.ok(RoyaltiesDto(emptyList()))
+    }
+
     override suspend fun getTokensByAddresses(tokenAddresses: List<String>): ResponseEntity<TokensDto> {
         val tokensWithMeta = tokenApiService.getTokensWithMeta(tokenAddresses).toList()
 
         return ResponseEntity.ok(TokenWithMetaConverter.convert(tokensWithMeta))
     }
 
-    override suspend fun getTokensByCollection(collection: String): ResponseEntity<TokensDto> {
+    override suspend fun getTokensByCollection(
+        collection: String,
+        continuation: String?,
+        size: Int?
+    ): ResponseEntity<TokensDto> {
+        // TODO support continuation
         val tokensWithMeta = tokenApiService.getTokensWithMetaByCollection(collection).toList()
 
         return ResponseEntity.ok(TokenWithMetaConverter.convert(tokensWithMeta))
     }
 
-    override suspend fun getTokensByOwner(owner: String): ResponseEntity<TokensDto> {
+    override suspend fun getTokensByOwner(
+        owner: String,
+        continuation: String?,
+        size: Int?
+    ): ResponseEntity<TokensDto> {
+        // TODO support continuation
         val balancesWithMeta = balanceApiService.getBalanceWithMetaByOwner(owner)
         val tokensWithMeta = balancesWithMeta.map {
             tokenApiService.getTokenWithMeta(it.balance.mint)
         }.toList()
 
         return ResponseEntity.ok(TokenWithMetaConverter.convert(tokensWithMeta))
+    }
+
+    override suspend fun getTokensByCreator(
+        creator: String, continuation: String?, size: Int?
+    ): ResponseEntity<TokensDto> {
+        // TODO implement
+        return ResponseEntity.ok(TokensDto())
     }
 }

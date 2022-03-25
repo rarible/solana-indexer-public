@@ -17,6 +17,7 @@ data class Token(
     // TODO: probably, can be calculated based on supply = 0
     // TODO: rename to 'closed'?
     val decimals: Int,
+    val hasMeta: Boolean?,
     val isDeleted: Boolean,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -31,6 +32,7 @@ data class Token(
     companion object {
         fun empty(mint: String): Token = Token(
             mint = mint,
+            hasMeta = false,
             supply = BigInteger.ZERO,
             revertableEvents = emptyList(),
             isDeleted = false,

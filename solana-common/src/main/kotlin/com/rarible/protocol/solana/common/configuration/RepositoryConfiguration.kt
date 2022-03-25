@@ -10,11 +10,9 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.mongodb.config.EnableMongoAuditing
-import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories
 
 @EnableMongoAuditing
 @EnableRaribleMongo
-@EnableReactiveMongoRepositories(basePackageClasses = [PackageRepository::class])
 @ComponentScan(basePackageClasses = [PackageRepository::class])
 class RepositoryConfiguration {
 

@@ -28,10 +28,10 @@ class TokenMetaService(
     @Autowired
     private lateinit var metaplexMetaUpdateListener: MetaplexMetaUpdateListener
 
-    private suspend fun getOnChainMeta(tokenAddress: TokenId): MetaplexMeta? =
+    suspend fun getOnChainMeta(tokenAddress: TokenId): MetaplexMeta? =
         metaplexMetaRepository.findByTokenAddress(tokenAddress)
 
-    private suspend fun getOffChainMeta(tokenAddress: TokenId): MetaplexOffChainMeta? =
+    suspend fun getOffChainMeta(tokenAddress: TokenId): MetaplexOffChainMeta? =
         metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress)
 
     suspend fun extendWithAvailableMeta(token: Token): TokenWithMeta {

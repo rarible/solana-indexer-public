@@ -11,6 +11,7 @@ data class SolanaIndexerProperties(
     val kafkaReplicaSet: String,
     val metricRootPath: String,
     val confirmationBlocks: Int = 100,
+    val metaplexOffChainMetaLoadingTimeout: Long = 20000,
     val featureFlags: FeatureFlags = FeatureFlags()
 )
 

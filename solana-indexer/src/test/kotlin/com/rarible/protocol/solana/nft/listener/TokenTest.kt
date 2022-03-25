@@ -26,6 +26,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         mintToken(tokenAddress, amount = 5UL)
         val token = Token(
             mint = tokenAddress,
+            hasMeta = false,
             supply = 5.scaleSupply(decimals),
             isDeleted = false,
             decimals = decimals,

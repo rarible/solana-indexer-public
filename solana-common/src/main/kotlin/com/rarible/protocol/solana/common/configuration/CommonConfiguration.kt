@@ -1,9 +1,6 @@
 package com.rarible.protocol.solana.common.configuration
 
-import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
-import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,7 +11,8 @@ import java.time.Clock
 @Import(
     RepositoryConfiguration::class,
     EventProducerConfiguration::class,
-    SolanaMetaConfiguration::class
+    SolanaMetaConfiguration::class,
+    SolanaServiceConfiguration::class
 )
 @EnableConfigurationProperties(SolanaIndexerProperties::class)
 class CommonConfiguration(

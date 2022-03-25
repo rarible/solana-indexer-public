@@ -20,7 +20,7 @@ object TokenWithMetaConverter {
     }
 
     fun convert(tokensWithMeta: List<TokenWithMeta>): TokensDto = TokensDto(
-        total = tokensWithMeta.size.toLong(),
         tokens = tokensWithMeta.map { convert(it) }
+        // TODO add continuation
     )
 }

@@ -21,6 +21,7 @@ import com.rarible.protocol.solana.common.model.TokenWithMeta
 
 fun createRandomToken(): Token = Token(
     mint = randomString(),
+    hasMeta = randomBoolean(),
     supply = randomBigInt(),
     revertableEvents = emptyList(),
     decimals = randomInt(6),

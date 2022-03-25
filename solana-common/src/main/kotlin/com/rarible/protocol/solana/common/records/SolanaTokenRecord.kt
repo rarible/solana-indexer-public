@@ -9,6 +9,12 @@ sealed class SolanaTokenRecord : SolanaBaseLogRecord() {
 
     override fun getKey(): String = mint
 
+    data class CreateMetaRecord(
+        override val log: SolanaLog,
+        override val timestamp: Instant,
+        override val mint: String
+    ) : SolanaTokenRecord()
+
     data class InitializeMintRecord(
         val mintAuthority: String,
         val decimals: Int,
