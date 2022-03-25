@@ -122,11 +122,11 @@ class SolanaBalanceLogEventFilter(
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.addRib(record.owner, record.to)
-                    record.mint?.let { accountToMintMapping[record.from] = it }
+                    record.mint?.let { accountToMintMapping[record.owner] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.addRib(record.from, record.owner)
-                    record.mint?.let { accountToMintMapping[record.to] = it }
+                    record.mint?.let { accountToMintMapping[record.owner] = it }
                 }
             }
         }
