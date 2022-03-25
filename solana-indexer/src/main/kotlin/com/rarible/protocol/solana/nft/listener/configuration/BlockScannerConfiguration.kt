@@ -51,11 +51,13 @@ class BlockchainScannerConfiguration(
     fun solanaApi(
         repository: BlockCacheRepository,
         properties: SolanaBlockchainScannerProperties,
-        mapper: ObjectMapper
+        mapper: ObjectMapper,
+        meterRegistry: MeterRegistry
     ) = SolanaCacheApi(
         repository,
         SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
-        mapper
+        mapper,
+        meterRegistry
     )
 
     @Bean
