@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListenerId
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
@@ -26,8 +27,8 @@ class OrderEventReduceService(
 
     override suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>) {
         val auctionHouseEvents = events
-            .filter { it.record is SolanaAuctionHouseRecord }
-            .flatMap { converter.convert(it.record as SolanaAuctionHouseRecord, it.reversed) }
+            .filter { it.record is SolanaAuctionHouseOrderRecord }
+            .flatMap { converter.convert(it.record as SolanaAuctionHouseOrderRecord, it.reversed) }
 
         delegate.reduceAll(auctionHouseEvents)
     }

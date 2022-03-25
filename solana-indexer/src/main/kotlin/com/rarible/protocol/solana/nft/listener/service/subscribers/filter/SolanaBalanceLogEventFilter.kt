@@ -174,6 +174,7 @@ class SolanaBalanceLogEventFilter(
         is SolanaAuctionHouseOrderRecord.SellRecord -> {
             accountToMintMapping[record.tokenAccount]?.let { mint -> record.copy(mint = mint) }
         }
+        is SolanaAuctionHouseOrderRecord.CancelRecord -> record
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {

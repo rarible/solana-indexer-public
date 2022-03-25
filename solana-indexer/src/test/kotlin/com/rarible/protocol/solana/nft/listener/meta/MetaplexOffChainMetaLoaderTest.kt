@@ -31,7 +31,6 @@ class MetaplexOffChainMetaLoaderTest {
         externalHttpClient = externalHttpClient,
         solanaIndexerProperties = mockk<SolanaIndexerProperties>().apply { every { this@apply.metaplexOffChainMetaLoadingTimeout } returns 20000 },
         metaMetrics = mockk(),
-        SolanaIndexerProperties("", ""),
         clock = mockk {
             every { instant() } returns Instant.EPOCH
         }

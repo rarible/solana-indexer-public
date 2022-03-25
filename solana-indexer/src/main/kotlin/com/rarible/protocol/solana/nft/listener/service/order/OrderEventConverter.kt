@@ -53,5 +53,6 @@ class OrderEventConverter {
                 log = record.log
             )
         )
+        is SolanaAuctionHouseOrderRecord.CancelRecord -> emptyList() // TODO[orders]: handle.
     }
 }
