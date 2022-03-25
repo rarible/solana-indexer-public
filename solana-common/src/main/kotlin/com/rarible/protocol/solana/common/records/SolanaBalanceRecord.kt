@@ -37,14 +37,14 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
 
     data class TransferIncomeRecord(
         val from: String,
-        val to: String,
+        val owner: String,
         val mint: String?,
         val incomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {
         override val account: String
-            get() = to
+            get() = owner
 
         /**
          * Append ':income' to distinguish this
@@ -54,15 +54,15 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     }
 
     data class TransferOutcomeRecord(
-        val from: String,
         val to: String,
+        val owner: String,
         val mint: String?,
         val outcomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {
         override val account: String
-            get() = from
+            get() = owner
 
         /**
          * Append ':outcome' to distinguish this

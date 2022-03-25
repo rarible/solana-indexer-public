@@ -171,7 +171,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaBalanceRecord.TransferIncomeRecord(
                         from = account,
-                        to = aliceAccount,
+                        owner = aliceAccount,
                         incomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
@@ -193,12 +193,12 @@ class SplProgramTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaBalanceRecord.TransferOutcomeRecord(
-                        from = account,
                         to = aliceAccount,
+                        owner = account,
+                        mint = token,
                         outcomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH,
-                        mint = token
+                        timestamp = Instant.EPOCH
                     )
                 )
             )

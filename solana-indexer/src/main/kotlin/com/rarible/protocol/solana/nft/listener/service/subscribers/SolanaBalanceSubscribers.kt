@@ -143,7 +143,7 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
             is Transfer -> SolanaBalanceRecord.TransferIncomeRecord(
                 from = log.instruction.accounts[0],
                 mint = null,
-                to = log.instruction.accounts[2],
+                owner = log.instruction.accounts[2],
                 incomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
@@ -151,7 +151,7 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
             is TransferChecked -> SolanaBalanceRecord.TransferIncomeRecord(
                 from = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                to = log.instruction.accounts[2],
+                owner = log.instruction.accounts[2],
                 incomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
@@ -179,17 +179,17 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
     ): List<SolanaBalanceRecord> {
         val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
             is Transfer -> SolanaBalanceRecord.TransferOutcomeRecord(
-                from = log.instruction.accounts[0],
-                mint = null,
                 to = log.instruction.accounts[2],
+                owner = log.instruction.accounts[0],
+                mint = null,
                 outcomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is TransferChecked -> SolanaBalanceRecord.TransferOutcomeRecord(
-                from = log.instruction.accounts[0],
-                mint = log.instruction.accounts[1],
                 to = log.instruction.accounts[2],
+                owner = log.instruction.accounts[0],
+                mint = log.instruction.accounts[1],
                 outcomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)

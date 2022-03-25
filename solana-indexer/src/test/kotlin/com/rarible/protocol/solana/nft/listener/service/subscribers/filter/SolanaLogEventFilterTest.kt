@@ -68,7 +68,7 @@ class SolanaLogEventFilterTest {
     fun `transfer and init records`() = runBlocking<Unit> {
         val init = randomBalanceInitRecord()
 
-        val transferWithInitMint = randomBalanceIncomeTransfer().copy(to = init.balanceAccount)
+        val transferWithInitMint = randomBalanceIncomeTransfer().copy(owner = init.balanceAccount)
         val transferWithMapping = randomBalanceOutcomeTransfer()
         val transferWithoutMapping = randomBalanceIncomeTransfer()
 
@@ -79,11 +79,11 @@ class SolanaLogEventFilterTest {
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
-                    transferWithMapping.to, transferWithMapping.from,
-                    transferWithoutMapping.to, transferWithoutMapping.from
+                    transferWithMapping.to, transferWithMapping.owner,
+                    transferWithoutMapping.owner, transferWithoutMapping.from
                 )
             )
-        } returns mapOf(transferWithMapping.from to mappedMint)
+        } returns mapOf(transferWithMapping.owner to mappedMint)
 
         // Mapping should be same only for non-existing non-currency associations
         coEvery {
@@ -123,7 +123,7 @@ class SolanaLogEventFilterTest {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
                     outcomeTransfer.to,
-                    outcomeTransfer.from
+                    outcomeTransfer.owner
                 )
             )
         } returns mapOf()
@@ -134,7 +134,7 @@ class SolanaLogEventFilterTest {
                 // Since we have no known mappings, all of them should be saved
                 mapOf(
                     outcomeTransfer.to to outcomeMint,
-                    outcomeTransfer.from to outcomeMint
+                    outcomeTransfer.owner to outcomeMint
                 )
             )
         } returns Unit
