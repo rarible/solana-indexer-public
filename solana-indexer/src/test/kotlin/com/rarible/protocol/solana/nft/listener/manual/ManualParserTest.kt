@@ -1,6 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.manual
 
+import com.rarible.blockchain.scanner.solana.client.SolanaApi
 import com.rarible.blockchain.scanner.solana.client.SolanaClient
+import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
 import kotlinx.coroutines.runBlocking
@@ -14,8 +16,10 @@ class ManualParserTest : AbstractBlockScannerTest() {
     private lateinit var subscribers: List<SolanaLogEventSubscriber>
 
     private val client = SolanaClient(
-        rpcUrls = listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"),
-        timeout = 10000,
+        SolanaHttpRpcApi(
+            urls = listOf("https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/"),
+            timeoutMillis = 10000
+        ),
         programIds = emptySet() // All programs.
     )
 

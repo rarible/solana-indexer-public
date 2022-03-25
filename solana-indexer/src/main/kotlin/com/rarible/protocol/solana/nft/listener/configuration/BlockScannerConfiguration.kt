@@ -1,15 +1,19 @@
 package com.rarible.protocol.solana.nft.listener.configuration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.cloudyrock.spring.v5.EnableMongock
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
 import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
+import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.lockredis.EnableRaribleRedisLock
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
+import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
+import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
@@ -42,6 +46,17 @@ class BlockchainScannerConfiguration(
     )
 
     private val BLACKLIST_FILES = emptyList<String>()
+
+    @Bean
+    fun solanaApi(
+        repository: BlockCacheRepository,
+        properties: SolanaBlockchainScannerProperties,
+        mapper: ObjectMapper
+    ) = SolanaCacheApi(
+        repository,
+        SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
+        mapper
+    )
 
     @Bean
     fun entityEventConsumer(

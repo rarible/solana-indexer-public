@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.meta
 
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.meta.ExternalHttpClient
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
@@ -24,6 +25,7 @@ class MetaplexOffChainMetaLoaderTest {
             coEvery { save(any()) } answers { firstArg() }
         },
         externalHttpClient = externalHttpClient,
+        solanaIndexerProperties = mockk<SolanaIndexerProperties>().apply { every { this@apply.metaplexOffChainMetaLoadingTimeout } returns 20000 },
         metaMetrics = mockk(),
         clock = mockk {
             every { instant() } returns Instant.EPOCH
