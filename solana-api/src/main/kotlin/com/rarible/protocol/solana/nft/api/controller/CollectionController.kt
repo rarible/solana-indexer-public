@@ -1,5 +1,8 @@
 package com.rarible.protocol.solana.nft.api.controller
 
+import com.rarible.protocol.solana.common.service.CollectionConversionService
+import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import com.rarible.solana.protocol.api.controller.CollectionControllerApi
 import com.rarible.solana.protocol.dto.CollectionDto
 import com.rarible.solana.protocol.dto.CollectionsDto
@@ -7,27 +10,34 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class CollectionController : CollectionControllerApi {
+class CollectionController(
+    private val collectionService: CollectionService,
+    private val collectionConversionService: CollectionConversionService
+) : CollectionControllerApi {
+
+    private val defaultSize = 50
 
     override suspend fun getAllCollections(continuation: String?, size: Int?): ResponseEntity<CollectionsDto> {
-        // TODO implement
-        return ResponseEntity.ok(CollectionsDto())
-    }
+        val collections = collectionService.findAll(continuation, size ?: defaultSize)
+        val dto = collections.map { collectionConversionService.toDto(it) }.sortedBy { it.address }
 
-    override suspend fun getCollectionById(collection: String): ResponseEntity<CollectionDto> {
-        // TODO implement in right way
         return ResponseEntity.ok(
-            CollectionDto(
-                address = "",
-                name = ""
+            CollectionsDto(
+                collections = dto,
+                continuation = dto.lastOrNull()?.address
             )
         )
     }
 
+    override suspend fun getCollectionById(collection: String): ResponseEntity<CollectionDto> {
+        val result = collectionService.findById(collection)
+            ?: throw EntityNotFoundApiException("collection", collection)
+
+        return ResponseEntity.ok(collectionConversionService.toDto(result))
+    }
+
     override suspend fun getCollectionsByOwner(
-        owner: String,
-        continuation: String?,
-        size: Int?
+        owner: String, continuation: String?, size: Int?
     ): ResponseEntity<CollectionsDto> {
         // TODO implement
         return ResponseEntity.ok(CollectionsDto())

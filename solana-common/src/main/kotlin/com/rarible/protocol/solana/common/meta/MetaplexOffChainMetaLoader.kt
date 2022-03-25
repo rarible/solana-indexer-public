@@ -4,6 +4,7 @@ import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.util.nowMillis
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
@@ -16,12 +17,15 @@ import java.time.Duration
 @Component
 class MetaplexOffChainMetaLoader(
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
+    private val collectionService: CollectionService,
     private val externalHttpClient: ExternalHttpClient,
     private val metaMetrics: MetaMetrics,
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val clock: Clock
 ) {
+
     private companion object {
+
         private val logger = LoggerFactory.getLogger(MetaplexOffChainMetaLoader::class.java)
     }
 
@@ -55,6 +59,7 @@ class MetaplexOffChainMetaLoader(
             metaFields = metaplexOffChainMetaFields,
             loadedAt = clock.nowMillis()
         )
+        collectionService.updateCollectionV1(metaplexOffChainMeta)
         return metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
     }
 
