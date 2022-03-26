@@ -10,15 +10,6 @@ sealed class TokenEvent : EntityEvent {
     abstract fun invert(): TokenEvent
 }
 
-data class CreateMetaEvent(
-    override val log: SolanaLog,
-    override val reversed: Boolean,
-    override val timestamp: Instant,
-    override val token: String
-) : TokenEvent() {
-    override fun invert(): TokenEvent = throw UnsupportedOperationException("Can't invert CreateMetaEvent")
-}
-
 data class InitializeMintEvent(
     val decimals: Int,
     override val log: SolanaLog,

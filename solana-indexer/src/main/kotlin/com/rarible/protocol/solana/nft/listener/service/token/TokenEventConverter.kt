@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.protocol.solana.common.event.BurnEvent
-import com.rarible.protocol.solana.common.event.CreateMetaEvent
 import com.rarible.protocol.solana.common.event.InitializeMintEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
@@ -35,14 +34,6 @@ class TokenEventConverter {
         is SolanaTokenRecord.InitializeMintRecord -> listOf(
             InitializeMintEvent(
                 decimals = record.decimals,
-                log = record.log,
-                reversed = reversed,
-                token = record.mint,
-                timestamp = record.timestamp
-            )
-        )
-        is SolanaTokenRecord.CreateMetaRecord -> listOf(
-            CreateMetaEvent(
                 log = record.log,
                 reversed = reversed,
                 token = record.mint,

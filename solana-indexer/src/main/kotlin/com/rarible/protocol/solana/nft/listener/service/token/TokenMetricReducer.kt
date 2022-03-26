@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.BurnEvent
-import com.rarible.protocol.solana.common.event.CreateMetaEvent
 import com.rarible.protocol.solana.common.event.InitializeMintEvent
 import com.rarible.protocol.solana.common.event.MintEvent
 import com.rarible.protocol.solana.common.event.TokenEvent
@@ -22,7 +21,6 @@ class TokenMetricReducer(
             is BurnEvent -> "burn"
             is MintEvent -> "mint"
             is InitializeMintEvent -> "initialize_mint"
-            is CreateMetaEvent -> "create_meta_event"
         }
     }
 }
