@@ -24,6 +24,8 @@ import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.Solan
 import io.lettuce.core.api.reactive.RedisReactiveCommands
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -53,12 +55,18 @@ class BlockchainScannerConfiguration(
         properties: SolanaBlockchainScannerProperties,
         mapper: ObjectMapper,
         meterRegistry: MeterRegistry
-    ) = SolanaCacheApi(
-        repository,
-        SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
-        mapper,
-        meterRegistry
-    )
+    ) = if (solanaIndexerProperties.featureFlags.enableCacheApi) {
+        logger.info("Using SolanaCacheApi")
+        SolanaCacheApi(
+            repository,
+            SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
+            mapper,
+            meterRegistry
+        )
+    } else {
+        logger.info("Using SolanaHttpRpcApi")
+        SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout)
+    }
 
     @Bean
     fun entityEventConsumer(
@@ -107,6 +115,9 @@ class BlockchainScannerConfiguration(
                 SolanaBlackListTokenFilter(tokens)
             }
         }
+    }
 
+    private companion object {
+        val logger: Logger = LoggerFactory.getLogger(BlockchainScannerConfiguration::class.java)
     }
 }

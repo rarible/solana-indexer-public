@@ -20,6 +20,7 @@ data class FeatureFlags(
     val enableInMemoryLogRecordHandling: Boolean = false,
     val skipInMemoryLogRecordHandling: Boolean = false,
     val enableAccountToMintAssociationCache: Boolean = true,
+    val enableCacheApi: Boolean = false,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
     val blacklistTokens: Set<String> = emptySet()
 )
