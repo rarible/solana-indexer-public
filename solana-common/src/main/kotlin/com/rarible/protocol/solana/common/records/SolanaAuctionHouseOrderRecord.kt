@@ -6,6 +6,7 @@ import java.time.Instant
 
 sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
     abstract val auctionHouse: String
+    abstract val mint: String
 
     final override fun getKey(): String = auctionHouse
 
@@ -13,7 +14,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val maker: String,
         val buyPrice: BigInteger,
         val tokenAccount: String,
-        val mint: String,
+        override val mint: String,
         val amount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant,
@@ -24,7 +25,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val maker: String,
         val sellPrice: BigInteger,
         val tokenAccount: String,
-        val mint: String,
+        override val mint: String,
         val amount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant,
@@ -35,7 +36,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val buyer: String,
         val seller: String,
         val price: BigInteger,
-        val mint: String,
+        override val mint: String,
         val treasuryMint: String,
         val amount: BigInteger,
         val direction: Direction,
@@ -56,7 +57,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
 
     data class CancelRecord(
         val owner: String,
-        val mint: String,
+        override val mint: String,
         val price: BigInteger,
         val amount: BigInteger,
         override val log: SolanaLog,
