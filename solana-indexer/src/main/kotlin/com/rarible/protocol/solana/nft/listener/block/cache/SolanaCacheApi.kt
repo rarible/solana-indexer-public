@@ -37,6 +37,8 @@ class SolanaCacheApi(
         .builder(BLOCK_CACHE_MISSES)
         .register(meterRegistry)
 
+    private var lastKnownBlock: Long = 0
+
     override suspend fun getBlock(
         slot: Long,
         details: GetBlockRequest.TransactionDetails
@@ -54,12 +56,28 @@ class SolanaCacheApi(
             } else {
                 blockCacheMisses.increment()
                 val result = httpApi.getBlock(slot, details)
-                val bytes = mapper.writeValueAsBytes(result)
-                repository.save(slot, bytes)
-                logger.info("Saved block to cache: {} size: {}", slot, bytes.size)
+                if (shouldSaveBlockToCache(slot)) {
+                    val bytes = mapper.writeValueAsBytes(result)
+                    repository.save(slot, bytes)
+                    logger.info("Saved block to cache: {} size: {}", slot, bytes.size)
+                }
                 result
             }
         }
+    }
+
+    /**
+     * Save the block to the cache only if it is stable enough (approximately >6 hours).
+     */
+    private suspend fun shouldSaveBlockToCache(slot: Long): Boolean {
+        if (lastKnownBlock == 0L) {
+            lastKnownBlock = getLatestSlot().result ?: lastKnownBlock
+        }
+        val shouldSave = lastKnownBlock != 0L && slot < lastKnownBlock - 50000
+        if (!shouldSave) {
+            logger.info("Do not save the block #$slot to the cache because it may be unstable")
+        }
+        return shouldSave
     }
 
     private suspend fun getFromCache(slot: Long): ByteArray? {
