@@ -73,7 +73,7 @@ class BlockchainScannerConfiguration(
     }
 
     @Bean
-    fun kafkaWrapper(): KafkaLogRecordEventWrapper<SolanaLogRecordEvent> {
+    fun kafkaLogRecordEventWrapper(): KafkaLogRecordEventWrapper<SolanaLogRecordEvent> {
         return object : KafkaLogRecordEventWrapper<SolanaLogRecordEvent> {
             override val targetClass get() = SolanaLogRecordEvent::class.java
 
