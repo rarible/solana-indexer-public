@@ -5,8 +5,8 @@ import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
-import com.rarible.solana.protocol.dto.CollectionDto
-import com.rarible.solana.protocol.dto.CollectionMetaDto
+import com.rarible.protocol.solana.dto.CollectionDto
+import com.rarible.protocol.solana.dto.CollectionMetaDto
 
 object CollectionConverter {
 

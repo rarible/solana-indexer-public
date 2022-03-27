@@ -4,9 +4,9 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.kafka.RaribleKafkaProducer
 import com.rarible.core.kafka.json.JsonSerializer
 import com.rarible.protocol.solana.common.update.PackageUpdate
-import com.rarible.solana.protocol.dto.BalanceEventDto
-import com.rarible.solana.protocol.dto.SolanaEventTopicProvider
-import com.rarible.solana.protocol.dto.TokenEventDto
+import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.SolanaEventTopicProvider
+import com.rarible.protocol.solana.dto.TokenEventDto
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan

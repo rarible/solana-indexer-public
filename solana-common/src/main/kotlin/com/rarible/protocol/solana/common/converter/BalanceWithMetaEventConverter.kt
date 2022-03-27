@@ -1,8 +1,8 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
-import com.rarible.solana.protocol.dto.BalanceEventDto
-import com.rarible.solana.protocol.dto.BalanceUpdateEventDto
+import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.BalanceUpdateEventDto
 import java.util.*
 
 object BalanceWithMetaEventConverter {

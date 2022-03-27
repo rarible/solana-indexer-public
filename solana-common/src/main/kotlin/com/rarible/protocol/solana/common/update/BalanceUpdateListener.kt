@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.converter.BalanceWithMetaEventConverte
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
-import com.rarible.solana.protocol.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.BalanceEventDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

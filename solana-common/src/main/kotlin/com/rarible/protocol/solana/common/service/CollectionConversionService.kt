@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.SolanaCollection
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
-import com.rarible.solana.protocol.dto.CollectionDto
+import com.rarible.protocol.solana.dto.CollectionDto
 import org.springframework.stereotype.Component
 
 @Component

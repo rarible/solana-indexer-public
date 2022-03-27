@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component
 class TokenRepository(
     private val mongo: ReactiveMongoOperations
 ) {
+
     suspend fun save(token: Token): Token =
         mongo.save(token).awaitFirst()
 
@@ -24,5 +25,8 @@ class TokenRepository(
         mongo.findById<Token>(mint).awaitFirstOrNull()
 
     suspend fun findByMints(mints: List<TokenId>): Flow<Token> =
-        mongo.find(Query(Criteria.where("_id").`in`(mints)).with(Sort.by("_id")), Token::class.java).asFlow()
+        mongo.find(
+            Query(Criteria.where("_id").`in`(mints))
+                .with(Sort.by("_id")), Token::class.java
+        ).asFlow()
 }

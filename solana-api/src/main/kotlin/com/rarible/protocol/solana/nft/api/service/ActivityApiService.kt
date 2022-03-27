@@ -3,8 +3,23 @@ package com.rarible.protocol.solana.nft.api.service
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
-import com.rarible.solana.protocol.dto.*
+import com.rarible.protocol.solana.dto.ActivitiesDto
+import com.rarible.protocol.solana.dto.ActivityBlockchainInfoDto
+import com.rarible.protocol.solana.dto.ActivityDto
+import com.rarible.protocol.solana.dto.ActivityFilterAllDto
+import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
+import com.rarible.protocol.solana.dto.ActivityFilterByCollectionDto
+import com.rarible.protocol.solana.dto.ActivityFilterByCollectionTypeDto
+import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
+import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
+import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
+import com.rarible.protocol.solana.dto.ActivitySortDto
+import com.rarible.protocol.solana.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.BurnActivityDto
+import com.rarible.protocol.solana.dto.MintActivityDto
+import com.rarible.protocol.solana.dto.TransferActivityDto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
@@ -13,42 +28,65 @@ import org.springframework.stereotype.Component
 class ActivityApiService(
     private val recordsBalanceRepository: RecordsBalanceRepository,
 ) {
-    suspend fun getActivitiesByItem(
-        type: List<ActivityTypeDto>,
-        tokenAddress: String,
+
+    suspend fun getAllActivities(
+        filter: ActivityFilterAllDto,
         continuation: String?,
-        size: Int?,
+        size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
-        recordsBalanceRepository.findByItem(type, tokenAddress, continuation, actualSize, sort)
+        recordsBalanceRepository.findAll(
+            filter.types.map { convert(it) },
+            continuation,
+            actualSize,
+            sort
+        )
+    }
+
+    suspend fun getActivitiesByItem(
+        filter: ActivityFilterByItemDto,
+        continuation: String?,
+        size: Int,
+        sort: ActivitySortDto,
+    ) = getActivities(size) { actualSize ->
+        recordsBalanceRepository.findByItem(
+            filter.types.map { convert(it) },
+            filter.itemId,
+            continuation,
+            actualSize,
+            sort
+        )
     }
 
     suspend fun getActivitiesByCollection(
-        type: List<ActivityTypeDto>,
-        collection: String,
+        filter: ActivityFilterByCollectionDto,
         continuation: String?,
-        size: Int?,
+        size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
-        recordsBalanceRepository.findByCollection(type, collection, continuation, actualSize, sort)
+        recordsBalanceRepository.findByCollection(
+            filter.types.map { convert(it) },
+            filter.collection,
+            continuation,
+            actualSize,
+            sort
+        )
     }
 
-    suspend fun getAllActivities(
-        type: List<ActivityTypeDto>,
+    suspend fun getActivitiesByUser(
+        filter: ActivityFilterByUserDto,
         continuation: String?,
-        size: Int?,
+        size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
-        recordsBalanceRepository.findAll(type, continuation, actualSize, sort)
+        emptyFlow()
     }
 
-    private suspend fun getActivities(size: Int?, block: (Int) -> Flow<SolanaBalanceRecord>): ActivitiesDto {
-        val actualSize = size ?: DEFAULT_SIZE
-
-        val activities = block(actualSize).mapNotNull { convert(it) }.toList()
+    private suspend fun getActivities(size: Int, block: (Int) -> Flow<SolanaBalanceRecord>): ActivitiesDto {
+        val activities = block(size).mapNotNull { convert(it) }.toList()
 
         val outContinuation = activities
-            .takeIf { activities.size >= actualSize }
+            .takeIf { activities.size >= size }
             .let { activities.lastOrNull()?.let(this::makeContinuation) }
 
         return ActivitiesDto(outContinuation, activities)
@@ -71,6 +109,7 @@ class ActivityApiService(
         tokenAddress = record.mint,
         value = record.mintAmount,
         blockchainInfo = blockchainInfo(record.log),
+        reverted = false
     )
 
     private fun makeBurn(record: SolanaBalanceRecord.BurnRecord) = BurnActivityDto(
@@ -80,6 +119,7 @@ class ActivityApiService(
         tokenAddress = record.mint,
         value = record.burnAmount,
         blockchainInfo = blockchainInfo(record.log),
+        reverted = false
     )
 
     private fun makeTransferIn(record: SolanaBalanceRecord.TransferIncomeRecord) = TransferActivityDto(
@@ -90,6 +130,8 @@ class ActivityApiService(
         tokenAddress = record.mint,
         value = record.incomeAmount,
         blockchainInfo = blockchainInfo(record.log),
+        reverted = false,
+        purchase = false // TODO should be evaluated
     )
 
     private fun makeTransferOut(record: SolanaBalanceRecord.TransferOutcomeRecord) = TransferActivityDto(
@@ -100,6 +142,8 @@ class ActivityApiService(
         tokenAddress = record.mint,
         value = record.outcomeAmount,
         blockchainInfo = blockchainInfo(record.log),
+        reverted = false,
+        purchase = false // TODO should be evaluated
     )
 
     private fun blockchainInfo(log: SolanaLog) = ActivityBlockchainInfoDto(
@@ -111,7 +155,43 @@ class ActivityApiService(
         innerInstructionIndex = log.innerInstructionIndex,
     )
 
-    companion object {
-        private const val DEFAULT_SIZE = 50
+    private fun convert(type: ActivityFilterByCollectionTypeDto): ActivityTypeDto {
+        return when (type) {
+            ActivityFilterByCollectionTypeDto.TRANSFER -> ActivityTypeDto.TRANSFER
+            ActivityFilterByCollectionTypeDto.MINT -> ActivityTypeDto.MINT
+            ActivityFilterByCollectionTypeDto.BURN -> ActivityTypeDto.BURN
+            ActivityFilterByCollectionTypeDto.BID -> ActivityTypeDto.BID
+            ActivityFilterByCollectionTypeDto.LIST -> ActivityTypeDto.LIST
+            ActivityFilterByCollectionTypeDto.SELL -> ActivityTypeDto.SELL
+            ActivityFilterByCollectionTypeDto.CANCEL_BID -> ActivityTypeDto.CANCEL_BID
+            ActivityFilterByCollectionTypeDto.CANCEL_LIST -> ActivityTypeDto.CANCEL_LIST
+        }
     }
+
+    private fun convert(type: ActivityFilterByItemTypeDto): ActivityTypeDto {
+        return when (type) {
+            ActivityFilterByItemTypeDto.TRANSFER -> ActivityTypeDto.TRANSFER
+            ActivityFilterByItemTypeDto.MINT -> ActivityTypeDto.MINT
+            ActivityFilterByItemTypeDto.BURN -> ActivityTypeDto.BURN
+            ActivityFilterByItemTypeDto.BID -> ActivityTypeDto.BID
+            ActivityFilterByItemTypeDto.LIST -> ActivityTypeDto.LIST
+            ActivityFilterByItemTypeDto.SELL -> ActivityTypeDto.SELL
+            ActivityFilterByItemTypeDto.CANCEL_BID -> ActivityTypeDto.CANCEL_BID
+            ActivityFilterByItemTypeDto.CANCEL_LIST -> ActivityTypeDto.CANCEL_LIST
+        }
+    }
+
+    private fun convert(type: ActivityFilterAllTypeDto): ActivityTypeDto {
+        return when (type) {
+            ActivityFilterAllTypeDto.TRANSFER -> ActivityTypeDto.TRANSFER
+            ActivityFilterAllTypeDto.MINT -> ActivityTypeDto.MINT
+            ActivityFilterAllTypeDto.BURN -> ActivityTypeDto.BURN
+            ActivityFilterAllTypeDto.BID -> ActivityTypeDto.BID
+            ActivityFilterAllTypeDto.LIST -> ActivityTypeDto.LIST
+            ActivityFilterAllTypeDto.SELL -> ActivityTypeDto.SELL
+            ActivityFilterAllTypeDto.CANCEL_BID -> ActivityTypeDto.CANCEL_BID
+            ActivityFilterAllTypeDto.CANCEL_LIST -> ActivityTypeDto.CANCEL_LIST
+        }
+    }
+
 }

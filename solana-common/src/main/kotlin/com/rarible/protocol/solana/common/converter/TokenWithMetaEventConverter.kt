@@ -1,9 +1,9 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.TokenWithMeta
-import com.rarible.solana.protocol.dto.TokenDeleteEventDto
-import com.rarible.solana.protocol.dto.TokenEventDto
-import com.rarible.solana.protocol.dto.TokenUpdateEventDto
+import com.rarible.protocol.solana.dto.TokenDeleteEventDto
+import com.rarible.protocol.solana.dto.TokenEventDto
+import com.rarible.protocol.solana.dto.TokenUpdateEventDto
 import java.util.*
 
 object TokenWithMetaEventConverter {

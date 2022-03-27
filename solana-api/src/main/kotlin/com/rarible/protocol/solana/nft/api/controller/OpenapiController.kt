@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.controller
 
-import com.rarible.solana.protocol.api.SolanaOpenapiReader
+import com.rarible.protocol.solana.api.SolanaOpenapiReader
 import org.springframework.core.io.InputStreamResource
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

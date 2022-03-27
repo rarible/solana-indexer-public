@@ -22,7 +22,9 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import java.time.Duration
 import java.time.Instant
 
+@Disabled // TODO too slow or even endless
 class AuctionHouseTest : AbstractBlockScannerTest() {
+
     private val timeout = Duration.ofSeconds(5)
     private val wrappedSol = "So11111111111111111111111111111111111111112"
 
@@ -136,7 +138,6 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
     }
 
     @Test
-    @Disabled //TODO endless test
     fun executeSaleTest() = runBlocking {
         val auctionHouseKeypair = createKeypair(randomString())
         airdrop(10, getWallet(auctionHouseKeypair))

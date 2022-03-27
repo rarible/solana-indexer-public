@@ -1,15 +1,15 @@
 package com.rarible.protocol.solana.nft.api.controller
 
+import com.rarible.protocol.solana.api.controller.TokenControllerApi
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMetaService
+import com.rarible.protocol.solana.dto.RoyaltiesDto
+import com.rarible.protocol.solana.dto.TokenDto
+import com.rarible.protocol.solana.dto.TokenMetaDto
+import com.rarible.protocol.solana.dto.TokensDto
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.solana.nft.api.service.TokenApiService
-import com.rarible.solana.protocol.api.controller.TokenControllerApi
-import com.rarible.solana.protocol.dto.RoyaltiesDto
-import com.rarible.solana.protocol.dto.TokenDto
-import com.rarible.solana.protocol.dto.TokenMetaDto
-import com.rarible.solana.protocol.dto.TokensDto
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.http.ResponseEntity

@@ -7,9 +7,9 @@ import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.dto.CollectionDto
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
-import com.rarible.solana.protocol.dto.CollectionDto
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

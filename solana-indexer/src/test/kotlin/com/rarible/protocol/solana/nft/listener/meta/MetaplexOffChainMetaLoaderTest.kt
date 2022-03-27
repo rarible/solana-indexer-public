@@ -90,6 +90,8 @@ class MetaplexOffChainMetaLoaderTest {
             loadedAt = Instant.EPOCH
         )
 
+        coEvery { collectionService.updateCollectionV1(expected) } returns Unit
+
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(tokenAddress, url)
 
         coVerify { collectionService.updateCollectionV1(expected) }

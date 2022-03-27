@@ -1,11 +1,11 @@
 package com.rarible.protocol.solana.nft.api.controller
 
+import com.rarible.protocol.solana.api.controller.CollectionControllerApi
 import com.rarible.protocol.solana.common.service.CollectionConversionService
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.dto.CollectionDto
+import com.rarible.protocol.solana.dto.CollectionsDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
-import com.rarible.solana.protocol.api.controller.CollectionControllerApi
-import com.rarible.solana.protocol.dto.CollectionDto
-import com.rarible.solana.protocol.dto.CollectionsDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 

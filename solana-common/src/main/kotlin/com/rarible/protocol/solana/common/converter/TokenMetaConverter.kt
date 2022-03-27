@@ -2,12 +2,12 @@ package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.solana.protocol.dto.ImageContentDto
-import com.rarible.solana.protocol.dto.TokenCreatorPartDto
-import com.rarible.solana.protocol.dto.TokenMetaAttributeDto
-import com.rarible.solana.protocol.dto.TokenMetaContentDto
-import com.rarible.solana.protocol.dto.TokenMetaDto
-import com.rarible.solana.protocol.dto.VideoContentDto
+import com.rarible.protocol.solana.dto.ImageContentDto
+import com.rarible.protocol.solana.dto.TokenCreatorPartDto
+import com.rarible.protocol.solana.dto.TokenMetaAttributeDto
+import com.rarible.protocol.solana.dto.TokenMetaContentDto
+import com.rarible.protocol.solana.dto.TokenMetaDto
+import com.rarible.protocol.solana.dto.VideoContentDto
 
 object TokenMetaConverter {
 

@@ -1,13 +1,13 @@
 package com.rarible.protocol.solana.nft.api.test
 
+import com.rarible.protocol.solana.api.client.BalanceControllerApi
+import com.rarible.protocol.solana.api.client.FixedSolanaApiServiceUriProvider
+import com.rarible.protocol.solana.api.client.NoopWebClientCustomizer
+import com.rarible.protocol.solana.api.client.SolanaNftIndexerApiClientFactory
+import com.rarible.protocol.solana.api.client.TokenControllerApi
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.solana.nft.api.service.TokenApiService
-import com.rarible.solana.protocol.api.client.BalanceControllerApi
-import com.rarible.solana.protocol.api.client.FixedSolanaApiServiceUriProvider
-import com.rarible.solana.protocol.api.client.NoopWebClientCustomizer
-import com.rarible.solana.protocol.api.client.SolanaNftIndexerApiClientFactory
-import com.rarible.solana.protocol.api.client.TokenControllerApi
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import java.net.URI

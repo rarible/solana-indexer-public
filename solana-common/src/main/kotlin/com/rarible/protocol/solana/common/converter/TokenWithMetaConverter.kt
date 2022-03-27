@@ -1,8 +1,8 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.TokenWithMeta
-import com.rarible.solana.protocol.dto.TokenDto
-import com.rarible.solana.protocol.dto.TokensDto
+import com.rarible.protocol.solana.dto.TokenDto
+import com.rarible.protocol.solana.dto.TokensDto
 
 object TokenWithMetaConverter {
     fun convert(tokenWithMeta: TokenWithMeta): TokenDto {

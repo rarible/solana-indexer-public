@@ -1,8 +1,8 @@
 package com.rarible.protocol.solana.common.repository
 
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
-import com.rarible.solana.protocol.dto.ActivitySortDto
-import com.rarible.solana.protocol.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.ActivitySortDto
+import com.rarible.protocol.solana.dto.ActivityTypeDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.reactive.asFlow
@@ -73,15 +73,17 @@ class RecordsBalanceRepository(
         size: Int?,
         sort: ActivitySortDto,
     ): Flow<SolanaBalanceRecord> {
-        TODO("Not yet implemented")
+        return emptyFlow()
     }
 
     private fun Criteria.addType(type: Collection<ActivityTypeDto>) =
-        and("_class").`in`(type.map {
+        and("_class").`in`(type.mapNotNull {
+            // TODO ATM we support only these 3 types of activity
             when (it) {
                 ActivityTypeDto.MINT -> MINT_TO_RECORD
                 ActivityTypeDto.BURN -> BURN_RECORD
                 ActivityTypeDto.TRANSFER -> TRANSFER_INCOME_RECORD
+                else -> null
             }
         })
 

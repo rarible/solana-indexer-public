@@ -1,9 +1,9 @@
 package com.rarible.protocol.solana.common.update
 
 import com.rarible.core.kafka.KafkaMessage
-import com.rarible.solana.protocol.dto.BalanceEventDto
-import com.rarible.solana.protocol.dto.SolanaEventTopicProvider
-import com.rarible.solana.protocol.dto.TokenEventDto
+import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.SolanaEventTopicProvider
+import com.rarible.protocol.solana.dto.TokenEventDto
 
 object KafkaEventFactory {
 

@@ -5,9 +5,9 @@ import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
+import com.rarible.protocol.solana.dto.ActivitySortDto
+import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.test.randomSolanaLog
-import com.rarible.solana.protocol.dto.ActivitySortDto
-import com.rarible.solana.protocol.dto.ActivityTypeDto
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Duration
 import java.time.ZonedDateTime
 
 internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
+
     @Autowired
     private lateinit var recordsBalanceRepository: RecordsBalanceRepository
 
@@ -26,26 +26,34 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
     fun `type logic`() = runBlocking<Unit> {
 
         val mint = randomString()
-        listOf(randomMint())
-            .sortedBy { it.id }
-            .mapIndexed { index, it ->
-                it.copy(mint = mint, timestamp = baseTimestamp + Duration.ofMinutes(index.toLong()))
-            }
-            .forEach { recordsBalanceRepository.save(it) }
+
+        val mintRecord = randomMint().copy(mint = mint, timestamp = baseTimestamp.plusSeconds(1))
+        val mintRecordOther = randomMint()
+        val transferRecord = randomIncome().copy(mint = mint, timestamp = baseTimestamp.plusSeconds(3))
+        val transferRecordOther = randomMint()
+        val burnRecord = randomBurn().copy(mint = mint, timestamp = baseTimestamp.plusSeconds(5))
+        val burnRecordOther = randomMint()
+
+        recordsBalanceRepository.save(mintRecord)
+        recordsBalanceRepository.save(mintRecordOther)
+        recordsBalanceRepository.save(transferRecord)
+        recordsBalanceRepository.save(transferRecordOther)
+        recordsBalanceRepository.save(burnRecord)
+        recordsBalanceRepository.save(burnRecordOther)
 
         findByItem(listOf(ActivityTypeDto.MINT), mint).toList().let { records ->
             assertEquals(1, records.size)
-            assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.MintToRecord::class.java)
+            assertThat(records.single()).isEqualTo(mintRecord)
         }
 
         findByItem(listOf(ActivityTypeDto.BURN), mint).toList().let { records ->
             assertEquals(1, records.size)
-            assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.BurnRecord::class.java)
+            assertThat(records.single()).isEqualTo(burnRecord)
         }
 
         findByItem(listOf(ActivityTypeDto.TRANSFER), mint).toList().let { records ->
             assertEquals(1, records.size)
-            assertThat(records.single()).isInstanceOf(SolanaBalanceRecord.TransferIncomeRecord::class.java)
+            assertThat(records.single()).isEqualTo(transferRecord)
         }
 
         findByItem(ActivityTypeDto.values().toList(), mint).toList().let { records ->
@@ -62,8 +70,8 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
         val types = ActivityTypeDto.values().toList()
         val mint = randomString()
         val data = (1..3).map { randomMint().copy(mint = mint) } +
-                (1..3).map { randomBurn().copy(mint = mint) } +
-                (1..4).map { randomIncome().copy(mint = mint) }
+            (1..3).map { randomBurn().copy(mint = mint) } +
+            (1..4).map { randomIncome().copy(mint = mint) }
         data.forEach { recordsBalanceRepository.save(it) }
 
         val c1 = findByItem(types, mint, size = 4).toList().let { records ->
@@ -123,6 +131,7 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
     ) = recordsBalanceRepository.findByItem(type, tokenAddress, continuation, size, sort)
 
     companion object {
+
         private val baseTimestamp = ZonedDateTime.parse("2022-01-03T22:26:07.000+00:00").toInstant()
 
         private fun makeContinuation(last: SolanaBalanceRecord) = "${last.timestamp.toEpochMilli()}_${last.id}"
@@ -148,15 +157,6 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
             owner = randomString(),
             mint = randomString(),
             incomeAmount = randomBigInt(),
-            log = randomSolanaLog(),
-            timestamp = baseTimestamp,
-        )
-
-        private fun randomOutcome() = SolanaBalanceRecord.TransferOutcomeRecord(
-            to = randomString(),
-            owner = randomString(),
-            mint = randomString(),
-            outcomeAmount = randomBigInt(),
             log = randomSolanaLog(),
             timestamp = baseTimestamp,
         )

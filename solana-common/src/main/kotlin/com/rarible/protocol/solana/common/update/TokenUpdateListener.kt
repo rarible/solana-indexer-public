@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.converter.TokenWithMetaEventConverter
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenWithMeta
-import com.rarible.solana.protocol.dto.TokenEventDto
+import com.rarible.protocol.solana.dto.TokenEventDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

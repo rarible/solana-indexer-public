@@ -4,12 +4,11 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.core.kafka.RaribleKafkaConsumer
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
-import com.rarible.protocol.union.subscriber.SolanaEventsConsumerFactory
-import com.rarible.solana.protocol.dto.BalanceEventDto
-import com.rarible.solana.protocol.dto.TokenEventDto
+import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.TokenEventDto
+import com.rarible.protocol.solana.subscriber.SolanaEventsConsumerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.mockk
 import org.springframework.beans.factory.annotation.Qualifier

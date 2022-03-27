@@ -1,10 +1,10 @@
 package com.rarible.protocol.solana.nft.api.controller
 
+import com.rarible.protocol.solana.api.controller.BalanceControllerApi
 import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
+import com.rarible.protocol.solana.dto.BalanceDto
+import com.rarible.protocol.solana.dto.BalancesDto
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
-import com.rarible.solana.protocol.api.controller.BalanceControllerApi
-import com.rarible.solana.protocol.dto.BalanceDto
-import com.rarible.solana.protocol.dto.BalancesDto
 import kotlinx.coroutines.flow.toList
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
