@@ -59,7 +59,6 @@ class SolanaCacheApi(
                 if (shouldSaveBlockToCache(slot)) {
                     val bytes = mapper.writeValueAsBytes(result)
                     repository.save(slot, bytes)
-                    logger.info("Saved block to cache: {} size: {}", slot, bytes.size)
                 }
                 result
             }

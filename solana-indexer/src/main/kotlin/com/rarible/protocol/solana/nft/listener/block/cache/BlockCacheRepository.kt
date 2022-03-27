@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.block.cache
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.Binary
+import org.slf4j.LoggerFactory
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.count
 import org.springframework.data.mongodb.core.findById
@@ -19,13 +20,17 @@ class BlockCacheRepository(
     @Resource(name = "reactiveMongoTemplateBlockCache")
     private val mongo: ReactiveMongoOperations
 ) {
+    private val logger = LoggerFactory.getLogger(BlockCacheRepository::class.java)
+
     suspend fun isPresent(id: Long): Boolean {
         val cnt = mongo.count<BlockCache>(Query(Criteria.where("id").`is`(id))).awaitFirst()
         return cnt > 0
     }
 
     suspend fun save(id: Long, content: ByteArray) {
-        mongo.save(BlockCache(id, Binary(gzip(content)))).awaitFirst()
+        val gzip = gzip(content)
+        mongo.save(BlockCache(id, Binary(gzip))).awaitFirst()
+        logger.info("Saved block #$id to the cache: original size {}, gzip size: {}", content.size, gzip.size)
     }
 
     suspend fun find(id: Long): ByteArray? {
