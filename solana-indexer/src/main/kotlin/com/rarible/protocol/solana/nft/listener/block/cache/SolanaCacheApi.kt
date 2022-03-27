@@ -45,7 +45,7 @@ class SolanaCacheApi(
             httpApi.getBlock(slot, details)
         } else {
             val fetchStart = Timer.start()
-            val fromCache = repository.find(slot)
+            val fromCache = getFromCache(slot)
             fetchStart.stop(blockCacheFetchTimer)
             if (fromCache != null) {
                 blockCacheHits.increment()
@@ -60,6 +60,15 @@ class SolanaCacheApi(
                 result
             }
         }
+    }
+
+    private suspend fun getFromCache(slot: Long): ByteArray? {
+        val fromCache = repository.find(slot) ?: return null
+        if (fromCache.size <= 2) {
+            logger.info("block cache {} was incorrect. reloading", slot)
+            return null
+        }
+        return fromCache
     }
 
     override suspend fun getFirstAvailableBlock(): ApiResponse<Long> = httpApi.getFirstAvailableBlock()

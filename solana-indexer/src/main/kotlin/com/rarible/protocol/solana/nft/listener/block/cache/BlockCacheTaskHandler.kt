@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class BlockCachTaskHandler(
+class BlockCacheTaskHandler(
     private val client: BlockCacheClient,
     private val repository: BlockCacheRepository,
     private val blockCacheProperties: BlockCacheProperties,
@@ -50,6 +50,6 @@ class BlockCachTaskHandler(
     }
 
     companion object {
-        val logger: Logger = LoggerFactory.getLogger(BlockCachTaskHandler::class.java)
+        val logger: Logger = LoggerFactory.getLogger(BlockCacheTaskHandler::class.java)
     }
 }
