@@ -23,7 +23,7 @@ class OrderEventReduceService(
 
     override val id: String = LogRecordEventListenerId.auctionHouseListenerId(environmentInfo.name)
 
-    override val subscriberGroup: SubscriberGroup = SubscriberGroup.AUCTION_HOUSE
+    override val subscriberGroup: SubscriberGroup = SubscriberGroup.AUCTION_HOUSE_ORDER
 
     override suspend fun onEntityEvents(events: List<SolanaLogRecordEvent>) {
         val auctionHouseEvents = events

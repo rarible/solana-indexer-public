@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component
 class OrderMetricReducer(
     properties: SolanaIndexerProperties,
     meterRegistry: MeterRegistry,
-) : AbstractMetricReducer<OrderEvent, Order>(meterRegistry, properties, "order") {
+) : AbstractMetricReducer<OrderEvent, Order>(meterRegistry, properties, "auction_house_order") {
 
     override fun getMetricName(event: OrderEvent): String {
         return when (event) {
-            is ExecuteSaleEvent -> "execute_sale"
-            is OrderBuyEvent -> "buy"
-            is OrderSellEvent -> "sell"
+            is ExecuteSaleEvent -> "auction_house_order_execute_sale"
+            is OrderBuyEvent -> "auction_house_order_buy"
+            is OrderSellEvent -> "auction_house_order_sell"
         }
     }
 }
