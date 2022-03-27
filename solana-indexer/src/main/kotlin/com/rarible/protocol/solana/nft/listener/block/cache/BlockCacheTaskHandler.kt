@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.block.cache
 
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
-import com.rarible.blockchain.scanner.util.BlockRanges
 import com.rarible.core.apm.withTransaction
 import com.rarible.core.task.TaskHandler
 import kotlinx.coroutines.async
@@ -23,13 +22,13 @@ class BlockCacheTaskHandler(
     override val type: String = "BLOCK_CACHE"
 
     override fun runLongTask(from: Long?, param: String): Flow<Long> {
-        val to = param.toLong()
-        return BlockRanges.getRanges(from ?: 0L, to, blockCacheProperties.batchSize).asFlow()
+        return getRangesReversed(param.toLong(), from!!, blockCacheProperties.batchSize).asFlow()
             .map {
+                logger.info("processing range {}", it)
                 withTransaction("cacheBlocks", labels = listOf("blocks" to it.toString())) {
                     loadRange(it)
                 }
-                it.last()
+                it.minOf { v -> v }
             }
     }
 
@@ -51,5 +50,14 @@ class BlockCacheTaskHandler(
 
     companion object {
         val logger: Logger = LoggerFactory.getLogger(BlockCacheTaskHandler::class.java)
+    }
+}
+
+private fun getRangesReversed(from: Long, to: Long, step: Int): Sequence<LongRange> {
+    check(from >= 0) { "$from "}
+    check(to >= 0) { "$to" }
+    if (from > to) return emptySequence()
+    return (from..to).reversed().asSequence().chunked(step) { list ->
+        LongRange(list.minOf { it }, list.maxOf { it })
     }
 }
