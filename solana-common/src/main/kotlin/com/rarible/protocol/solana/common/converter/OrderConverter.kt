@@ -3,7 +3,6 @@ package com.rarible.protocol.solana.common.converter
 import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
-import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.model.order.filter.OrdersWithContinuation
@@ -34,12 +33,10 @@ object OrderConverter {
     fun convert(assetType: AssetType): AssetTypeDto = TokenAssetTypeDto(
         mint = assetType.tokenAddress,
         isNft = when (assetType) {
-            is TokenFtAssetType -> false
             is TokenNftAssetType -> true
             WrappedSolAssetType -> false
         },
         isCurrency = when (assetType) {
-            is TokenFtAssetType -> true
             is TokenNftAssetType -> false
             WrappedSolAssetType -> true
         }

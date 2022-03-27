@@ -34,10 +34,6 @@ data class TokenNftAssetType(
     override val tokenAddress: String,
 ) : AssetType()
 
-data class TokenFtAssetType(
-    override val tokenAddress: String,
-) : AssetType()
-
 data class Asset(
     val type: AssetType,
     val amount: BigInteger
