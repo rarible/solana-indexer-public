@@ -14,7 +14,7 @@ typealias OrderId = String
 enum class OrderStatus {
     ACTIVE,
     CANCELLED,
-    ENDED
+    FILLED
 }
 
 enum class OrderType {
@@ -22,10 +22,20 @@ enum class OrderType {
     SELL
 }
 
-sealed class AssetType
+sealed class AssetType {
+    abstract val tokenAddress: String
+}
 
-data class TokenAssetType(
-    val tokenAddress: String
+object WrappedSolAssetType : AssetType() {
+    override val tokenAddress: String = "So11111111111111111111111111111111111111112"
+}
+
+data class TokenNftAssetType(
+    override val tokenAddress: String,
+) : AssetType()
+
+data class TokenFtAssetType(
+    override val tokenAddress: String,
 ) : AssetType()
 
 data class Asset(
@@ -40,7 +50,8 @@ data class Order(
     val status: OrderStatus,
     val type: OrderType,
     val make: Asset,
-    val cancelled: Boolean,
+    val take: Asset,
+    val fill: BigInteger,
     val createdAt: Instant,
     val updatedAt: Instant,
     override val revertableEvents: List<OrderEvent>,
@@ -59,19 +70,15 @@ data class Order(
         fun empty(): Order = Order(
             auctionHouse = "",
             maker = "",
-            status = OrderStatus.ENDED,
+            status = OrderStatus.CANCELLED,
             type = OrderType.BUY,
-            make = Asset(TokenAssetType(tokenAddress = ""), BigInteger.ZERO),
-            cancelled = false,
+            make = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
+            take = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
+            fill = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList()
         )
-
-        // hash
-        // ACTIVE
-        // FILLED
-        // ACTIVE
 
         fun calculateAuctionHouseOrderId(
             maker: String,
@@ -79,8 +86,6 @@ data class Order(
             auctionHouse: String
         ): String = Hash.keccak256(maker + make.hash() + auctionHouse)
 
-        private fun AssetType.hash() = when (this) {
-            is TokenAssetType -> tokenAddress
-        }
+        private fun AssetType.hash() = tokenAddress
     }
 }

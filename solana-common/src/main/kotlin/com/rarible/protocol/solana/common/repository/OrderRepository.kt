@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.index.Index
+import org.springframework.data.mongodb.core.query
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.inValues
@@ -29,8 +30,14 @@ class OrderRepository(
         return mongo.find(query, Order::class.java).asFlow()
     }
 
-    suspend fun save(balance: Order): Order =
-        mongo.save(balance).awaitFirst()
+    suspend fun save(order: Order): Order =
+        mongo.save(order).awaitFirst()
+
+    fun query(query: Query): Flow<Order> =
+        mongo.query<Order>()
+            .matching(query)
+            .all()
+            .asFlow()
 
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(OrderRepository::class.java)
@@ -41,11 +48,14 @@ class OrderRepository(
     }
 
     private object OrderIndexes {
-        val ID: Index = Index()
+
+        val BY_UPDATED_AT_AND_ID_DEFINITION = Index()
+            .on(Order::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
+            .background()
 
         val ALL_INDEXES = listOf(
-            ID
+            BY_UPDATED_AT_AND_ID_DEFINITION
         )
     }
 }

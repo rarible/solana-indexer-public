@@ -1,58 +1,59 @@
 package com.rarible.protocol.solana.common.converter
 
-import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
-import com.rarible.protocol.solana.common.model.TokenAssetType
+import com.rarible.protocol.solana.common.model.TokenFtAssetType
+import com.rarible.protocol.solana.common.model.TokenNftAssetType
+import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.model.order.filter.OrdersWithContinuation
 import com.rarible.protocol.solana.dto.AssetDto
 import com.rarible.protocol.solana.dto.AssetTypeDto
 import com.rarible.protocol.solana.dto.AuctionHouseOrderDto
 import com.rarible.protocol.solana.dto.OrderDto
 import com.rarible.protocol.solana.dto.OrderStatusDto
+import com.rarible.protocol.solana.dto.OrdersDto
 import com.rarible.protocol.solana.dto.TokenAssetTypeDto
-import java.math.BigInteger
 
 object OrderConverter {
 
-    fun convert(source: Order): OrderDto {
-        return AuctionHouseOrderDto(
-            hash = source.id,
-            maker = source.maker,
-            make = convert(source.make),
-            take = convert(source.make), // TODO take should be
-            fill = BigInteger.ZERO, // TODO ???
+    fun convert(order: Order): OrderDto =
+        AuctionHouseOrderDto(
+            maker = order.maker,
+            make = AssetDto(convert(order.make.type), order.make.amount.toBigDecimal()),
+            take = AssetDto(convert(order.take.type), order.take.amount.toBigDecimal()),
+            fill = order.fill,
             start = null,
             end = null,
-            createdAt = source.createdAt,
-            updatedAt = source.updatedAt,
-            status = convert(source.status)
+            createdAt = order.createdAt,
+            updatedAt = order.updatedAt,
+            hash = order.id,
+            status = order.status.toDto()
         )
-    }
 
-    private fun convert(source: OrderStatus): OrderStatusDto {
-        return when (source) {
-            OrderStatus.ACTIVE -> OrderStatusDto.ACTIVE
-            OrderStatus.CANCELLED -> OrderStatusDto.CANCELLED
-            OrderStatus.ENDED -> OrderStatusDto.FILLED // TODO ???
+    fun convert(assetType: AssetType): AssetTypeDto = TokenAssetTypeDto(
+        mint = assetType.tokenAddress,
+        isNft = when (assetType) {
+            is TokenFtAssetType -> false
+            is TokenNftAssetType -> true
+            WrappedSolAssetType -> false
+        },
+        isCurrency = when (assetType) {
+            is TokenFtAssetType -> true
+            is TokenNftAssetType -> false
+            WrappedSolAssetType -> true
         }
-    }
+    )
 
-    private fun convert(source: Asset): AssetDto {
-        return AssetDto(
-            type = convert(source.type),
-            value = source.amount.toBigDecimal()
+    fun convert(ordersWithContinuation: OrdersWithContinuation): OrdersDto =
+        OrdersDto(
+            orders = ordersWithContinuation.orders.map { convert(it) },
+            continuation = ordersWithContinuation.continuation
         )
-    }
 
-    private fun convert(source: AssetType): AssetTypeDto {
-        return when (source) {
-            is TokenAssetType -> TokenAssetTypeDto(
-                mint = source.tokenAddress,
-                isNft = true, // TODO ???
-                isCurrency = false // TODO ???
-            )
-        }
+    private fun OrderStatus.toDto() = when (this) {
+        OrderStatus.ACTIVE -> OrderStatusDto.ACTIVE
+        OrderStatus.CANCELLED -> OrderStatusDto.CANCELLED
+        OrderStatus.FILLED -> OrderStatusDto.FILLED
     }
-
 }

@@ -9,38 +9,67 @@ import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.OrderType
-import com.rarible.protocol.solana.common.model.TokenAssetType
+import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import org.springframework.stereotype.Component
+import java.math.BigInteger
 
 @Component
 class ForwardOrderReducer : Reducer<OrderEvent, Order> {
     override suspend fun reduce(entity: Order, event: OrderEvent): Order {
         return when (event) {
-            is ExecuteSaleEvent -> entity.copy(
-                status = OrderStatus.ENDED
-            )
-            is OrderBuyEvent -> entity.copy(
-                maker = event.maker,
-                status = OrderStatus.ACTIVE,
-                type = OrderType.BUY,
-                cancelled = false,
-                make = Asset(
-                    type = TokenAssetType(tokenAddress = event.mint),
-                    amount = event.amount
-                ),
-                createdAt = event.timestamp
-            )
-            is OrderSellEvent -> entity.copy(
-                maker = event.maker,
-                status = OrderStatus.ACTIVE,
-                type = OrderType.SELL,
-                cancelled = false,
-                make = Asset(
-                    type = TokenAssetType(tokenAddress = event.mint),
-                    amount = event.amount
-                ),
-                createdAt = event.timestamp
-            )
+            is ExecuteSaleEvent -> {
+                if (entity == Order.empty()) {
+                    // Skip reducing virtual part of the order.
+                    return entity
+                }
+                val newFill = entity.fill + event.amount
+                val isFilled = when (event.direction) {
+                    ExecuteSaleEvent.Direction.BUY -> newFill == entity.make.amount
+                    ExecuteSaleEvent.Direction.SELL -> newFill == entity.take.amount
+                }
+                val newStatus = if (isFilled) OrderStatus.FILLED else OrderStatus.ACTIVE
+                entity.copy(
+                    fill = newFill,
+                    status = newStatus,
+                    updatedAt = event.timestamp
+                )
+            }
+            is OrderBuyEvent -> {
+                check(entity == Order.empty())  { "$entity" }
+                entity.copy(
+                    auctionHouse = entity.auctionHouse,
+                    maker = event.maker,
+                    status = OrderStatus.ACTIVE,
+                    type = OrderType.BUY,
+                    make = Asset(
+                        type = WrappedSolAssetType,
+                        amount = event.buyPrice
+                    ),
+                    take = event.buyAsset,
+                    fill = BigInteger.ZERO,
+                    createdAt = event.timestamp,
+                    updatedAt = event.timestamp,
+                    revertableEvents = emptyList()
+                )
+            }
+            is OrderSellEvent -> {
+                check(entity == Order.empty()) { "$entity" }
+                entity.copy(
+                    auctionHouse = entity.auctionHouse,
+                    maker = event.maker,
+                    status = OrderStatus.ACTIVE,
+                    type = OrderType.SELL,
+                    make = event.sellAsset,
+                    take = Asset(
+                        type = WrappedSolAssetType,
+                        amount = event.sellPrice
+                    ),
+                    fill = BigInteger.ZERO,
+                    createdAt = event.timestamp,
+                    updatedAt = event.timestamp,
+                    revertableEvents = emptyList()
+                )
+            }
         }.copy(updatedAt = event.timestamp)
     }
 }

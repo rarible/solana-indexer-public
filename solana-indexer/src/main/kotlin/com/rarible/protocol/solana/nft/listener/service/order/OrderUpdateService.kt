@@ -16,6 +16,9 @@ class OrderUpdateService(
         repository.findById(id)
 
     override suspend fun update(entity: Order): Order {
+        if (entity == Order.empty()) {
+            return entity
+        }
         val order = repository.save(entity)
         logger.info("Updated order: $entity")
         return order

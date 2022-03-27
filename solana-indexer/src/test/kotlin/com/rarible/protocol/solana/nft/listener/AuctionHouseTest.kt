@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
@@ -26,7 +27,7 @@ import java.time.Instant
 class AuctionHouseTest : AbstractBlockScannerTest() {
 
     private val timeout = Duration.ofSeconds(5)
-    private val wrappedSol = "So11111111111111111111111111111111111111112"
+    private val wrappedSol = WrappedSolAssetType.tokenAddress
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
