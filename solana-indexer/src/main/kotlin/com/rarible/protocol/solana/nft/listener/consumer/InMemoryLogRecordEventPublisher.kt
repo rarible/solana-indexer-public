@@ -29,7 +29,7 @@ class InMemoryLogRecordEventPublisher(
         return !featureFlags.skipInMemoryLogRecordHandling
     }
 
-    override suspend fun publish(groupId: String, logRecordEvents: List<LogRecordEvent<*>>) {
+    override suspend fun publish(groupId: String, logRecordEvents: List<LogRecordEvent>) {
         val listener = listenersByGroup[groupId]
         if (listener == null) {
             logger.error("Can't find log LogRecordEventListener with groupId={}", groupId)
