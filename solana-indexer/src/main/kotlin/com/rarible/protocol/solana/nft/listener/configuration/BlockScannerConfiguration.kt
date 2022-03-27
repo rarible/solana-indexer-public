@@ -3,6 +3,8 @@ package com.rarible.protocol.solana.nft.listener.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.cloudyrock.spring.v5.EnableMongock
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
+import com.rarible.blockchain.scanner.framework.data.LogRecordEvent
+import com.rarible.blockchain.scanner.publisher.KafkaLogRecordEventWrapper
 import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
@@ -12,10 +14,12 @@ import com.rarible.core.lockredis.EnableRaribleRedisLock
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
+import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
+import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTokenReader
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
@@ -66,6 +70,20 @@ class BlockchainScannerConfiguration(
     } else {
         logger.info("Using SolanaHttpRpcApi")
         SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout)
+    }
+
+    @Bean
+    fun kafkaWrapper(): KafkaLogRecordEventWrapper<SolanaLogRecordEvent> {
+        return object : KafkaLogRecordEventWrapper<SolanaLogRecordEvent> {
+            override val targetClass get() = SolanaLogRecordEvent::class.java
+
+            override fun wrap(logRecordEvent: LogRecordEvent): SolanaLogRecordEvent =
+                SolanaLogRecordEvent(
+                    record = logRecordEvent.record as SolanaBaseLogRecord,
+                    reversed = logRecordEvent.reverted
+                )
+
+        }
     }
 
     @Bean
