@@ -37,7 +37,7 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
             is OrderBuyEvent -> {
                 check(entity == Order.empty())  { "$entity" }
                 entity.copy(
-                    auctionHouse = entity.auctionHouse,
+                    auctionHouse = event.auctionHouse,
                     maker = event.maker,
                     status = OrderStatus.ACTIVE,
                     type = OrderType.BUY,
@@ -56,7 +56,7 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
             is OrderSellEvent -> {
                 check(entity == Order.empty()) { "$entity" }
                 entity.copy(
-                    auctionHouse = entity.auctionHouse,
+                    auctionHouse = event.auctionHouse,
                     maker = event.maker,
                     status = OrderStatus.ACTIVE,
                     type = OrderType.SELL,
