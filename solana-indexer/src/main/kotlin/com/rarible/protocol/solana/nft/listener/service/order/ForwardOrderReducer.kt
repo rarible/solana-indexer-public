@@ -24,8 +24,8 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 }
                 val newFill = entity.fill + event.amount
                 val isFilled = when (event.direction) {
-                    ExecuteSaleEvent.Direction.BUY -> newFill == entity.make.amount
-                    ExecuteSaleEvent.Direction.SELL -> newFill == entity.take.amount
+                    ExecuteSaleEvent.Direction.BUY -> newFill == entity.take.amount
+                    ExecuteSaleEvent.Direction.SELL -> newFill == entity.make.amount
                 }
                 val newStatus = if (isFilled) OrderStatus.FILLED else OrderStatus.ACTIVE
                 entity.copy(
