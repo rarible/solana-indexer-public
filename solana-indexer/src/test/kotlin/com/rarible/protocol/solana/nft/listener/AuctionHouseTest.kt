@@ -124,6 +124,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = getWallet(keypair),
+                        treasuryMint = wrappedSol,
                         tokenAccount = "",
                         mint = token,
                         amount = 1L.toBigInteger(),
@@ -174,6 +175,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = buyerWallet,
+                        treasuryMint = wrappedSol,
                         buyPrice = 1.scaleSupply(9),
                         tokenAccount = fromAccount,
                         mint = token,

@@ -65,6 +65,7 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
         val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)) {
             is Buy -> SolanaAuctionHouseOrderRecord.BuyRecord(
                 maker = log.instruction.accounts[0],
+                treasuryMint = log.instruction.accounts[1],
                 buyPrice = instruction.price.toBigInteger(),
                 // Only the token account is available in the record.
                 // Mint will be set in the SolanaBalanceLogEventFilter by account <-> mint association.

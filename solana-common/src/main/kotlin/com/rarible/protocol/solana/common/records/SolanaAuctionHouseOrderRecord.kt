@@ -1,24 +1,33 @@
 package com.rarible.protocol.solana.common.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
+import com.rarible.protocol.solana.common.model.Order
+import com.rarible.protocol.solana.common.model.getAssetType
 import java.math.BigInteger
 import java.time.Instant
 
 sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
     abstract val auctionHouse: String
     abstract val mint: String
+    abstract val orderId: String
 
     final override fun getKey(): String = auctionHouse
 
     data class BuyRecord(
         val maker: String,
+        val treasuryMint: String,
         val buyPrice: BigInteger,
         val tokenAccount: String,
         override val mint: String,
         val amount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant,
-        override val auctionHouse: String
+        override val auctionHouse: String,
+        override val orderId: String = Order.calculateAuctionHouseOrderId(
+            maker,
+            getAssetType(treasuryMint),
+            auctionHouse
+        )
     ) : SolanaAuctionHouseOrderRecord()
 
     data class SellRecord(
@@ -29,7 +38,8 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val amount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant,
-        override val auctionHouse: String
+        override val auctionHouse: String,
+        override val orderId: String = Order.calculateAuctionHouseOrderId(maker, getAssetType(mint), auctionHouse)
     ) : SolanaAuctionHouseOrderRecord()
 
     data class ExecuteSaleRecord(
@@ -42,7 +52,11 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val direction: Direction,
         override val log: SolanaLog,
         override val timestamp: Instant,
-        override val auctionHouse: String
+        override val auctionHouse: String,
+        override val orderId: String = when (direction) {
+            Direction.BUY -> Order.calculateAuctionHouseOrderId(buyer, getAssetType(treasuryMint), auctionHouse)
+            Direction.SELL -> Order.calculateAuctionHouseOrderId(seller, getAssetType(mint), auctionHouse)
+        }
     ) : SolanaAuctionHouseOrderRecord() {
         enum class Direction {
             BUY, SELL
@@ -62,6 +76,8 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         val amount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant,
-        override val auctionHouse: String
+        override val auctionHouse: String,
+        // TODO[orders]: probably this is incorrect if owner = buyer because will "make" = SOL and we don't know it.
+        override val orderId: String = Order.calculateAuctionHouseOrderId(owner, getAssetType(mint), auctionHouse)
     ) : SolanaAuctionHouseOrderRecord()
 }

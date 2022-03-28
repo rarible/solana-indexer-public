@@ -22,18 +22,6 @@ enum class OrderType {
     SELL
 }
 
-sealed class AssetType {
-    abstract val tokenAddress: String
-}
-
-object WrappedSolAssetType : AssetType() {
-    override val tokenAddress: String = "So11111111111111111111111111111111111111112"
-}
-
-data class TokenNftAssetType(
-    override val tokenAddress: String,
-) : AssetType()
-
 data class Asset(
     val type: AssetType,
     val amount: BigInteger
