@@ -169,10 +169,14 @@ class SolanaBalanceLogEventFilter(
         is SolanaMetaRecord -> record
         is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
         is SolanaAuctionHouseOrderRecord.BuyRecord -> {
-            accountToMintMapping[record.tokenAccount]?.let { mint -> record.copy(mint = mint) }
+            accountToMintMapping[record.tokenAccount]?.let { mint ->
+                record.copy(mint = mint).withUpdatedOrderId()
+            }
         }
         is SolanaAuctionHouseOrderRecord.SellRecord -> {
-            accountToMintMapping[record.tokenAccount]?.let { mint -> record.copy(mint = mint) }
+            accountToMintMapping[record.tokenAccount]?.let { mint ->
+                record.copy(mint = mint).withUpdatedOrderId()
+            }
         }
         is SolanaAuctionHouseOrderRecord.CancelRecord -> record
     }

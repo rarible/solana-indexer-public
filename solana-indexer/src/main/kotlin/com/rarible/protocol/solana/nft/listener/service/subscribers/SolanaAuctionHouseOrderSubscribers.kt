@@ -39,7 +39,8 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
                 amount = instruction.size.toBigInteger(),
                 auctionHouse = log.instruction.accounts[4],
                 log = log.log,
-                timestamp = Instant.ofEpochSecond(block.timestamp)
+                timestamp = Instant.ofEpochSecond(block.timestamp),
+                orderId = ""
             )
             else -> return emptyList()
         }
@@ -74,7 +75,8 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
                 amount = instruction.size.toBigInteger(),
                 auctionHouse = log.instruction.accounts[8],
                 log = log.log,
-                timestamp = Instant.ofEpochSecond(block.timestamp)
+                timestamp = Instant.ofEpochSecond(block.timestamp),
+                orderId = ""
             )
             else -> return emptyList()
         }

@@ -93,8 +93,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         sellPrice = 1.scaleSupply(9),
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH
-                    )
+                        timestamp = Instant.EPOCH,
+                        orderId = ""
+                    ).withUpdatedOrderId()
                 )
             )
         }
@@ -131,8 +132,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         buyPrice = 1.scaleSupply(9),
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH
-                    )
+                        timestamp = Instant.EPOCH,
+                        orderId = ""
+                    ).withUpdatedOrderId()
                 )
             )
         }
@@ -183,7 +185,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
-                    )
+                        orderId = ""
+                    ).withUpdatedOrderId()
                 )
             )
 
@@ -205,7 +208,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
-                    )
+                        orderId = ""
+                    ).withUpdatedOrderId()
                 )
             )
 

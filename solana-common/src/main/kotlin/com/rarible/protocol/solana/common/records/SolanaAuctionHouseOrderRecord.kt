@@ -23,12 +23,16 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        override val orderId: String = Order.calculateAuctionHouseOrderId(
-            maker,
-            getAssetType(treasuryMint),
-            auctionHouse
+        override val orderId: String
+    ) : SolanaAuctionHouseOrderRecord() {
+        fun withUpdatedOrderId() = copy(
+            orderId = Order.calculateAuctionHouseOrderId(
+                maker = maker,
+                make = getAssetType(treasuryMint),
+                auctionHouse = auctionHouse
+            )
         )
-    ) : SolanaAuctionHouseOrderRecord()
+    }
 
     data class SellRecord(
         val maker: String,
@@ -39,8 +43,12 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        override val orderId: String = Order.calculateAuctionHouseOrderId(maker, getAssetType(mint), auctionHouse)
-    ) : SolanaAuctionHouseOrderRecord()
+        override val orderId: String
+    ) : SolanaAuctionHouseOrderRecord() {
+        fun withUpdatedOrderId() = copy(
+            orderId = Order.calculateAuctionHouseOrderId(maker, getAssetType(mint), auctionHouse)
+        )
+    }
 
     data class ExecuteSaleRecord(
         val buyer: String,
