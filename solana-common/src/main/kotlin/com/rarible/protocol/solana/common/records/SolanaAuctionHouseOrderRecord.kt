@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.model.Order
+import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.model.getAssetType
 import java.math.BigInteger
 import java.time.Instant
@@ -85,7 +86,9 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        // TODO[orders]: probably this is incorrect if owner = buyer because will "make" = SOL and we don't know it.
-        override val orderId: String = Order.calculateAuctionHouseOrderId(owner, getAssetType(mint), auctionHouse)
+        // TODO[orders]: this may not work if the auction house was created with a different treasury mint (not wrapped SOL).
+        //  The Cancel event does not have 'treasureMint' field. We can save this info in the database by CreateAuctionHouseRecord,
+        //  similar how we do for AccountToMintAssociationService.
+        override val orderId: String = Order.calculateAuctionHouseOrderId(owner, WrappedSolAssetType, auctionHouse)
     ) : SolanaAuctionHouseOrderRecord()
 }
