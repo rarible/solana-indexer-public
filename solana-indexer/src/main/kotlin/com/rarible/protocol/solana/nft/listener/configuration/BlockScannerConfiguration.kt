@@ -8,7 +8,6 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
-import com.rarible.core.lockredis.EnableRaribleRedisLock
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
@@ -21,15 +20,12 @@ import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTo
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaWhiteListTokenFilter
-import io.lettuce.core.api.reactive.RedisReactiveCommands
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.time.Duration
 
 @Configuration
 @EnableSolanaScanner
@@ -87,14 +83,6 @@ class BlockchainScannerConfiguration(
             applicationEnvironmentInfo = applicationEnvironmentInfo,
             solanaBlockchainScannerProperties = solanaBlockchainScannerProperties
         ).apply { start(logRecordEventListener) }
-    }
-
-    // TODO: until CHARLIE-172 is fixed, let's set a timeout for the Redis.
-    @Bean
-    fun setRedisTimeout(
-        redis: RedisReactiveCommands<String, String>
-    ): CommandLineRunner = CommandLineRunner {
-        redis.setTimeout(Duration.ofSeconds(1))
     }
 
     @Bean
