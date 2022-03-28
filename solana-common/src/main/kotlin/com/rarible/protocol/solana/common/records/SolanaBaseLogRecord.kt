@@ -37,24 +37,24 @@ sealed class SolanaBaseLogRecord : SolanaLogRecord() {
  */
 @Suppress("unused")
 private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record) {
-    is SolanaAuctionHouseOrderRecord.BuyRecord -> TODO()
-    is SolanaAuctionHouseOrderRecord.CancelRecord -> TODO()
-    is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> TODO()
-    is SolanaAuctionHouseOrderRecord.SellRecord -> TODO()
-    is SolanaAuctionHouseRecord.CreateAuctionHouseRecord -> TODO()
-    is SolanaAuctionHouseRecord.UpdateAuctionHouseRecord -> TODO()
-    is SolanaBalanceRecord.BurnRecord -> TODO()
-    is SolanaBalanceRecord.InitializeBalanceAccountRecord -> TODO()
-    is SolanaBalanceRecord.MintToRecord -> TODO()
-    is SolanaBalanceRecord.TransferIncomeRecord -> TODO()
-    is SolanaBalanceRecord.TransferOutcomeRecord -> TODO()
-    is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> TODO()
-    is SolanaMetaRecord.MetaplexSignMetadataRecord -> TODO()
-    is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> TODO()
-    is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> TODO()
-    is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> TODO()
-    is SolanaMetaRecord.SetAndVerifyMetadataRecord -> TODO()
-    is SolanaTokenRecord.BurnRecord -> TODO()
-    is SolanaTokenRecord.InitializeMintRecord -> TODO()
-    is SolanaTokenRecord.MintToRecord -> TODO()
+    is SolanaAuctionHouseOrderRecord.BuyRecord -> Unit
+    is SolanaAuctionHouseOrderRecord.CancelRecord -> Unit
+    is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
+    is SolanaAuctionHouseOrderRecord.SellRecord -> Unit
+    is SolanaAuctionHouseRecord.CreateAuctionHouseRecord -> Unit
+    is SolanaAuctionHouseRecord.UpdateAuctionHouseRecord -> Unit
+    is SolanaBalanceRecord.BurnRecord -> Unit
+    is SolanaBalanceRecord.InitializeBalanceAccountRecord -> Unit
+    is SolanaBalanceRecord.MintToRecord -> Unit
+    is SolanaBalanceRecord.TransferIncomeRecord -> Unit
+    is SolanaBalanceRecord.TransferOutcomeRecord -> Unit
+    is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> Unit
+    is SolanaMetaRecord.MetaplexSignMetadataRecord -> Unit
+    is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> Unit
+    is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> Unit
+    is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> Unit
+    is SolanaMetaRecord.SetAndVerifyMetadataRecord -> Unit
+    is SolanaTokenRecord.BurnRecord -> Unit
+    is SolanaTokenRecord.InitializeMintRecord -> Unit
+    is SolanaTokenRecord.MintToRecord -> Unit
 }
