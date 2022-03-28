@@ -51,10 +51,9 @@ data class Order(
     val createdAt: Instant,
     val updatedAt: Instant,
     override val revertableEvents: List<OrderEvent>,
-) : Entity<OrderId, OrderEvent, Order> {
-
     @Id
-    override val id = calculateAuctionHouseOrderId(maker, make.type, auctionHouse)
+    override val id: String = calculateAuctionHouseOrderId(maker, make.type, auctionHouse),
+) : Entity<OrderId, OrderEvent, Order> {
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order {
         return copy(revertableEvents = events)

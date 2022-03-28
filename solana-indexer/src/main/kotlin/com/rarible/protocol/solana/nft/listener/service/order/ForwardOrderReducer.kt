@@ -49,7 +49,8 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                     fill = BigInteger.ZERO,
                     createdAt = event.timestamp,
                     updatedAt = event.timestamp,
-                    revertableEvents = emptyList()
+                    revertableEvents = emptyList(),
+                    id = Order.calculateAuctionHouseOrderId(event.maker, WrappedSolAssetType, event.auctionHouse)
                 )
             }
             is OrderSellEvent -> {
@@ -67,7 +68,8 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                     fill = BigInteger.ZERO,
                     createdAt = event.timestamp,
                     updatedAt = event.timestamp,
-                    revertableEvents = emptyList()
+                    revertableEvents = emptyList(),
+                    id = Order.calculateAuctionHouseOrderId(event.maker, event.sellAsset.type, event.auctionHouse)
                 )
             }
         }.copy(updatedAt = event.timestamp)
