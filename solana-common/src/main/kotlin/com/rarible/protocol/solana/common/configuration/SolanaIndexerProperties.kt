@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 
 const val SOLANA_INDEXER_PROPERTIES_PATH = "common"
+const val SOLANA_INDEXER_FEATURE_FLAGS = "common.featureFlags"
 
 @ConstructorBinding
 @ConfigurationProperties(SOLANA_INDEXER_PROPERTIES_PATH)
@@ -19,7 +20,6 @@ data class FeatureFlags(
     val skipTransfersWithUnknownMint: Boolean = false,
     val enableInMemoryLogRecordHandling: Boolean = false,
     val skipInMemoryLogRecordHandling: Boolean = false,
-    val enableAccountToMintAssociationCache: Boolean = true,
     val enableCacheApi: Boolean = false,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
     val blacklistTokens: Set<String> = emptySet()

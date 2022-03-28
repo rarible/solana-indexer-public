@@ -33,7 +33,6 @@ import java.time.Duration
 
 @Configuration
 @EnableSolanaScanner
-@EnableRaribleRedisLock
 @EnableMongock
 class BlockchainScannerConfiguration(
     private val solanaIndexerProperties: SolanaIndexerProperties,
