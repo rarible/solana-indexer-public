@@ -35,7 +35,7 @@ object OrderConverter {
 
     fun convert(assetType: AssetType): AssetTypeDto = when (assetType) {
         is TokenNftAssetType -> SolanaNftAssetTypeDto(mint = assetType.tokenAddress)
-        WrappedSolAssetType -> SolanaSolAssetTypeDto()
+        is WrappedSolAssetType -> SolanaSolAssetTypeDto()
     }
 
     fun convert(ordersWithContinuation: OrdersWithContinuation): OrdersDto =
