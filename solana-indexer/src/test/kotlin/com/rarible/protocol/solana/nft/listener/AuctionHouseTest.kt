@@ -3,10 +3,17 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.AssetType
+import com.rarible.protocol.solana.common.model.Order
+import com.rarible.protocol.solana.common.model.OrderStatus
+import com.rarible.protocol.solana.common.model.OrderType
+import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +27,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
+import java.math.BigInteger
 import java.time.Duration
 import java.time.Instant
 
@@ -30,6 +38,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
+
+    @Autowired
+    private lateinit var orderRepository: OrderRepository
 
     @Test
     fun createAuctionHouseTest() = runBlocking {
@@ -155,10 +166,62 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         airdrop(10, getFeePayerAccountForAuctionHouse(house, auctionHouseKeypair))
         airdrop(10, buyerKeypair)
 
-        sell(house, baseKeypair, 1, token, 1)
-        buy(house, buyerKeypair, 1, token, 1)
+        sell(house, baseKeypair, 5, token, 1)
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(sellerWallet, TokenNftAssetType(token), house)
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house,
+                        maker = sellerWallet,
+                        status = OrderStatus.ACTIVE,
+                        type = OrderType.SELL,
+                        make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList()
+                    )
+                )
+        }
+        buy(house, buyerKeypair, 5, token, 1)
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(buyerWallet, WrappedSolAssetType, house)
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house,
+                        maker = buyerWallet,
+                        status = OrderStatus.ACTIVE,
+                        type = OrderType.BUY,
+                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList()
+                    )
+                )
+        }
 
-        executeSale(house, auctionHouseKeypair, 1, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
+        executeSale(house, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
         Wait.waitAssert(timeout) {
             val balanceRecords  = findRecordByType(
                 collection = SubscriberGroup.BALANCE.collectionName,
@@ -178,7 +241,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = buyerWallet,
                         treasuryMint = wrappedSol,
-                        buyPrice = 1.scaleSupply(9),
+                        buyPrice = 5.scaleSupply(9),
                         tokenAccount = fromAccount,
                         mint = token,
                         amount = 1L.toBigInteger(),
@@ -201,7 +264,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaAuctionHouseOrderRecord.SellRecord(
                         maker = sellerWallet,
-                        sellPrice = 1.scaleSupply(9),
+                        sellPrice = 5.scaleSupply(9),
                         tokenAccount = fromAccount,
                         mint = token,
                         amount = 1L.toBigInteger(),
@@ -222,7 +285,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 seller = sellerWallet,
                 mint = token,
                 amount = 1L.toBigInteger(),
-                price = 1.scaleSupply(9),
+                price = 5.scaleSupply(9),
                 auctionHouse = house,
                 log = ANY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
@@ -278,6 +341,56 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
             )
+
+            val buyOrder = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(buyerWallet, WrappedSolAssetType, house)
+            )
+            assertThat(buyOrder)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house,
+                        maker = buyerWallet,
+                        status = OrderStatus.FILLED,
+                        type = OrderType.BUY,
+                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        fill = BigInteger.ONE,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList()
+                    )
+                )
+
+            val sellOrder = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(sellerWallet, TokenNftAssetType(token), house)
+            )
+            assertThat(sellOrder)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house,
+                        maker = sellerWallet,
+                        status = OrderStatus.FILLED,
+                        type = OrderType.SELL,
+                        make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        fill = BigInteger.ONE,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList()
+                    )
+                )
         }
     }
 
