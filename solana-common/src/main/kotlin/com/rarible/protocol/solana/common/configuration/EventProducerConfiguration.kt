@@ -4,7 +4,10 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.kafka.RaribleKafkaProducer
 import com.rarible.core.kafka.json.JsonSerializer
 import com.rarible.protocol.solana.common.update.PackageUpdate
+import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.CollectionEventDto
+import com.rarible.protocol.solana.dto.OrderEventDto
 import com.rarible.protocol.solana.dto.SolanaEventTopicProvider
 import com.rarible.protocol.solana.dto.TokenEventDto
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -40,6 +43,36 @@ class EventProducerConfiguration(
             clientSuffix = "balance",
             topic = balanceTopic,
             type = BalanceEventDto::class.java
+        )
+    }
+
+    @Bean
+    fun collectionEventProducer(): RaribleKafkaProducer<CollectionEventDto> {
+        val topic = SolanaEventTopicProvider.getCollectionTopic(env)
+        return createSolanaProducer(
+            clientSuffix = "collection",
+            topic = topic,
+            type = CollectionEventDto::class.java
+        )
+    }
+
+    @Bean
+    fun orderEventProducer(): RaribleKafkaProducer<OrderEventDto> {
+        val topic = SolanaEventTopicProvider.getOrderTopic(env)
+        return createSolanaProducer(
+            clientSuffix = "order",
+            topic = topic,
+            type = OrderEventDto::class.java
+        )
+    }
+
+    @Bean
+    fun activityEventProducer(): RaribleKafkaProducer<ActivityDto> {
+        val topic = SolanaEventTopicProvider.getActivityTopic(env)
+        return createSolanaProducer(
+            clientSuffix = "activity",
+            topic = topic,
+            type = ActivityDto::class.java
         )
     }
 
