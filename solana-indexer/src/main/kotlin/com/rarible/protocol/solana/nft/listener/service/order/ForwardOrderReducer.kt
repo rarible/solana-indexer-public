@@ -34,44 +34,38 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                     updatedAt = event.timestamp
                 )
             }
-            is OrderBuyEvent -> {
-                check(entity == Order.empty())  { "$entity" }
-                entity.copy(
-                    auctionHouse = event.auctionHouse,
-                    maker = event.maker,
-                    status = OrderStatus.ACTIVE,
-                    type = OrderType.BUY,
-                    make = Asset(
-                        type = WrappedSolAssetType,
-                        amount = event.buyPrice
-                    ),
-                    take = event.buyAsset,
-                    fill = BigInteger.ZERO,
-                    createdAt = event.timestamp,
-                    updatedAt = event.timestamp,
-                    revertableEvents = emptyList(),
-                    id = Order.calculateAuctionHouseOrderId(event.maker, WrappedSolAssetType, event.auctionHouse)
-                )
-            }
-            is OrderSellEvent -> {
-                check(entity == Order.empty()) { "$entity" }
-                entity.copy(
-                    auctionHouse = event.auctionHouse,
-                    maker = event.maker,
-                    status = OrderStatus.ACTIVE,
-                    type = OrderType.SELL,
-                    make = event.sellAsset,
-                    take = Asset(
-                        type = WrappedSolAssetType,
-                        amount = event.sellPrice
-                    ),
-                    fill = BigInteger.ZERO,
-                    createdAt = event.timestamp,
-                    updatedAt = event.timestamp,
-                    revertableEvents = emptyList(),
-                    id = Order.calculateAuctionHouseOrderId(event.maker, event.sellAsset.type, event.auctionHouse)
-                )
-            }
+            is OrderBuyEvent -> entity.copy(
+                auctionHouse = event.auctionHouse,
+                maker = event.maker,
+                status = OrderStatus.ACTIVE,
+                type = OrderType.BUY,
+                make = Asset(
+                    type = WrappedSolAssetType,
+                    amount = event.buyPrice
+                ),
+                take = event.buyAsset,
+                fill = BigInteger.ZERO,
+                createdAt = event.timestamp,
+                updatedAt = event.timestamp,
+                revertableEvents = emptyList(),
+                id = Order.calculateAuctionHouseOrderId(event.maker, WrappedSolAssetType, event.auctionHouse)
+            )
+            is OrderSellEvent -> entity.copy(
+                auctionHouse = event.auctionHouse,
+                maker = event.maker,
+                status = OrderStatus.ACTIVE,
+                type = OrderType.SELL,
+                make = event.sellAsset,
+                take = Asset(
+                    type = WrappedSolAssetType,
+                    amount = event.sellPrice
+                ),
+                fill = BigInteger.ZERO,
+                createdAt = event.timestamp,
+                updatedAt = event.timestamp,
+                revertableEvents = emptyList(),
+                id = Order.calculateAuctionHouseOrderId(event.maker, event.sellAsset.type, event.auctionHouse)
+            )
         }.copy(updatedAt = event.timestamp)
     }
 }
