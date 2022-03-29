@@ -2,8 +2,6 @@ package com.rarible.protocol.solana.common.records
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.model.Order
-import com.rarible.protocol.solana.common.model.WrappedSolAssetType
-import com.rarible.protocol.solana.common.model.getAssetType
 import java.math.BigInteger
 import java.time.Instant
 
@@ -29,7 +27,8 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         fun withUpdatedOrderId() = copy(
             orderId = Order.calculateAuctionHouseOrderId(
                 maker = maker,
-                make = getAssetType(treasuryMint),
+                mint = mint,
+                direction = OrderDirection.BUY,
                 auctionHouse = auctionHouse
             )
         )
@@ -47,7 +46,12 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val orderId: String
     ) : SolanaAuctionHouseOrderRecord() {
         fun withUpdatedOrderId() = copy(
-            orderId = Order.calculateAuctionHouseOrderId(maker, getAssetType(mint), auctionHouse)
+            orderId = Order.calculateAuctionHouseOrderId(
+                maker = maker,
+                mint = mint,
+                direction = OrderDirection.SELL,
+                auctionHouse = auctionHouse
+            )
         )
     }
 
@@ -62,10 +66,15 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        override val orderId: String = when (direction) {
-            OrderDirection.BUY -> Order.calculateAuctionHouseOrderId(buyer, getAssetType(treasuryMint), auctionHouse)
-            OrderDirection.SELL -> Order.calculateAuctionHouseOrderId(seller, getAssetType(mint), auctionHouse)
-        }
+        override val orderId: String = Order.calculateAuctionHouseOrderId(
+            maker = when (direction) {
+                OrderDirection.BUY -> buyer
+                OrderDirection.SELL -> seller
+            },
+            mint = mint,
+            direction = direction,
+            auctionHouse = auctionHouse
+        )
     ) : SolanaAuctionHouseOrderRecord() {
 
         override val id: String
@@ -83,10 +92,13 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        // TODO[orders]: this may not work if the auction house was created with a different treasury mint (not wrapped SOL).
-        //  The Cancel event does not have 'treasureMint' field. We can save this info in the database by CreateAuctionHouseRecord,
-        //  similar how we do for AccountToMintAssociationService.
-        override val orderId: String = Order.calculateAuctionHouseOrderId(owner, WrappedSolAssetType, auctionHouse)
+        override val orderId: String = Order.calculateAuctionHouseOrderId(
+            maker = owner,
+            mint = mint,
+            // TODO: we don't really know the direction, but seemingly the Cancel is applicable only to BUY (BID) orders.
+            direction = OrderDirection.BUY,
+            auctionHouse = auctionHouse
+        )
     ) : SolanaAuctionHouseOrderRecord()
 
 }

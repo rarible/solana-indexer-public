@@ -26,7 +26,7 @@ import java.time.Instant
     JsonSubTypes.Type(name = "METAPLEX_META_SET_AND_VERIFY", value = SolanaMetaRecord.SetAndVerifyMetadataRecord::class),
     JsonSubTypes.Type(name = "TOKEN_BURN", value = SolanaTokenRecord.BurnRecord::class),
     JsonSubTypes.Type(name = "TOKEN_INITIALIZE_MINT", value = SolanaTokenRecord.InitializeMintRecord::class),
-    JsonSubTypes.Type(name = "TOKEN_MINT_TOK", value = SolanaTokenRecord.MintToRecord::class)
+    JsonSubTypes.Type(name = "TOKEN_MINT_TO", value = SolanaTokenRecord.MintToRecord::class)
 )
 sealed class SolanaBaseLogRecord : SolanaLogRecord() {
     abstract val timestamp: Instant

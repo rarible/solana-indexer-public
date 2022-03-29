@@ -4,6 +4,7 @@ import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.hash.Hash
 import com.rarible.protocol.solana.common.model.Order.Companion.COLLECTION
+import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
@@ -17,11 +18,6 @@ enum class OrderStatus {
     FILLED
 }
 
-enum class OrderType {
-    BUY,
-    SELL
-}
-
 data class Asset(
     val type: AssetType,
     val amount: BigInteger
@@ -32,15 +28,23 @@ data class Order(
     val auctionHouse: String,
     val maker: String,
     val status: OrderStatus,
-    val type: OrderType,
     val make: Asset,
     val take: Asset,
     val fill: BigInteger,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val direction: OrderDirection,
     override val revertableEvents: List<OrderEvent>,
     @Id
-    override val id: String = calculateAuctionHouseOrderId(maker, make.type, auctionHouse),
+    override val id: String = calculateAuctionHouseOrderId(
+        maker = maker,
+        mint = when (direction) {
+            OrderDirection.BUY -> take.type.tokenAddress
+            OrderDirection.SELL -> make.type.tokenAddress
+        },
+        direction = direction,
+        auctionHouse = auctionHouse
+    ),
 ) : Entity<OrderId, OrderEvent, Order> {
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order {
@@ -54,21 +58,20 @@ data class Order(
             auctionHouse = "",
             maker = "",
             status = OrderStatus.CANCELLED,
-            type = OrderType.BUY,
             make = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
             take = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
             fill = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            direction = OrderDirection.SELL
         )
 
         fun calculateAuctionHouseOrderId(
             maker: String,
-            make: AssetType,
+            mint: String,
+            direction: OrderDirection,
             auctionHouse: String
-        ): String = Hash.keccak256(maker + make.hash() + auctionHouse)
-
-        private fun AssetType.hash() = tokenAddress
+        ): String = Hash.keccak256(maker + mint + direction.name + auctionHouse)
     }
 }

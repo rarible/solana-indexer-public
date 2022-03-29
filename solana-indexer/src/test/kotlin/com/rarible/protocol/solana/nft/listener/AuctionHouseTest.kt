@@ -6,7 +6,6 @@ import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
-import com.rarible.protocol.solana.common.model.OrderType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.OrderDirection
@@ -169,7 +168,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         sell(house, baseKeypair, 5, token, 1)
         Wait.waitAssert(timeout) {
             val order = orderRepository.findById(
-                Order.calculateAuctionHouseOrderId(sellerWallet, TokenNftAssetType(token), house)
+                Order.calculateAuctionHouseOrderId(
+                    maker = sellerWallet,
+                    mint = token,
+                    direction = OrderDirection.SELL,
+                    auctionHouse = house
+                )
             )
             assertThat(order)
                 .usingRecursiveComparison()
@@ -183,20 +187,25 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         maker = sellerWallet,
                         status = OrderStatus.ACTIVE,
-                        type = OrderType.SELL,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
-                        revertableEvents = emptyList()
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.SELL
                     )
                 )
         }
         buy(house, buyerKeypair, 5, token, 1)
         Wait.waitAssert(timeout) {
             val order = orderRepository.findById(
-                Order.calculateAuctionHouseOrderId(buyerWallet, WrappedSolAssetType, house)
+                Order.calculateAuctionHouseOrderId(
+                    maker = buyerWallet,
+                    mint = token,
+                    direction = OrderDirection.BUY,
+                    auctionHouse = house
+                )
             )
             assertThat(order)
                 .usingRecursiveComparison()
@@ -210,13 +219,13 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         maker = buyerWallet,
                         status = OrderStatus.ACTIVE,
-                        type = OrderType.BUY,
                         make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
-                        revertableEvents = emptyList()
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.BUY
                     )
                 )
         }
@@ -343,7 +352,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             )
 
             val buyOrder = orderRepository.findById(
-                Order.calculateAuctionHouseOrderId(buyerWallet, WrappedSolAssetType, house)
+                Order.calculateAuctionHouseOrderId(
+                    maker = buyerWallet,
+                    mint = token,
+                    direction = OrderDirection.BUY,
+                    auctionHouse = house
+                )
             )
             assertThat(buyOrder)
                 .usingRecursiveComparison()
@@ -357,18 +371,23 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         maker = buyerWallet,
                         status = OrderStatus.FILLED,
-                        type = OrderType.BUY,
                         make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
-                        revertableEvents = emptyList()
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.BUY
                     )
                 )
 
             val sellOrder = orderRepository.findById(
-                Order.calculateAuctionHouseOrderId(sellerWallet, TokenNftAssetType(token), house)
+                Order.calculateAuctionHouseOrderId(
+                    maker = sellerWallet,
+                    mint = token,
+                    direction = OrderDirection.SELL,
+                    auctionHouse = house
+                )
             )
             assertThat(sellOrder)
                 .usingRecursiveComparison()
@@ -382,13 +401,13 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house,
                         maker = sellerWallet,
                         status = OrderStatus.FILLED,
-                        type = OrderType.SELL,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
                         fill = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
-                        revertableEvents = emptyList()
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.SELL
                     )
                 )
         }

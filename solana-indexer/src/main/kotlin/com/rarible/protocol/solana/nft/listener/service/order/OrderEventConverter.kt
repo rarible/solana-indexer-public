@@ -40,10 +40,7 @@ class OrderEventConverter {
                 timestamp = record.timestamp,
                 reversed = reversed,
                 log = record.log,
-                direction = when (record.direction) {
-                    OrderDirection.BUY -> Direction.BUY
-                    OrderDirection.SELL -> Direction.SELL
-                }
+                direction = record.direction
             )
         )
         is SolanaAuctionHouseOrderRecord.SellRecord -> listOf(

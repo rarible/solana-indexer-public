@@ -11,8 +11,3 @@ data class TokenNftAssetType(
 object WrappedSolAssetType : AssetType() {
     override val tokenAddress: String = "So11111111111111111111111111111111111111112"
 }
-
-fun getAssetType(mint: String): AssetType = when (mint) {
-    WrappedSolAssetType.tokenAddress -> WrappedSolAssetType
-    else -> TokenNftAssetType(mint)
-}

@@ -8,8 +8,8 @@ import com.rarible.protocol.solana.common.event.OrderSellEvent
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
-import com.rarible.protocol.solana.common.model.OrderType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 
@@ -24,8 +24,8 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 }
                 val newFill = entity.fill + event.amount
                 val isFilled = when (event.direction) {
-                    Direction.BUY -> newFill == entity.take.amount
-                    Direction.SELL -> newFill == entity.make.amount
+                    OrderDirection.BUY -> newFill == entity.take.amount
+                    OrderDirection.SELL -> newFill == entity.make.amount
                 }
                 val newStatus = if (isFilled) OrderStatus.FILLED else OrderStatus.ACTIVE
                 entity.copy(
@@ -38,7 +38,6 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 auctionHouse = event.auctionHouse,
                 maker = event.maker,
                 status = OrderStatus.ACTIVE,
-                type = OrderType.BUY,
                 make = Asset(
                     type = WrappedSolAssetType,
                     amount = event.buyPrice
@@ -48,13 +47,17 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 createdAt = event.timestamp,
                 updatedAt = event.timestamp,
                 revertableEvents = emptyList(),
-                id = Order.calculateAuctionHouseOrderId(event.maker, WrappedSolAssetType, event.auctionHouse)
+                id = Order.calculateAuctionHouseOrderId(
+                    maker = event.maker,
+                    mint = event.buyAsset.type.tokenAddress,
+                    direction = OrderDirection.BUY,
+                    auctionHouse = event.auctionHouse
+                )
             )
             is OrderSellEvent -> entity.copy(
                 auctionHouse = event.auctionHouse,
                 maker = event.maker,
                 status = OrderStatus.ACTIVE,
-                type = OrderType.SELL,
                 make = event.sellAsset,
                 take = Asset(
                     type = WrappedSolAssetType,
@@ -64,7 +67,12 @@ class ForwardOrderReducer : Reducer<OrderEvent, Order> {
                 createdAt = event.timestamp,
                 updatedAt = event.timestamp,
                 revertableEvents = emptyList(),
-                id = Order.calculateAuctionHouseOrderId(event.maker, event.sellAsset.type, event.auctionHouse)
+                id = Order.calculateAuctionHouseOrderId(
+                    maker = event.maker,
+                    mint = event.sellAsset.type.tokenAddress,
+                    direction = OrderDirection.SELL,
+                    auctionHouse = event.auctionHouse
+                )
             )
         }.copy(updatedAt = event.timestamp)
     }

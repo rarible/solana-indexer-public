@@ -7,8 +7,7 @@ import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.event.OrderSellEvent
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
-import com.rarible.protocol.solana.common.model.TokenNftAssetType
-import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.stereotype.Component
 
 @Component
@@ -17,23 +16,23 @@ class OrderIdService : EntityIdService<OrderEvent, OrderId> {
         when (event) {
             is ExecuteSaleEvent -> Order.calculateAuctionHouseOrderId(
                 maker = when (event.direction) {
-                    Direction.BUY -> event.buyer
-                    Direction.SELL -> event.seller
+                    OrderDirection.BUY -> event.buyer
+                    OrderDirection.SELL -> event.seller
                 },
-                make = when (event.direction) {
-                    Direction.BUY -> WrappedSolAssetType
-                    Direction.SELL -> TokenNftAssetType(event.mint)
-                },
+                mint = event.mint,
+                direction = event.direction,
                 auctionHouse = event.auctionHouse
             )
             is OrderBuyEvent -> Order.calculateAuctionHouseOrderId(
                 maker = event.maker,
-                make = WrappedSolAssetType,
+                mint = event.buyAsset.type.tokenAddress,
+                direction = OrderDirection.BUY,
                 auctionHouse = event.auctionHouse
             )
             is OrderSellEvent -> Order.calculateAuctionHouseOrderId(
                 maker = event.maker,
-                make = event.sellAsset.type,
+                mint = event.sellAsset.type.tokenAddress,
+                direction = OrderDirection.SELL,
                 auctionHouse = event.auctionHouse
             )
         }
