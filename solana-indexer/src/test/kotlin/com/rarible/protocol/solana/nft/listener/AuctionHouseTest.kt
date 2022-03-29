@@ -173,7 +173,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     maker = sellerWallet,
                     mint = token,
                     direction = OrderDirection.SELL,
-                    auctionHouse = house
+                    auctionHouse = house.id
                 )
             )
             assertThat(order)
@@ -209,7 +209,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     maker = buyerWallet,
                     mint = token,
                     direction = OrderDirection.BUY,
-                    auctionHouse = house
+                    auctionHouse = house.id
                 )
             )
             assertThat(order)
@@ -363,7 +363,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     maker = buyerWallet,
                     mint = token,
                     direction = OrderDirection.BUY,
-                    auctionHouse = house
+                    auctionHouse = house.id
                 )
             )
             assertThat(buyOrder)
@@ -395,7 +395,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     maker = sellerWallet,
                     mint = token,
                     direction = OrderDirection.SELL,
-                    auctionHouse = house
+                    auctionHouse = house.id
                 )
             )
             assertThat(sellOrder)
