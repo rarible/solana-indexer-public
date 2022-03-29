@@ -30,7 +30,7 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.SellRecord> {
         val record = when (
-            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+            val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
             is Sell -> SolanaAuctionHouseOrderRecord.SellRecord(
                 maker = log.instruction.accounts[0],
@@ -67,7 +67,7 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.BuyRecord> {
         val record = when (
-            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+            val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
             is Buy -> SolanaAuctionHouseOrderRecord.BuyRecord(
                 maker = log.instruction.accounts[0],
@@ -104,7 +104,7 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord> =
-        when (val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)) {
+        when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is ExecuteSale -> {
                 val sellRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
                     buyer = log.instruction.accounts[0],
@@ -142,11 +142,11 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.CancelRecord> {
         return when (
-            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+            val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
             is Cancel -> {
                 val cancelRecord = SolanaAuctionHouseOrderRecord.CancelRecord(
-                    owner = log.instruction.accounts[0],
+                    maker = log.instruction.accounts[0],
                     mint = log.instruction.accounts[2],
                     price = instruction.price.toBigInteger(),
                     amount = instruction.size.toBigInteger(),

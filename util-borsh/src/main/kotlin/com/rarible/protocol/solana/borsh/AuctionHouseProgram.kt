@@ -91,7 +91,7 @@ internal fun ByteBuffer.parseCancel(): Cancel {
     return Cancel(price = price, size = size)
 }
 
-fun String.parseAuctionHouseInstruction(numberOfAccounts: Int): AuctionHouseInstruction? {
+fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {
     val bytes = Base58.decode(this)
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
 
@@ -100,13 +100,9 @@ fun String.parseAuctionHouseInstruction(numberOfAccounts: Int): AuctionHouseInst
         -1518880751171598746L -> ByteBuffer::parseBuy
         -1042918692164058403L -> ByteBuffer::parseCreateAuctionHouse
         -2597168572136237228L -> ByteBuffer::parseUpdateAuctionHouse
+        -4693616285582369816L -> ByteBuffer::parseCancel
         442251406432881189L -> ByteBuffer::parseExecuteSell
-        else -> if (numberOfAccounts == 8) {
-            // TODO: We don't know the discriminator of the cancel instruction yet :(
-            ByteBuffer::parseCancel
-        } else {
-            return null
-        }
+        else -> return null
     }
 
     return decoder(buffer)

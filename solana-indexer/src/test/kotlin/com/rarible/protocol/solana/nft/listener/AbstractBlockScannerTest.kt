@@ -222,6 +222,32 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
+    protected fun cancel(
+        auctionHouse: String,
+        keypair: String,
+        buyPrice: Long,
+        mint: String,
+        amount: Long,
+    ) {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("cancel")
+            add("--auction-house")
+            add(auctionHouse)
+            add("--buy-price")
+            add("$buyPrice")
+            add("--mint")
+            add(mint)
+            add("--token-size")
+            add("$amount")
+            add("--keypair")
+            add(keypair)
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
     protected fun buy(
         auctionHouse: String,
         buyerKeypair: String,

@@ -35,6 +35,18 @@ data class OrderSellEvent(
     override val log: SolanaLog
 ) : OrderEvent()
 
+data class OrderCancelEvent(
+    val maker: String,
+    val mint: String,
+    val price: BigInteger,
+    val amount: BigInteger,
+    val direction: OrderDirection,
+    override val log: SolanaLog,
+    override val timestamp: Instant,
+    override val auctionHouse: String,
+    override val reversed: Boolean,
+) : OrderEvent()
+
 data class ExecuteSaleEvent(
     override val auctionHouse: String,
     val buyer: String,

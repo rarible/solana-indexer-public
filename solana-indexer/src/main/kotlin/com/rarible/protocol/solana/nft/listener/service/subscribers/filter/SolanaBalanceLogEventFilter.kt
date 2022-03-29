@@ -136,7 +136,7 @@ class SolanaBalanceLogEventFilter(
                     is SolanaAuctionHouseOrderRecord.SellRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
                     }
-                    is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
+                    else -> Unit
                 }
             }
         }

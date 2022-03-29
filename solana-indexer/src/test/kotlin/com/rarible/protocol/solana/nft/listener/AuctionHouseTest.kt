@@ -113,6 +113,215 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
     }
 
     @Test
+    fun sellCancelTest() = runBlocking {
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
+        val token = mintNft(baseKeypair)
+        val sellerWallet = getWallet(baseKeypair)
+
+        airdrop(10, house.feePayerAcct)
+        sell(house.id, baseKeypair, 5, token, 1)
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(
+                    maker = sellerWallet,
+                    mint = token,
+                    direction = OrderDirection.SELL,
+                    auctionHouse = house.id
+                )
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house.id,
+                        maker = sellerWallet,
+                        status = OrderStatus.ACTIVE,
+                        make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.SELL,
+                        makePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        takePrice = null
+                    )
+                )
+        }
+        cancel(house.id, baseKeypair, 5, token, 1)
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
+                type = SolanaAuctionHouseOrderRecord.CancelRecord::class.java
+            ).toList()
+            val cancelRecord = SolanaAuctionHouseOrderRecord.CancelRecord(
+                mint = token,
+                amount = 1L.toBigInteger(),
+                auctionHouse = house.id,
+                log = ANY_SOLANA_LOG,
+                timestamp = Instant.EPOCH,
+                orderId = "",
+                maker = sellerWallet,
+                price = 5.scaleSupply(9),
+                direction = OrderDirection.SELL
+            ).withUpdatedOrderId()
+
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
+                SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
+            ).containsExactlyInAnyOrder(
+                cancelRecord,
+                cancelRecord.copy(direction = OrderDirection.BUY).withUpdatedOrderId()
+            )
+
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(
+                    maker = sellerWallet,
+                    mint = token,
+                    direction = OrderDirection.SELL,
+                    auctionHouse = house.id
+                )
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house.id,
+                        maker = sellerWallet,
+                        status = OrderStatus.CANCELLED,
+                        make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.SELL,
+                        makePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        takePrice = null
+                    )
+                )
+        }
+    }
+
+    @Test
+    fun buyCancelTest() = runBlocking {
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
+        val token = mintNft(baseKeypair)
+        airdrop(10, house.feePayerAcct)
+        buy(house.id, keypair, 5, token, 1)
+
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(
+                    maker = wallet,
+                    mint = token,
+                    direction = OrderDirection.BUY,
+                    auctionHouse = house.id
+                )
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house.id,
+                        maker = wallet,
+                        status = OrderStatus.ACTIVE,
+                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.BUY,
+                        makePrice = null,
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                    )
+                )
+        }
+        cancel(house.id, keypair, 5, token, 1)
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
+                type = SolanaAuctionHouseOrderRecord.CancelRecord::class.java
+            ).toList()
+            val cancelRecord = SolanaAuctionHouseOrderRecord.CancelRecord(
+                mint = token,
+                amount = 1L.toBigInteger(),
+                auctionHouse = house.id,
+                log = ANY_SOLANA_LOG,
+                timestamp = Instant.EPOCH,
+                orderId = "",
+                maker = wallet,
+                price = 5.scaleSupply(9),
+                direction = OrderDirection.SELL
+            ).withUpdatedOrderId()
+
+            assertThat(records).usingElementComparatorIgnoringFields(
+                SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
+                SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
+            ).containsExactlyInAnyOrder(
+                cancelRecord,
+                cancelRecord.copy(direction = OrderDirection.BUY).withUpdatedOrderId()
+            )
+
+            val order = orderRepository.findById(
+                Order.calculateAuctionHouseOrderId(
+                    maker = wallet,
+                    mint = token,
+                    direction = OrderDirection.BUY,
+                    auctionHouse = house.id
+                )
+            )
+            assertThat(order)
+                .usingRecursiveComparison()
+                .ignoringFields(
+                    "createdAt",
+                    "updatedAt",
+                    "revertableEvents"
+                )
+                .isEqualTo(
+                    Order(
+                        auctionHouse = house.id,
+                        maker = wallet,
+                        status = OrderStatus.CANCELLED,
+                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        fill = BigInteger.ZERO,
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH,
+                        revertableEvents = emptyList(),
+                        direction = OrderDirection.BUY,
+                        makePrice = null,
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                    )
+                )
+        }
+    }
+
+    @Test
     fun buyTest() = runBlocking {
         val keypair = createKeypair(randomString())
         val wallet = getWallet(keypair)

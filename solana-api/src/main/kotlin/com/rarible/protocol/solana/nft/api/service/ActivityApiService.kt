@@ -78,7 +78,7 @@ class ActivityApiService(
         continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
-    ) = getActivities(size) { actualSize ->
+    ) = getActivities(size) {
         emptyFlow()
     }
 

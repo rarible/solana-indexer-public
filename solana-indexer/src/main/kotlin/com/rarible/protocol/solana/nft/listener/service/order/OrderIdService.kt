@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 import com.rarible.core.entity.reducer.service.EntityIdService
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
+import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.event.OrderSellEvent
 import com.rarible.protocol.solana.common.model.Order
@@ -33,6 +34,12 @@ class OrderIdService : EntityIdService<OrderEvent, OrderId> {
                 maker = event.maker,
                 mint = event.sellAsset.type.tokenAddress,
                 direction = OrderDirection.SELL,
+                auctionHouse = event.auctionHouse
+            )
+            is OrderCancelEvent -> Order.calculateAuctionHouseOrderId(
+                maker = event.maker,
+                mint = event.mint,
+                direction = event.direction,
                 auctionHouse = event.auctionHouse
             )
         }

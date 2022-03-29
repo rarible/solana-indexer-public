@@ -85,7 +85,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
     }
 
     data class CancelRecord(
-        val owner: String,
+        val maker: String,
         override val mint: String,
         val price: BigInteger,
         val amount: BigInteger,
@@ -98,7 +98,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
 
         fun withUpdatedOrderId() = copy(
             orderId = Order.calculateAuctionHouseOrderId(
-                maker = owner,
+                maker = maker,
                 mint = mint,
                 direction = direction,
                 auctionHouse = auctionHouse

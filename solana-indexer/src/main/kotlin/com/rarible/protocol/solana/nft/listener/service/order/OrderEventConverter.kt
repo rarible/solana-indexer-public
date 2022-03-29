@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
+import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.event.OrderSellEvent
 import com.rarible.protocol.solana.common.model.Asset
@@ -57,6 +58,18 @@ class OrderEventConverter {
                 log = record.log
             )
         )
-        is SolanaAuctionHouseOrderRecord.CancelRecord -> emptyList() // TODO[orders]: handle.
+        is SolanaAuctionHouseOrderRecord.CancelRecord -> listOf(
+            OrderCancelEvent(
+                maker = record.maker,
+                mint = record.mint,
+                price = record.price,
+                amount = record.amount,
+                direction = record.direction,
+                log = record.log,
+                timestamp = record.timestamp,
+                auctionHouse = record.auctionHouse,
+                reversed = reversed
+            )
+        )
     }
 }
