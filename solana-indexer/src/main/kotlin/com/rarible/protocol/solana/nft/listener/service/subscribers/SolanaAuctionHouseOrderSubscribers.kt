@@ -29,7 +29,9 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.SellRecord> {
-        val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)) {
+        val record = when (
+            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+        ) {
             is Sell -> SolanaAuctionHouseOrderRecord.SellRecord(
                 maker = log.instruction.accounts[0],
                 sellPrice = instruction.price.toBigInteger(),
@@ -64,7 +66,9 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.BuyRecord> {
-        val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)) {
+        val record = when (
+            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+        ) {
             is Buy -> SolanaAuctionHouseOrderRecord.BuyRecord(
                 maker = log.instruction.accounts[0],
                 treasuryMint = log.instruction.accounts[3],
@@ -137,19 +141,27 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.CancelRecord> {
-        val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)) {
-            is Cancel -> SolanaAuctionHouseOrderRecord.CancelRecord(
-                owner = log.instruction.accounts[0],
-                mint = log.instruction.accounts[2],
-                price = instruction.price.toBigInteger(),
-                amount = instruction.size.toBigInteger(),
-                log = log.log,
-                timestamp = Instant.ofEpochSecond(block.timestamp),
-                auctionHouse = log.instruction.accounts[4]
-            )
+        return when (
+            val instruction = log.instruction.data.parseAuctionHouseInstruction(log.instruction.accounts.size)
+        ) {
+            is Cancel -> {
+                val cancelRecord = SolanaAuctionHouseOrderRecord.CancelRecord(
+                    owner = log.instruction.accounts[0],
+                    mint = log.instruction.accounts[2],
+                    price = instruction.price.toBigInteger(),
+                    amount = instruction.size.toBigInteger(),
+                    log = log.log,
+                    timestamp = Instant.ofEpochSecond(block.timestamp),
+                    auctionHouse = log.instruction.accounts[4],
+                    direction = OrderDirection.BUY,
+                    orderId = ""
+                )
+                listOf(
+                    cancelRecord.withUpdatedOrderId(),
+                    cancelRecord.copy(direction = OrderDirection.SELL).withUpdatedOrderId()
+                )
+            }
             else -> return emptyList()
         }
-
-        return listOf(record)
     }
 }

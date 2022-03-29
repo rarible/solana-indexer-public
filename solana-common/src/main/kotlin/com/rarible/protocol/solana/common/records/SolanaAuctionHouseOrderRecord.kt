@@ -89,16 +89,28 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val mint: String,
         val price: BigInteger,
         val amount: BigInteger,
+        val direction: OrderDirection,
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
-        override val orderId: String = Order.calculateAuctionHouseOrderId(
-            maker = owner,
-            mint = mint,
-            // TODO: we don't really know the direction, but seemingly the Cancel is applicable only to BUY (BID) orders.
-            direction = OrderDirection.BUY,
-            auctionHouse = auctionHouse
+        override val orderId: String
+    ) : SolanaAuctionHouseOrderRecord() {
+
+        fun withUpdatedOrderId() = copy(
+            orderId = Order.calculateAuctionHouseOrderId(
+                maker = owner,
+                mint = mint,
+                direction = direction,
+                auctionHouse = auctionHouse
+            )
         )
-    ) : SolanaAuctionHouseOrderRecord()
+
+        override val id: String
+            get() = super.id + ":" + when (direction) {
+                OrderDirection.BUY -> "buy"
+                OrderDirection.SELL -> "sell"
+            }
+
+    }
 
 }
