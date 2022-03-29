@@ -15,7 +15,6 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
-import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -37,7 +36,20 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.math.BigDecimal
 import java.math.BigInteger
+
+data class AuctionHouse(
+    val id: String,
+    val mint: String,
+    val authority: String,
+    val creator: String,
+    val feePayerAcct: String,
+    val treasuryAcct: String,
+    val feePayerWithdrawalAcct: String,
+    val treasuryWithdrawalAcct: String,
+    val sellerFeeBasisPoints: Int
+)
 
 @MongoTest
 @MongoCleanup
@@ -126,7 +138,17 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(0, -1) }
     }
 
-    protected fun createAuctionHouse(keypair: String): String {
+    protected fun getBalance(address: String): BigDecimal {
+        val args = buildList {
+            add("solana")
+            add("balance")
+            add(address)
+        }
+
+        return processOperation(args) { it.parse(0, 0) }.toBigDecimal()
+    }
+
+    protected fun createAuctionHouse(keypair: String): AuctionHouse {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
@@ -141,10 +163,12 @@ abstract class AbstractBlockScannerTest {
             add(keypair)
         }
 
-        return processOperation(args) { it.parse(4, -1) }
+        val house = processOperation(args) { it.parse(4, -1) }
+
+        return getAuctionHouse(house, keypair)
     }
 
-    protected fun getFeePayerAccountForAuctionHouse(auctionHouse: String, keypair: String): String {
+    protected fun getAuctionHouse(auctionHouse: String, keypair: String): AuctionHouse {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
@@ -155,7 +179,7 @@ abstract class AbstractBlockScannerTest {
             add(keypair)
         }
 
-        return processOperation(args) { it.parse(7, -1) }
+        return processOperation(args) { it.parse() }
     }
 
     protected fun updateAuctionHouse(auctionHouse: String, keypair: String) {
@@ -222,6 +246,26 @@ abstract class AbstractBlockScannerTest {
         }
 
         return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun showEscrow(
+        auctionHouse: String,
+        keypair: String,
+        wallet: String
+    ) : BigDecimal {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("show_escrow")
+            add("--auction-house")
+            add(auctionHouse)
+            add("--wallet")
+            add(wallet)
+            add("--keypair")
+            add(keypair)
+        }
+
+        return processOperation(args) { it.parse(1, -1) }.toBigDecimal()
     }
 
     protected fun executeSale(
@@ -356,6 +400,22 @@ abstract class AbstractBlockScannerTest {
         val exec = solana.execInContainer(*args.toTypedArray())
         assertEquals(0, exec.exitCode, exec.stderr)
         return parser(exec.stdout)
+    }
+
+    private fun String.parse(): AuctionHouse {
+        val rows = split(System.lineSeparator())
+
+        return AuctionHouse(
+            id = rows[3].split(" ").last(),
+            mint = rows[4].split(" ").last(),
+            authority = rows[5].split(" ").last(),
+            creator = rows[6].split(" ").last(),
+            feePayerAcct = rows[7].split(" ").last(),
+            treasuryAcct = rows[8].split(" ").last(),
+            feePayerWithdrawalAcct = rows[9].split(" ").last(),
+            treasuryWithdrawalAcct = rows[10].split(" ").last(),
+            sellerFeeBasisPoints = rows[13].split(" ").last().toInt()
+        )
     }
 
     private fun String.parse(rowNumber: Int, colNumber: Int): String {

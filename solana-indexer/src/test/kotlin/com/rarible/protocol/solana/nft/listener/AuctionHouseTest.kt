@@ -26,6 +26,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Duration
 import java.time.Instant
@@ -63,7 +64,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         treasuryMint = wrappedSol,
                         feeWithdrawalDestination = wallet,
                         treasuryWithdrawalDestination = wallet,
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
@@ -80,8 +81,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         airdrop(10, wallet)
         val house = createAuctionHouse(keypair)
         val token = mintNft(baseKeypair)
-        airdrop(10, getFeePayerAccountForAuctionHouse(house, keypair))
-        sell(house, baseKeypair, 1, token, 1)
+        airdrop(10, house.feePayerAcct)
+        sell(house.id, baseKeypair, 1, token, 1)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -101,7 +102,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         mint = token,
                         amount = 1L.toBigInteger(),
                         sellPrice = 1.scaleSupply(9),
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
@@ -118,8 +119,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         airdrop(10, wallet)
         val house = createAuctionHouse(keypair)
         val token = mintNft(baseKeypair)
-        airdrop(10, getFeePayerAccountForAuctionHouse(house, keypair))
-        buy(house, keypair, 1, token, 1)
+        airdrop(10, house.feePayerAcct)
+        buy(house.id, keypair, 1, token, 1)
 
         Wait.waitAssert(timeout) {
             val records = findRecordByType(
@@ -140,7 +141,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         mint = token,
                         amount = 1L.toBigInteger(),
                         buyPrice = 1.scaleSupply(9),
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
@@ -151,7 +152,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
     }
 
     @Test
-    fun executeSaleTest() = runBlocking {
+    fun executeSaleTest() = runBlocking<Unit> {
         val auctionHouseKeypair = createKeypair(randomString())
         airdrop(10, getWallet(auctionHouseKeypair))
         val house = createAuctionHouse(auctionHouseKeypair)
@@ -162,10 +163,10 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         val buyerWallet = getWallet(buyerKeypair)
         val token = mintNft(keypair = baseKeypair)
 
-        airdrop(10, getFeePayerAccountForAuctionHouse(house, auctionHouseKeypair))
+        airdrop(10, house.feePayerAcct)
         airdrop(10, buyerKeypair)
 
-        sell(house, baseKeypair, 5, token, 1)
+        sell(house.id, baseKeypair, 5, token, 1)
         Wait.waitAssert(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
@@ -184,7 +185,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
                 .isEqualTo(
                     Order(
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         maker = sellerWallet,
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -199,7 +200,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
         }
-        buy(house, buyerKeypair, 5, token, 1)
+        buy(house.id, buyerKeypair, 5, token, 1)
+        val escrow = showEscrow(house.id, buyerKeypair, buyerWallet)
+        assertThat(escrow).isEqualByComparingTo(5.scaleSupply(9).toBigDecimal())
         Wait.waitAssert(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
@@ -218,7 +221,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
                 .isEqualTo(
                     Order(
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         maker = buyerWallet,
                         status = OrderStatus.ACTIVE,
                         make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
@@ -233,8 +236,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
         }
-
-        executeSale(house, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
+        val sellerBalanceBefore = getBalance(sellerWallet)
+        executeSale(house.id, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
         Wait.waitAssert(timeout) {
             val balanceRecords = findRecordByType(
                 collection = SubscriberGroup.BALANCE.collectionName,
@@ -258,7 +261,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         tokenAccount = fromAccount,
                         mint = token,
                         amount = 1L.toBigInteger(),
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
@@ -281,7 +284,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         tokenAccount = fromAccount,
                         mint = token,
                         amount = 1L.toBigInteger(),
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
@@ -299,7 +302,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 mint = token,
                 amount = 1L.toBigInteger(),
                 price = 5.scaleSupply(9),
-                auctionHouse = house,
+                auctionHouse = house.id,
                 log = ANY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
                 direction = OrderDirection.SELL,
@@ -372,7 +375,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
                 .isEqualTo(
                     Order(
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         maker = buyerWallet,
                         status = OrderStatus.FILLED,
                         make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
@@ -404,7 +407,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
                 .isEqualTo(
                     Order(
-                        auctionHouse = house,
+                        auctionHouse = house.id,
                         maker = sellerWallet,
                         status = OrderStatus.FILLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -419,6 +422,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
         }
+
+        assertThat(getBalance(sellerWallet) - sellerBalanceBefore).isEqualByComparingTo(BigDecimal.valueOf(4.5))
+        assertThat(getBalance(house.treasuryAcct)).isEqualByComparingTo(BigDecimal.valueOf(0.5))
     }
 
     private inline fun <reified T : SolanaLogRecord> findRecordByType(
