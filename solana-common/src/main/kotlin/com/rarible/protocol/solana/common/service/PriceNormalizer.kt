@@ -62,7 +62,7 @@ class PriceNormalizer(
     private suspend fun getDecimals(assetType: AssetType): Int =
         when (assetType) {
             is TokenNftAssetType -> getTokenDecimals(assetType.tokenAddress)
-            WrappedSolAssetType -> 9
+            is WrappedSolAssetType -> 9
         }
 
     private suspend fun getTokenDecimals(mint: String): Int {
