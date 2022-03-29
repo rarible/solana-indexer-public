@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.event
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.records.OrderDirection
 import java.math.BigInteger
 import java.time.Instant
 
@@ -41,12 +42,8 @@ data class ExecuteSaleEvent(
     val price: BigInteger,
     val mint: String,
     val amount: BigInteger,
-    val direction: Direction,
+    val direction: OrderDirection,
     override val timestamp: Instant,
     override val reversed: Boolean,
     override val log: SolanaLog
-) : OrderEvent() {
-    enum class Direction {
-        BUY, SELL
-    }
-}
+) : OrderEvent()

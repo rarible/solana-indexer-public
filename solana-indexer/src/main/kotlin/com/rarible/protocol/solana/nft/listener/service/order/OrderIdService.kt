@@ -17,12 +17,12 @@ class OrderIdService : EntityIdService<OrderEvent, OrderId> {
         when (event) {
             is ExecuteSaleEvent -> Order.calculateAuctionHouseOrderId(
                 maker = when (event.direction) {
-                    ExecuteSaleEvent.Direction.BUY -> event.buyer
-                    ExecuteSaleEvent.Direction.SELL -> event.seller
+                    Direction.BUY -> event.buyer
+                    Direction.SELL -> event.seller
                 },
                 make = when (event.direction) {
-                    ExecuteSaleEvent.Direction.BUY -> WrappedSolAssetType
-                    ExecuteSaleEvent.Direction.SELL -> TokenNftAssetType(event.mint)
+                    Direction.BUY -> WrappedSolAssetType
+                    Direction.SELL -> TokenNftAssetType(event.mint)
                 },
                 auctionHouse = event.auctionHouse
             )

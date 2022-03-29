@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.borsh.Cancel
 import com.rarible.protocol.solana.borsh.ExecuteSale
 import com.rarible.protocol.solana.borsh.Sell
 import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
+import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.util.toBigInteger
 import org.springframework.stereotype.Component
@@ -111,11 +112,11 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
                     auctionHouse = log.instruction.accounts[10],
                     log = log.log,
                     timestamp = Instant.ofEpochSecond(block.timestamp),
-                    direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.SELL
+                    direction = OrderDirection.SELL
                 )
                 listOf(
                     sellRecord,
-                    sellRecord.copy(direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.BUY)
+                    sellRecord.copy(direction = OrderDirection.BUY)
                 )
             }
             else -> emptyList()

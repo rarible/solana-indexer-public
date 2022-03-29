@@ -58,23 +58,20 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         override val mint: String,
         val treasuryMint: String,
         val amount: BigInteger,
-        val direction: Direction,
+        val direction: OrderDirection,
         override val log: SolanaLog,
         override val timestamp: Instant,
         override val auctionHouse: String,
         override val orderId: String = when (direction) {
-            Direction.BUY -> Order.calculateAuctionHouseOrderId(buyer, getAssetType(treasuryMint), auctionHouse)
-            Direction.SELL -> Order.calculateAuctionHouseOrderId(seller, getAssetType(mint), auctionHouse)
+            OrderDirection.BUY -> Order.calculateAuctionHouseOrderId(buyer, getAssetType(treasuryMint), auctionHouse)
+            OrderDirection.SELL -> Order.calculateAuctionHouseOrderId(seller, getAssetType(mint), auctionHouse)
         }
     ) : SolanaAuctionHouseOrderRecord() {
-        enum class Direction {
-            BUY, SELL
-        }
 
         override val id: String
             get() = super.id + ":" + when (direction) {
-                Direction.BUY -> "buy"
-                Direction.SELL -> "sell"
+                OrderDirection.BUY -> "buy"
+                OrderDirection.SELL -> "sell"
             }
     }
 
@@ -91,4 +88,5 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
         //  similar how we do for AccountToMintAssociationService.
         override val orderId: String = Order.calculateAuctionHouseOrderId(owner, WrappedSolAssetType, auctionHouse)
     ) : SolanaAuctionHouseOrderRecord()
+
 }

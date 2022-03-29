@@ -4,12 +4,12 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.model.Asset
-import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.OrderType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
@@ -289,7 +289,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 auctionHouse = house,
                 log = ANY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
-                direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.SELL,
+                direction = OrderDirection.SELL,
                 treasuryMint = wrappedSol
             )
             assertThat(saleRecords).usingElementComparatorIgnoringFields(
@@ -298,7 +298,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     sellRecord,
-                    sellRecord.copy(direction = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.BUY)
+                    sellRecord.copy(direction = OrderDirection.BUY)
                 )
             )
 

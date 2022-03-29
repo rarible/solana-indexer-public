@@ -41,8 +41,8 @@ class OrderEventConverter {
                 reversed = reversed,
                 log = record.log,
                 direction = when (record.direction) {
-                    SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.BUY -> ExecuteSaleEvent.Direction.BUY
-                    SolanaAuctionHouseOrderRecord.ExecuteSaleRecord.Direction.SELL -> ExecuteSaleEvent.Direction.SELL
+                    OrderDirection.BUY -> Direction.BUY
+                    OrderDirection.SELL -> Direction.SELL
                 }
             )
         )
