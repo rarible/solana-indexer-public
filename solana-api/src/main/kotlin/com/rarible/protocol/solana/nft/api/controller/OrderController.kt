@@ -131,11 +131,11 @@ class OrderController(
     }
 
     private suspend fun toSlice(
-        balances: List<Order>,
+        orders: List<Order>,
         continuationFactory: ContinuationFactory<OrderDto, *>,
         size: Int
     ): OrdersDto {
-        val dto = balances.map { orderConverter.convert(it) }
+        val dto = orders.map { orderConverter.convert(it) }
 
         val slice = Paging(continuationFactory, dto).getSlice(size)
         return OrdersDto(slice.continuation, slice.entities)

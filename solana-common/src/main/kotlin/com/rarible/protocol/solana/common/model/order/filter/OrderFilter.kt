@@ -20,7 +20,6 @@ sealed class OrderFilter {
         val continuation: DateIdContinuation?
     ) : OrderFilter() {
 
-        // TODO[orders]: respect [continuation].
         override fun getQuery(limit: Int): Query {
             val criteria = Criteria()
                 .forStatuses(statuses)
