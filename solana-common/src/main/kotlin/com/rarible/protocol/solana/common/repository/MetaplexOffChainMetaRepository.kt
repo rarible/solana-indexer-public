@@ -29,16 +29,26 @@ class MetaplexOffChainMetaRepository(
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexOffChainMeta? =
         mongo.findById<MetaplexOffChainMeta>(tokenAddress).awaitFirstOrNull()
 
-    fun findByOffChainCollectionHash(offChainCollectionHash: String): Flow<MetaplexOffChainMeta> {
+    fun findByOffChainCollectionHash(
+        offChainCollectionHash: String, fromTokenAddress: String? = null
+    ): Flow<MetaplexOffChainMeta> {
         val criteria = Criteria.where(offChainCollectionHashKey).isEqualTo(offChainCollectionHash)
+            .fromTokenAddress(fromTokenAddress)
+
         val query = Query(criteria).with(
             Sort.by(
-                offChainCollectionHashKey,
+                Sort.Direction.ASC,
                 MetaplexOffChainMeta::tokenAddress.name,
                 "_id"
             )
         )
         return mongo.find(query, MetaplexOffChainMeta::class.java).asFlow()
+    }
+
+    private fun Criteria.fromTokenAddress(fromTokenAddress: String?): Criteria {
+        return fromTokenAddress?.let {
+            this.and(MetaplexOffChainMeta::tokenAddress.name).lt(it)
+        } ?: this
     }
 
     suspend fun createIndexes() {

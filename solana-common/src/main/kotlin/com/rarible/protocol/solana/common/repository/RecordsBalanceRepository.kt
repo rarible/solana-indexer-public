@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.dto.ActivitySortDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
@@ -25,17 +26,15 @@ class RecordsBalanceRepository(
 
     fun findAll(
         type: List<ActivityTypeDto>,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ): Flow<SolanaBalanceRecord> {
         if (type.isEmpty()) return emptyFlow()
 
-        val cont = parseContinuation(continuation)
-
         val criteria = Criteria()
             .addType(type)
-            .addContinuation(cont, sort)
+            .addContinuation(continuation, sort)
 
         val query = Query(criteria)
             .limit(size)
@@ -47,17 +46,15 @@ class RecordsBalanceRepository(
     fun findByItem(
         type: Collection<ActivityTypeDto>,
         tokenAddress: String,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ): Flow<SolanaBalanceRecord> {
         if (type.isEmpty()) return emptyFlow()
 
-        val cont = parseContinuation(continuation)
-
         val criteria = Criteria.where("mint").isEqualTo(tokenAddress)
             .addType(type)
-            .addContinuation(cont, sort)
+            .addContinuation(continuation, sort)
 
         val query = Query(criteria)
             .limit(size)
@@ -69,7 +66,7 @@ class RecordsBalanceRepository(
     fun findByCollection(
         type: List<ActivityTypeDto>,
         collection: String,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int?,
         sort: ActivitySortDto,
     ): Flow<SolanaBalanceRecord> {
@@ -87,17 +84,17 @@ class RecordsBalanceRepository(
             }
         })
 
-    private fun Criteria.addContinuation(continuation: Pair<Instant, String>?, sort: ActivitySortDto) =
+    private fun Criteria.addContinuation(continuation: DateIdContinuation?, sort: ActivitySortDto) =
         continuation?.let {
             if (sort == ActivitySortDto.LATEST_FIRST) {
                 orOperator(
-                    Criteria("timestamp").isEqualTo(continuation.first).and("_id").lt(continuation.second),
-                    Criteria("timestamp").lt(continuation.first)
+                    Criteria("timestamp").isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                    Criteria("timestamp").lt(continuation.date)
                 )
             } else {
                 orOperator(
-                    Criteria("timestamp").isEqualTo(continuation.first).and("_id").gt(continuation.second),
-                    Criteria("timestamp").gt(continuation.first)
+                    Criteria("timestamp").isEqualTo(continuation.date).and("_id").gt(continuation.id),
+                    Criteria("timestamp").gt(continuation.date)
                 )
             }
         } ?: this

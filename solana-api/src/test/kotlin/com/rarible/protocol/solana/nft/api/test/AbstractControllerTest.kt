@@ -5,9 +5,16 @@ import com.rarible.protocol.solana.api.client.FixedSolanaApiServiceUriProvider
 import com.rarible.protocol.solana.api.client.NoopWebClientCustomizer
 import com.rarible.protocol.solana.api.client.SolanaNftIndexerApiClientFactory
 import com.rarible.protocol.solana.api.client.TokenControllerApi
-import com.rarible.protocol.solana.common.meta.TokenMetaService
-import com.rarible.protocol.solana.nft.api.service.BalanceApiService
-import com.rarible.protocol.solana.nft.api.service.TokenApiService
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
+import com.rarible.protocol.solana.common.meta.TokenMeta
+import com.rarible.protocol.solana.common.meta.TokenMetaParser
+import com.rarible.protocol.solana.common.model.MetaplexMeta
+import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
+import com.rarible.protocol.solana.common.model.TokenId
+import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
+import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.test.createRandomMetaplexMeta
+import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
 import java.net.URI
@@ -17,13 +24,13 @@ import javax.annotation.PostConstruct
 abstract class AbstractControllerTest : AbstractIntegrationTest() {
 
     @Autowired
-    lateinit var testTokenApiService: TokenApiService
+    lateinit var testMetaplexOffChainMetaLoader: MetaplexOffChainMetaLoader
 
     @Autowired
-    lateinit var testTokenMetaService: TokenMetaService
+    lateinit var metaplexMetaRepository: MetaplexMetaRepository
 
     @Autowired
-    lateinit var testBalanceApiService: BalanceApiService
+    lateinit var metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
 
     protected lateinit var tokenControllerApi: TokenControllerApi
 
@@ -35,5 +42,26 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
         val clientFactory = SolanaNftIndexerApiClientFactory(urlProvider, NoopWebClientCustomizer())
         tokenControllerApi = clientFactory.createTokenControllerApiClient()
         balanceControllerApi = clientFactory.createBalanceControllerApiClient()
+    }
+
+    suspend fun saveRandomMetaplexOnChainAndOffChainMeta(
+        tokenAddress: TokenId,
+        metaplexMetaCustomizer: MetaplexMeta.() -> MetaplexMeta = { this },
+        metaplexOffChainMetaCustomizer: MetaplexOffChainMeta.() -> MetaplexOffChainMeta = { this }
+    ): TokenMeta {
+        val metaplexMeta = createRandomMetaplexMeta().copy(
+            tokenAddress = tokenAddress
+        ).metaplexMetaCustomizer()
+        val metaplexOffChainMeta = createRandomMetaplexOffChainMeta().copy(
+            tokenAddress = tokenAddress
+        ).metaplexOffChainMetaCustomizer()
+
+        metaplexMetaRepository.save(metaplexMeta)
+        metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
+
+        return TokenMetaParser.mergeOnChainAndOffChainMeta(
+            metaplexMeta.metaFields,
+            metaplexOffChainMeta.metaFields
+        )
     }
 }

@@ -30,8 +30,8 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
         balanceRepository.save(balance)
         balanceRepository.save(balance2)
         balanceRepository.save(balance3)
-        assertThat(balanceRepository.findByOwner(balance.owner).toList())
-            .isEqualTo(listOf(balance, balance2).sortedBy { it.account })
+        assertThat(balanceRepository.findByOwner(balance.owner, null, 100).toList())
+            .isEqualTo(listOf(balance, balance2).sortedBy { it.updatedAt })
     }
 
     @Test
@@ -42,8 +42,8 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
         balanceRepository.save(balance)
         balanceRepository.save(balance2)
         balanceRepository.save(balance3)
-        assertThat(balanceRepository.findByMint(balance.mint).toList())
-            .isEqualTo(listOf(balance, balance2).sortedBy { it.account })
+        assertThat(balanceRepository.findByMint(balance.mint, null, 100).toList())
+            .isEqualTo(listOf(balance, balance2).sortedBy { it.updatedAt })
     }
 
     @Test

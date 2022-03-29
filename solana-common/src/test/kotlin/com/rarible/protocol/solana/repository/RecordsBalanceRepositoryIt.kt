@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.repository
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.AbstractIntegrationTest
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
 import com.rarible.protocol.solana.dto.ActivitySortDto
@@ -128,7 +129,7 @@ internal class RecordsBalanceRepositoryIt : AbstractIntegrationTest() {
         continuation: String? = null,
         size: Int = 50,
         sort: ActivitySortDto = ActivitySortDto.LATEST_FIRST,
-    ) = recordsBalanceRepository.findByItem(type, tokenAddress, continuation, size, sort)
+    ) = recordsBalanceRepository.findByItem(type, tokenAddress, DateIdContinuation.parse(continuation), size, sort)
 
     companion object {
 

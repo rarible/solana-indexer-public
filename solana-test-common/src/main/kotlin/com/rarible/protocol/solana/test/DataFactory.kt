@@ -18,9 +18,10 @@ import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenWithMeta
+import java.time.Instant
 
-fun createRandomToken(): Token = Token(
-    mint = randomString(),
+fun createRandomToken(mint: String = randomString()): Token = Token(
+    mint = mint,
     supply = randomBigInt(),
     revertableEvents = emptyList(),
     decimals = randomInt(6),
@@ -34,9 +35,11 @@ fun createRandomTokenWithMeta(): TokenWithMeta = TokenWithMeta(
     tokenMeta = createRandomTokenMeta()
 )
 
-fun createRandomMetaplexMeta(): MetaplexMeta = MetaplexMeta(
+fun createRandomMetaplexMeta(
+    mint: String = randomString()
+): MetaplexMeta = MetaplexMeta(
     metaAddress = randomString(),
-    tokenAddress = randomString(),
+    tokenAddress = mint,
     metaFields = createRandomMetaplexMetaFields(),
     isMutable = randomBoolean(),
     revertableEvents = emptyList(),
@@ -161,18 +164,26 @@ fun createRandomTokenCreator(): MetaplexTokenCreator =
         verified = randomBoolean()
     )
 
-fun createRandomBalance(): Balance = Balance(
+fun createRandomBalance(
+    owner: String = randomString(),
+    mint: String = randomString(),
+    updatedAt: Instant = nowMillis()
+): Balance = Balance(
     account = randomString(),
-    owner = randomString(),
-    mint = randomString(),
+    owner = owner,
+    mint = mint,
     value = randomBigInt(),
     revertableEvents = emptyList(),
     createdAt = nowMillis(),
-    updatedAt = nowMillis()
+    updatedAt = updatedAt
 )
 
-fun createRandomBalanceWithMeta(): BalanceWithMeta = BalanceWithMeta(
-    balance = createRandomBalance(),
+fun createRandomBalanceWithMeta(
+    owner: String = randomString(),
+    mint: String = randomString(),
+    updatedAt: Instant = nowMillis()
+): BalanceWithMeta = BalanceWithMeta(
+    balance = createRandomBalance(owner, mint, updatedAt),
     tokenMeta = createRandomTokenMeta()
 )
 

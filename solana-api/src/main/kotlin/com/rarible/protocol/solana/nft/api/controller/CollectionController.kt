@@ -1,11 +1,15 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.api.controller.CollectionControllerApi
+import com.rarible.protocol.solana.common.continuation.CollectionContinuation
+import com.rarible.protocol.solana.common.continuation.Paging
+import com.rarible.protocol.solana.common.model.SolanaCollection
 import com.rarible.protocol.solana.common.service.CollectionConversionService
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.dto.CollectionDto
 import com.rarible.protocol.solana.dto.CollectionsDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
+import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
@@ -15,18 +19,13 @@ class CollectionController(
     private val collectionConversionService: CollectionConversionService
 ) : CollectionControllerApi {
 
-    private val defaultSize = 50
-
     override suspend fun getAllCollections(continuation: String?, size: Int?): ResponseEntity<CollectionsDto> {
-        val collections = collectionService.findAll(continuation, size ?: defaultSize)
-        val dto = collections.map { collectionConversionService.toDto(it) }.sortedBy { it.address }
+        val safeSize = PageSize.COLLECTION.limit(size)
 
-        return ResponseEntity.ok(
-            CollectionsDto(
-                collections = dto,
-                continuation = dto.lastOrNull()?.address
-            )
-        )
+        val collections = collectionService.findAll(continuation, safeSize)
+
+        val dto = toSlice(collections, safeSize)
+        return ResponseEntity.ok(dto)
     }
 
     override suspend fun getCollectionById(collection: String): ResponseEntity<CollectionDto> {
@@ -46,5 +45,14 @@ class CollectionController(
     override suspend fun refreshCollectionMeta(collection: String): ResponseEntity<Unit> {
         // TODO implement
         return ResponseEntity.ok().build()
+    }
+
+    private suspend fun toSlice(collections: List<SolanaCollection>, size: Int): CollectionsDto {
+        val continuationFactory = CollectionContinuation.ById
+        val result = collections.map { collectionConversionService.toDto(it) }
+
+        val slice = Paging(continuationFactory, result).getSlice(size)
+
+        return CollectionsDto(slice.entities, slice.continuation)
     }
 }

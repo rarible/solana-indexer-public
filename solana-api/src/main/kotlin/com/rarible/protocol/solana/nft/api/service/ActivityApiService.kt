@@ -1,9 +1,9 @@
 package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
-import com.rarible.protocol.solana.dto.ActivitiesDto
 import com.rarible.protocol.solana.dto.ActivityBlockchainInfoDto
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
@@ -31,7 +31,7 @@ class ActivityApiService(
 
     suspend fun getAllActivities(
         filter: ActivityFilterAllDto,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
@@ -45,7 +45,7 @@ class ActivityApiService(
 
     suspend fun getActivitiesByItem(
         filter: ActivityFilterByItemDto,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
@@ -60,7 +60,7 @@ class ActivityApiService(
 
     suspend fun getActivitiesByCollection(
         filter: ActivityFilterByCollectionDto,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
@@ -75,24 +75,16 @@ class ActivityApiService(
 
     suspend fun getActivitiesByUser(
         filter: ActivityFilterByUserDto,
-        continuation: String?,
+        continuation: DateIdContinuation?,
         size: Int,
         sort: ActivitySortDto,
     ) = getActivities(size) { actualSize ->
         emptyFlow()
     }
 
-    private suspend fun getActivities(size: Int, block: (Int) -> Flow<SolanaBalanceRecord>): ActivitiesDto {
-        val activities = block(size).mapNotNull { convert(it) }.toList()
-
-        val outContinuation = activities
-            .takeIf { activities.size >= size }
-            .let { activities.lastOrNull()?.let(this::makeContinuation) }
-
-        return ActivitiesDto(outContinuation, activities)
+    private suspend fun getActivities(size: Int, block: (Int) -> Flow<SolanaBalanceRecord>): List<ActivityDto> {
+        return block(size).mapNotNull { convert(it) }.toList()
     }
-
-    private fun makeContinuation(last: ActivityDto) = "${last.date.toEpochMilli()}_${last.id}"
 
     private fun convert(it: SolanaBalanceRecord) = when (it) {
         is SolanaBalanceRecord.MintToRecord -> makeMint(it)

@@ -1,7 +1,12 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.api.controller.OrderControllerApi
+import com.rarible.protocol.solana.common.continuation.ContinuationFactory
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.OrderContinuation
+import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.common.converter.OrderConverter
+import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.order.filter.OrderFilter
 import com.rarible.protocol.solana.common.model.order.filter.OrderFilterSort
@@ -11,8 +16,8 @@ import com.rarible.protocol.solana.dto.OrderIdsDto
 import com.rarible.protocol.solana.dto.OrderSortDto
 import com.rarible.protocol.solana.dto.OrderStatusDto
 import com.rarible.protocol.solana.dto.OrdersDto
-import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import com.rarible.protocol.solana.nft.api.service.OrderApiService
+import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class OrderController(
     private val orderApiService: OrderApiService
 ) : OrderControllerApi {
+
     override suspend fun getOrderById(id: String): ResponseEntity<OrderDto> {
         val order = orderApiService.getOrderById(id)
         return ResponseEntity.ok(OrderConverter.convert(order))
@@ -37,13 +43,23 @@ class OrderController(
         sort: OrderSortDto?,
         status: List<OrderStatusDto>?
     ): ResponseEntity<OrdersDto> {
+        val safeSize = PageSize.ORDER.limit(size)
+        val safeSort = sort?.fromDto() ?: OrderFilterSort.LAST_UPDATE_DESC
+
         val orderFilter = OrderFilter.All(
-            statuses = (status ?: listOf(OrderStatusDto.ACTIVE)).fromDto(),
-            sort = sort?.fromDto() ?: OrderFilterSort.LAST_UPDATE_DESC
+            statuses = status?.fromDto(),
+            sort = safeSort,
+            continuation = DateIdContinuation.parse(continuation)
         )
-        val requestSize = limitSize(size)
-        val ordersWithContinuation = orderApiService.getOrders(orderFilter, continuation, requestSize)
-        return ResponseEntity.ok(OrderConverter.convert(ordersWithContinuation))
+
+        val orders = orderApiService.getOrders(orderFilter, safeSize)
+
+        val continuationFactory = when (safeSort) {
+            OrderFilterSort.LAST_UPDATE_ASC -> OrderContinuation.ByLastUpdatedAndIdAsc
+            OrderFilterSort.LAST_UPDATE_DESC -> OrderContinuation.ByLastUpdatedAndIdDesc
+        }
+
+        return ResponseEntity.ok(toSlice(orders, continuationFactory, safeSize))
     }
 
     override suspend fun getSellCurrencies(itemId: String): ResponseEntity<OrderCurrenciesDto> {
@@ -113,6 +129,17 @@ class OrderController(
         return ResponseEntity.ok(OrdersDto(null, emptyList()))
     }
 
+    private fun toSlice(
+        balances: List<Order>,
+        continuationFactory: ContinuationFactory<OrderDto, *>,
+        size: Int
+    ): OrdersDto {
+        val dto = balances.map { OrderConverter.convert(it) }
+
+        val slice = Paging(continuationFactory, dto).getSlice(size)
+        return OrdersDto(slice.continuation, slice.entities)
+    }
+
     private fun List<OrderStatusDto>.fromDto(): List<OrderStatus> = map { it.fromDto() }
     private fun OrderStatusDto.fromDto(): OrderStatus = when (this) {
         OrderStatusDto.ACTIVE -> OrderStatus.ACTIVE
@@ -124,6 +151,4 @@ class OrderController(
         OrderSortDto.LAST_UPDATE_ASC -> OrderFilterSort.LAST_UPDATE_ASC
         OrderSortDto.LAST_UPDATE_DESC -> OrderFilterSort.LAST_UPDATE_DESC
     }
-
-    private fun limitSize(size: Int?) = if (size != null) minOf(size, 50) else 50
 }

@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import kotlinx.coroutines.flow.Flow
@@ -21,26 +22,48 @@ class BalanceRepository(
     private val mongo: ReactiveMongoOperations
 ) {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     suspend fun save(balance: Balance): Balance =
         mongo.save(balance).awaitFirst()
 
     suspend fun findByAccount(account: BalanceId): Balance? =
         mongo.findById<Balance>(account).awaitFirstOrNull()
 
-    fun findByOwner(owner: String): Flow<Balance> {
-        val criteria = Criteria.where(Balance::owner.name).isEqualTo(owner)
-        val query = Query(criteria).with(Sort.by(Balance::owner.name, "_id"))
+    fun findByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
+        val criteria = Criteria
+            .where(Balance::owner.name).isEqualTo(owner)
+            .addContinuation(continuation)
+
+        val query = Query(criteria).withSortByLastUpdateAndId()
+        query.limit(limit)
+
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
-    fun findByMint(mint: String): Flow<Balance> {
-        val criteria = Criteria.where(Balance::mint.name).isEqualTo(mint)
-        val query = Query(criteria).with(Sort.by(Balance::mint.name, "_id"))
+    fun findByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
+        val criteria = Criteria
+            .where(Balance::mint.name).isEqualTo(mint)
+            .addContinuation(continuation)
+
+        val query = Query(criteria).withSortByLastUpdateAndId()
+        query.limit(limit)
+
         return mongo.find(query, Balance::class.java).asFlow()
     }
+
+    private fun Query.withSortByLastUpdateAndId() =
+        with(Sort.by(Sort.Direction.DESC, Balance::updatedAt.name, "_id"))
+
+    private fun Criteria.addContinuation(continuation: DateIdContinuation?) =
+        continuation?.let {
+            orOperator(
+                Criteria(Balance::updatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                Criteria(Balance::updatedAt.name).lt(continuation.date)
+            )
+        } ?: this
 
     suspend fun createIndexes() {
-        val logger = LoggerFactory.getLogger(BalanceRepository::class.java)
         logger.info("Ensuring indexes on ${Balance.COLLECTION}")
         BalanceIndexes.ALL_INDEXES.forEach { index ->
             mongo.indexOps(Balance.COLLECTION).ensureIndex(index).awaitFirst()
@@ -48,17 +71,20 @@ class BalanceRepository(
     }
 
     private object BalanceIndexes {
-        val OWNER_ID: Index = Index()
+
+        val OWNER_AND_UPDATED_AT_AND_ID: Index = Index()
             .on(Balance::owner.name, Sort.Direction.ASC)
+            .on(Balance::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
 
-        val MINT_ID: Index = Index()
+        val MINT_AND_UPDATED_AT_AND_ID: Index = Index()
             .on(Balance::mint.name, Sort.Direction.ASC)
+            .on(Balance::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
 
         val ALL_INDEXES = listOf(
-            OWNER_ID,
-            MINT_ID
+            OWNER_AND_UPDATED_AT_AND_ID,
+            MINT_AND_UPDATED_AT_AND_ID
         )
     }
 

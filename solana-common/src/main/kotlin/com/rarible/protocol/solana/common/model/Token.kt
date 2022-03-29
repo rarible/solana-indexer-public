@@ -29,6 +29,9 @@ data class Token(
         copy(revertableEvents = events)
 
     companion object {
+
+        const val COLLECTION = "token"
+
         fun empty(mint: String): Token = Token(
             mint = mint,
             supply = BigInteger.ZERO,

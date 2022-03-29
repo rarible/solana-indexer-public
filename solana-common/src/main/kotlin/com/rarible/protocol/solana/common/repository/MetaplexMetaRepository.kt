@@ -22,8 +22,9 @@ import org.springframework.stereotype.Component
 class MetaplexMetaRepository(
     private val mongo: ReactiveMongoOperations
 ) {
+
     suspend fun save(metaplexMeta: MetaplexMeta): MetaplexMeta =
-         mongo.save(metaplexMeta).awaitFirst()
+        mongo.save(metaplexMeta).awaitFirst()
 
     suspend fun findByMetaAddress(metaAddress: MetaId): MetaplexMeta? =
         mongo.findById<MetaplexMeta>(metaAddress).awaitFirstOrNull()
@@ -33,9 +34,17 @@ class MetaplexMetaRepository(
         return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 
-    fun findByCollectionAddress(collectionAddress: String): Flow<MetaplexMeta> {
+    fun findByCollectionAddress(collectionAddress: String, fromTokenAddress: String? = null): Flow<MetaplexMeta> {
         val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
-        val query = Query(criteria).with(Sort.by(collectionAddressKey, MetaplexMeta::tokenAddress.name, "_id"))
+            .fromTokenAddress(fromTokenAddress)
+
+        val query = Query(criteria).with(
+            Sort.by(
+                Sort.Direction.ASC,
+                MetaplexMeta::tokenAddress.name,
+                "_id"
+            )
+        )
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
@@ -47,7 +56,14 @@ class MetaplexMetaRepository(
         }
     }
 
+    private fun Criteria.fromTokenAddress(fromTokenAddress: String?): Criteria {
+        return fromTokenAddress?.let {
+            this.and(MetaplexMeta::tokenAddress.name).lt(it)
+        } ?: this
+    }
+
     private object MetaIndexes {
+
         val TOKEN_ADDRESS_ID: Index = Index()
             .on(MetaplexMeta::tokenAddress.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
@@ -66,6 +82,7 @@ class MetaplexMetaRepository(
     }
 
     companion object {
+
         val collectionAddressKey = MetaplexMeta::metaFields.name + "." + MetaplexMetaFields::collection.name + "." + MetaplexMetaFields.Collection::address.name
     }
 
