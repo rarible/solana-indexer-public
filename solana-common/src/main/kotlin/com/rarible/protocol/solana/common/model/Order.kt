@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.model.Order.Companion.COLLECTION
 import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Instant
 
@@ -30,6 +31,8 @@ data class Order(
     val status: OrderStatus,
     val make: Asset,
     val take: Asset,
+    val makePrice: BigDecimal?,
+    val takePrice: BigDecimal?,
     val fill: BigInteger,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -47,9 +50,7 @@ data class Order(
     ),
 ) : Entity<OrderId, OrderEvent, Order> {
 
-    override fun withRevertableEvents(events: List<OrderEvent>): Order {
-        return copy(revertableEvents = events)
-    }
+    override fun withRevertableEvents(events: List<OrderEvent>): Order = copy(revertableEvents = events)
 
     companion object {
         const val COLLECTION = "order"
@@ -60,6 +61,8 @@ data class Order(
             status = OrderStatus.CANCELLED,
             make = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
             take = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
+            makePrice = BigDecimal.ZERO,
+            takePrice = BigDecimal.ZERO,
             fill = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,

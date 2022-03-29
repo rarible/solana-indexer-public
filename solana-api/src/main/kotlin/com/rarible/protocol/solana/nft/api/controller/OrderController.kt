@@ -23,17 +23,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OrderController(
-    private val orderApiService: OrderApiService
+    private val orderApiService: OrderApiService,
+    private val orderConverter: OrderConverter
 ) : OrderControllerApi {
 
     override suspend fun getOrderById(id: String): ResponseEntity<OrderDto> {
         val order = orderApiService.getOrderById(id)
-        return ResponseEntity.ok(OrderConverter.convert(order))
+        return ResponseEntity.ok(orderConverter.convert(order))
     }
 
     override suspend fun getOrdersByIds(orderIdsDto: OrderIdsDto): ResponseEntity<OrdersDto> {
         val orders = orderApiService.findByIds(orderIdsDto.ids)
-            .map { OrderConverter.convert(it) }
+            .map { orderConverter.convert(it) }
         return ResponseEntity.ok(OrdersDto(null, orders))
     }
 
@@ -129,12 +130,12 @@ class OrderController(
         return ResponseEntity.ok(OrdersDto(null, emptyList()))
     }
 
-    private fun toSlice(
+    private suspend fun toSlice(
         balances: List<Order>,
         continuationFactory: ContinuationFactory<OrderDto, *>,
         size: Int
     ): OrdersDto {
-        val dto = balances.map { OrderConverter.convert(it) }
+        val dto = balances.map { orderConverter.convert(it) }
 
         val slice = Paging(continuationFactory, dto).getSlice(size)
         return OrdersDto(slice.continuation, slice.entities)

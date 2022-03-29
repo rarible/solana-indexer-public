@@ -193,7 +193,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
-                        direction = OrderDirection.SELL
+                        direction = OrderDirection.SELL,
+                        makePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        takePrice = null
                     )
                 )
         }
@@ -225,14 +227,16 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
-                        direction = OrderDirection.BUY
+                        direction = OrderDirection.BUY,
+                        makePrice = null,
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
                     )
                 )
         }
 
         executeSale(house, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
         Wait.waitAssert(timeout) {
-            val balanceRecords  = findRecordByType(
+            val balanceRecords = findRecordByType(
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
             ).toList()
@@ -311,7 +315,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
             )
 
-            val incomeTransfersRecords  = findRecordByType(
+            val incomeTransfersRecords = findRecordByType(
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.TransferIncomeRecord::class.java
             ).toList()
@@ -331,7 +335,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
             )
 
-            val outcomeTransfersRecords  = findRecordByType(
+            val outcomeTransfersRecords = findRecordByType(
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.TransferOutcomeRecord::class.java
             ).toList()
@@ -377,7 +381,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
-                        direction = OrderDirection.BUY
+                        direction = OrderDirection.BUY,
+                        makePrice = null,
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
                     )
                 )
 
@@ -407,7 +413,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
-                        direction = OrderDirection.SELL
+                        direction = OrderDirection.SELL,
+                        makePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        takePrice = null
                     )
                 )
         }
