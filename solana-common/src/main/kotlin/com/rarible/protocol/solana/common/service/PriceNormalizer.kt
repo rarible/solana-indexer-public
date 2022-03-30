@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderMakeAndTakePrice
+import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.OrderDirection
@@ -62,7 +63,8 @@ class PriceNormalizer(
     private suspend fun getDecimals(assetType: AssetType): Int =
         when (assetType) {
             is TokenNftAssetType -> getTokenDecimals(assetType.tokenAddress)
-            is WrappedSolAssetType -> 9
+            is TokenFtAssetType -> 0 // TODO potentially there should be collection with such coins/decimals, see ethereum or tokens.json
+            WrappedSolAssetType -> 9
         }
 
     private suspend fun getTokenDecimals(mint: String): Int {

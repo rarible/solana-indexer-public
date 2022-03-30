@@ -5,6 +5,8 @@ import com.rarible.protocol.solana.common.continuation.ContinuationFactory
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.OrderContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
+import com.rarible.protocol.solana.common.continuation.PriceIdContinuation
+import com.rarible.protocol.solana.common.converter.AssetConverter
 import com.rarible.protocol.solana.common.converter.OrderConverter
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
@@ -20,11 +22,13 @@ import com.rarible.protocol.solana.nft.api.service.OrderApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 
 @RestController
 class OrderController(
     private val orderApiService: OrderApiService,
-    private val orderConverter: OrderConverter
+    private val orderConverter: OrderConverter,
+    private val assetConverter: AssetConverter,
 ) : OrderControllerApi {
 
     override suspend fun getOrderById(id: String): ResponseEntity<OrderDto> {
@@ -55,35 +59,58 @@ class OrderController(
 
         val orders = orderApiService.getOrders(orderFilter, safeSize)
 
-        val continuationFactory = when (safeSort) {
-            OrderFilterSort.LAST_UPDATE_ASC -> OrderContinuation.ByLastUpdatedAndIdAsc
-            OrderFilterSort.LAST_UPDATE_DESC -> OrderContinuation.ByLastUpdatedAndIdDesc
-        }
-
-        return ResponseEntity.ok(toSlice(orders, continuationFactory, safeSize))
+        return ResponseEntity.ok(toSlice(orders, safeSort, safeSize))
     }
 
     override suspend fun getSellCurrencies(itemId: String): ResponseEntity<OrderCurrenciesDto> {
-        // TODO[orders]: implement
-        return ResponseEntity.ok(OrderCurrenciesDto(emptyList()))
+        val assetTypes = orderApiService.getSellOrderCurrencies(itemId)
+        val dto = assetTypes.map { assetConverter.convert(it) }
+        return ResponseEntity.ok(OrderCurrenciesDto(dto))
     }
 
-    override suspend fun getSellOrders(origin: String?, continuation: String?, size: Int?): ResponseEntity<OrdersDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrdersDto(null, emptyList()))
+    override suspend fun getSellOrders(
+        origin: String?,
+        continuation: String?,
+        size: Int?
+    ): ResponseEntity<OrdersDto> {
+        val safeSize = PageSize.ORDER.limit(size)
+        val sort = OrderFilterSort.LAST_UPDATE_DESC
+
+        val orderFilter = OrderFilter.Sell(
+            statuses = listOf(OrderStatus.ACTIVE),
+            makers = null,
+            sort = sort,
+            continuation = DateIdContinuation.parse(continuation)
+        )
+
+        val orders = orderApiService.getOrders(orderFilter, safeSize)
+
+        return ResponseEntity.ok(toSlice(orders, sort, safeSize))
     }
 
     override suspend fun getSellOrdersByItem(
         itemId: String,
         currencyId: String,
-        maker: String?,
+        maker: List<String>?,
         origin: String?,
         status: List<OrderStatusDto>?,
         continuation: String?,
         size: Int?
     ): ResponseEntity<OrdersDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrdersDto(null, emptyList()))
+        val safeSize = PageSize.ORDER.limit(size)
+
+        val filter = OrderFilter.SellByItem(
+            statuses = status?.fromDto(),
+            currency = currencyId,
+            tokenAddress = itemId,
+            makers = maker,
+            continuation = PriceIdContinuation.parse(continuation)
+        )
+
+        val orders = orderApiService.getOrders(filter, safeSize)
+
+        val dto = toSlice(orders, OrderContinuation.BySellPriceAndIdAsc, safeSize)
+        return ResponseEntity.ok(dto)
     }
 
     override suspend fun getSellOrdersByMaker(
@@ -93,13 +120,25 @@ class OrderController(
         continuation: String?,
         size: Int?
     ): ResponseEntity<OrdersDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrdersDto(null, emptyList()))
+        val safeSize = PageSize.ORDER.limit(size)
+        val sort = OrderFilterSort.LAST_UPDATE_DESC
+
+        val orderFilter = OrderFilter.Sell(
+            statuses = status?.fromDto(),
+            makers = listOf(maker),
+            sort = sort,
+            continuation = DateIdContinuation.parse(continuation)
+        )
+
+        val orders = orderApiService.getOrders(orderFilter, safeSize)
+
+        return ResponseEntity.ok(toSlice(orders, sort, safeSize))
     }
 
     override suspend fun getBidCurrencies(itemId: String): ResponseEntity<OrderCurrenciesDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrderCurrenciesDto(emptyList()))
+        val assetTypes = orderApiService.getBuyOrderCurrencies(itemId)
+        val dto = assetTypes.map { assetConverter.convert(it) }
+        return ResponseEntity.ok(OrderCurrenciesDto(dto))
     }
 
     override suspend fun getOrderBidsByItem(
@@ -108,13 +147,27 @@ class OrderController(
         status: List<OrderStatusDto>,
         maker: List<String>?,
         origin: String?,
-        startDate: Long?,
-        endDate: Long?,
+        start: Long?,
+        end: Long?,
         continuation: String?,
         size: Int?
     ): ResponseEntity<OrdersDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrdersDto(null, emptyList()))
+        val safeSize = PageSize.ORDER.limit(size)
+
+        val filter = OrderFilter.BuyByItem(
+            statuses = status.fromDto(),
+            currency = currencyId,
+            tokenAddress = itemId,
+            makers = maker,
+            continuation = PriceIdContinuation.parse(continuation),
+            start = start?.let { Instant.ofEpochMilli(it) },
+            end = end?.let { Instant.ofEpochMilli(it) }
+        )
+
+        val orders = orderApiService.getOrders(filter, safeSize)
+
+        val dto = toSlice(orders, OrderContinuation.ByBuyPriceAndIdDesc, safeSize)
+        return ResponseEntity.ok(dto)
     }
 
     override suspend fun getOrderBidsByMaker(
@@ -126,8 +179,34 @@ class OrderController(
         continuation: String?,
         size: Int?
     ): ResponseEntity<OrdersDto> {
-        // TODO[orders] implement
-        return ResponseEntity.ok(OrdersDto(null, emptyList()))
+        val safeSize = PageSize.ORDER.limit(size)
+        val sort = OrderFilterSort.LAST_UPDATE_DESC
+
+        val filter = OrderFilter.Buy(
+            sort = sort,
+            statuses = status?.fromDto(),
+            makers = listOf(maker),
+            continuation = DateIdContinuation.parse(continuation),
+            start = start?.let { Instant.ofEpochMilli(it) },
+            end = start?.let { Instant.ofEpochMilli(it) },
+        )
+
+        val orders = orderApiService.getOrders(filter, safeSize)
+
+        val dto = toSlice(orders, sort, safeSize)
+        return ResponseEntity.ok(dto)
+    }
+
+    private suspend fun toSlice(
+        orders: List<Order>,
+        sort: OrderFilterSort,
+        size: Int
+    ): OrdersDto {
+        val continuationFactory = when (sort) {
+            OrderFilterSort.LAST_UPDATE_ASC -> OrderContinuation.ByLastUpdatedAndIdAsc
+            OrderFilterSort.LAST_UPDATE_DESC -> OrderContinuation.ByLastUpdatedAndIdDesc
+        }
+        return toSlice(orders, continuationFactory, size)
     }
 
     private suspend fun toSlice(

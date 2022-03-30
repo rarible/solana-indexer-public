@@ -11,20 +11,20 @@ object TokenMetaParser {
 
     fun mergeOnChainAndOffChainMeta(
         onChainMeta: MetaplexMetaFields,
-        offChainMeta: MetaplexOffChainMetaFields
+        offChainMeta: MetaplexOffChainMetaFields?
     ): TokenMeta = TokenMeta(
         name = onChainMeta.name,
         symbol = onChainMeta.symbol,
         url = onChainMeta.uri,
         creators = getCreators(onChainMeta, offChainMeta),
         collection = getCollection(onChainMeta, offChainMeta),
-        description = offChainMeta.description,
-        attributes = offChainMeta.attributes.mapNotNull { it.getAttribute() },
-        contents = parseContents(offChainMeta),
-        externalUrl = offChainMeta.externalUrl
+        description = offChainMeta?.description,
+        attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() } ?: emptyList(),
+        contents = offChainMeta?.let { parseContents(it) } ?: emptyList(),
+        externalUrl = offChainMeta?.externalUrl
     )
 
-    private fun parseContents(metaplexOffChainMetaFields: MetaplexOffChainMetaFields) =
+    private fun parseContents(metaplexOffChainMetaFields: MetaplexOffChainMetaFields): List<TokenMeta.Content> =
         (metaplexOffChainMetaFields.getFiles() + listOfNotNull(
             metaplexOffChainMetaFields.getImage(),
             metaplexOffChainMetaFields.getAnimation()
@@ -77,7 +77,7 @@ object TokenMetaParser {
 
     private fun getCollection(
         metaplexMeta: MetaplexMetaFields,
-        metaplexOffChainMetaFields: MetaplexOffChainMetaFields
+        metaplexOffChainMetaFields: MetaplexOffChainMetaFields?
     ): TokenMeta.Collection? {
         val onChainCollection = metaplexMeta.collection
         if (onChainCollection != null) {
@@ -86,7 +86,7 @@ object TokenMetaParser {
                 verified = onChainCollection.verified
             )
         }
-        val offChainCollection = metaplexOffChainMetaFields.collection ?: return null
+        val offChainCollection = metaplexOffChainMetaFields?.collection ?: return null
         return TokenMeta.Collection.OffChain(
             name = offChainCollection.name,
             family = offChainCollection.family,
@@ -100,10 +100,10 @@ object TokenMetaParser {
 
     private fun getCreators(
         metaplexMeta: MetaplexMetaFields,
-        metaplexOffChainMetaFields: MetaplexOffChainMetaFields
+        metaplexOffChainMetaFields: MetaplexOffChainMetaFields?
     ): List<MetaplexTokenCreator> =
         metaplexMeta.creators?.takeIf { it.isNotEmpty() }
-            ?: metaplexOffChainMetaFields.properties?.creators.orEmpty()
+            ?: metaplexOffChainMetaFields?.properties?.creators.orEmpty()
 
     private fun <T> parseField(fieldName: String, block: () -> T): T {
         val field = block()

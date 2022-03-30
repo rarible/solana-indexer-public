@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.test
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.core.common.nowMillis
+import com.rarible.core.test.data.randomBigDecimal
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
@@ -9,6 +10,8 @@ import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
+import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -16,8 +19,13 @@ import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.model.Order
+import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.Token
+import com.rarible.protocol.solana.common.model.TokenFtAssetType
+import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.TokenWithMeta
+import com.rarible.protocol.solana.common.records.OrderDirection
 import java.time.Instant
 
 fun createRandomToken(mint: String = randomString()): Token = Token(
@@ -211,3 +219,63 @@ fun randomSolanaLog(): SolanaLog {
         innerInstructionIndex = randomInt(1_000_000)
     )
 }
+
+fun randomSellOrder(
+    make: Asset = randomAsset(randomAssetTypeNft()),
+    take: Asset = randomAsset(randomAssetTypeFt()),
+): Order {
+    return Order(
+        auctionHouse = randomString(),
+        maker = randomString(),
+        status = OrderStatus.ACTIVE,
+        make = make,
+        take = take,
+        takePrice = null,
+        makePrice = randomBigDecimal(4, 2),
+        fill = randomBigInt(2),
+        createdAt = nowMillis(),
+        updatedAt = nowMillis(),
+        direction = OrderDirection.SELL,
+        revertableEvents = emptyList()
+    )
+}
+
+fun randomBuyOrder(
+    make: Asset = randomAsset(randomAssetTypeFt()),
+    take: Asset = randomAsset(randomAssetTypeNft()),
+): Order {
+    return Order(
+        auctionHouse = randomString(),
+        maker = randomString(),
+        status = OrderStatus.ACTIVE,
+        make = make,
+        take = take,
+        takePrice = randomBigDecimal(4, 2),
+        makePrice = null,
+        fill = randomBigInt(2),
+        createdAt = nowMillis(),
+        updatedAt = nowMillis(),
+        direction = OrderDirection.BUY,
+        revertableEvents = emptyList()
+    )
+}
+
+fun randomAsset(type: AssetType = randomAssetTypeNft()): Asset {
+    return Asset(
+        type = type,
+        amount = randomBigInt(6)
+    )
+}
+
+fun randomAssetTypeNft(): AssetType {
+    return TokenNftAssetType(
+        tokenAddress = randomString()
+    )
+}
+
+fun randomAssetTypeFt(): AssetType {
+    return TokenFtAssetType(
+        tokenAddress = randomString()
+    )
+}
+

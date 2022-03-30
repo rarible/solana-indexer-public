@@ -27,6 +27,8 @@ class OrderConverter(
                 OrderDirection.SELL -> priceNormalizer.normalize(order.make.type, order.fill)
                 OrderDirection.BUY -> priceNormalizer.normalize(order.take.type, order.fill)
             },
+            makePrice = order.makePrice,
+            takePrice = order.takePrice,
             start = null,
             end = null,
             createdAt = order.createdAt,

@@ -18,7 +18,8 @@ object OrderContinuation {
         }
     }
 
-    /*object BySellPriceAndIdAsc : ContinuationFactory<OrderDto, PriceIdContinuation> {
+    object BySellPriceAndIdAsc : ContinuationFactory<OrderDto, PriceIdContinuation> {
+
         override fun getContinuation(entity: OrderDto): PriceIdContinuation {
             return PriceIdContinuation(
                 entity.makePrice,
@@ -28,7 +29,8 @@ object OrderContinuation {
         }
     }
 
-    object ByBidPriceAndIdDesc : ContinuationFactory<OrderDto, PriceIdContinuation> {
+    object ByBuyPriceAndIdDesc : ContinuationFactory<OrderDto, PriceIdContinuation> {
+
         override fun getContinuation(entity: OrderDto): PriceIdContinuation {
             return PriceIdContinuation(
                 entity.takePrice,
@@ -36,5 +38,5 @@ object OrderContinuation {
                 false
             )
         }
-    }*/
+    }
 }

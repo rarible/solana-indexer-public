@@ -46,10 +46,10 @@ class TokenMetaService(
 
     suspend fun getAvailableTokenMeta(tokenAddress: TokenId): TokenMeta? {
         val onChainMeta = getOnChainMeta(tokenAddress) ?: return null
-        val offChainMeta = getOffChainMeta(tokenAddress) ?: return null
+        val offChainMeta = getOffChainMeta(tokenAddress)
         return TokenMetaParser.mergeOnChainAndOffChainMeta(
             onChainMeta = onChainMeta.metaFields,
-            offChainMeta = offChainMeta.metaFields
+            offChainMeta = offChainMeta?.metaFields
         )
     }
 

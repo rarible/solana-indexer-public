@@ -8,7 +8,7 @@ import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 data class TokenMeta(
     val name: String,
     val symbol: String,
-    val description: String,
+    val description: String?,
     val creators: List<MetaplexTokenCreator>,
     val collection: Collection?,
     val url: String,

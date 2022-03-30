@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.dto.TokenDto
-import com.rarible.protocol.solana.dto.TokensDto
 
 object TokenWithMetaConverter {
     fun convert(tokenWithMeta: TokenWithMeta): TokenDto {
@@ -18,9 +17,4 @@ object TokenWithMetaConverter {
             decimals = token.decimals
         )
     }
-
-    fun convert(tokensWithMeta: List<TokenWithMeta>): TokensDto = TokensDto(
-        tokens = tokensWithMeta.map { convert(it) }
-        // TODO add continuation
-    )
 }

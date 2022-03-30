@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.api.service
 
+import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.model.order.filter.OrderFilter
@@ -23,9 +24,14 @@ class OrderApiService(
         size: Int
     ): List<Order> {
         val query = orderFilter.getQuery(size)
-        val orders = when (orderFilter) {
-            is OrderFilter.All -> orderRepository.query(query).toList()
-        }
-        return orders
+        return orderRepository.query(query).toList()
+    }
+
+    suspend fun getSellOrderCurrencies(tokenAddress: String): List<AssetType> {
+        return orderRepository.findCurrencyTypesOfSellOrders(tokenAddress).toList()
+    }
+
+    suspend fun getBuyOrderCurrencies(tokenAddress: String): List<AssetType> {
+        return orderRepository.findCurrencyTypesOfBuyOrders(tokenAddress).toList()
     }
 }

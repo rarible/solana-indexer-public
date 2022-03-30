@@ -3,9 +3,9 @@ package com.rarible.protocol.solana.common.continuation
 import java.math.BigDecimal
 
 data class PriceIdContinuation(
-    private val price: BigDecimal?,
-    private val id: String,
-    private val asc: Boolean = false
+    val price: BigDecimal?,
+    val id: String,
+    val asc: Boolean = false
 ) : Continuation<PriceIdContinuation> {
 
     private val sign = if (asc) 1 else -1
@@ -33,6 +33,16 @@ data class PriceIdContinuation(
         // continuation should ignore price by using min/max value depends on sort
         val from = price ?: if (asc) "0" else Long.MAX_VALUE.toString()
         return "${from}_${id}"
+    }
+
+    companion object {
+
+        fun parse(str: String?): PriceIdContinuation? {
+            val pair = Continuation.splitBy(str, "_") ?: return null
+            val price = BigDecimal(pair.first)
+            val id = pair.second
+            return PriceIdContinuation(price, id)
+        }
     }
 
 }
