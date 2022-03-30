@@ -64,7 +64,7 @@ class PriceNormalizer(
         when (assetType) {
             is TokenNftAssetType -> getTokenDecimals(assetType.tokenAddress)
             is TokenFtAssetType -> 0 // TODO potentially there should be collection with such coins/decimals, see ethereum or tokens.json
-            WrappedSolAssetType -> 9
+            is WrappedSolAssetType -> 9
         }
 
     private suspend fun getTokenDecimals(mint: String): Int {

@@ -13,19 +13,13 @@ data class TokenFtAssetType(
     override val tokenAddress: String,
 ) : AssetType()
 
-object WrappedSolAssetType : AssetType() {
+// WARNING token address should be a constant, it is made as data class only to be stored in mongo with this value
+data class WrappedSolAssetType(
+    override val tokenAddress: String = SOL
+) : AssetType() {
 
-    override val tokenAddress: String = "So11111111111111111111111111111111111111112"
+    companion object {
 
-    override fun equals(other: Any?): Boolean {
-        return other != null && other is WrappedSolAssetType
-    }
-
-    override fun hashCode(): Int {
-        return tokenAddress.hashCode()
-    }
-
-    override fun toString(): String {
-        return "WrappedSolAssetType(tokenAddress=$tokenAddress)"
+        const val SOL = "So11111111111111111111111111111111111111112"
     }
 }

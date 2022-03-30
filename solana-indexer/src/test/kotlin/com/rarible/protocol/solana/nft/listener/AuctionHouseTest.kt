@@ -34,7 +34,7 @@ import java.time.Instant
 class AuctionHouseTest : AbstractBlockScannerTest() {
 
     private val timeout = Duration.ofSeconds(5)
-    private val wrappedSol = WrappedSolAssetType.tokenAddress
+    private val wrappedSol = WrappedSolAssetType.SOL
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
@@ -145,7 +145,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         maker = sellerWallet,
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
-                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -204,7 +204,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         maker = sellerWallet,
                         status = OrderStatus.CANCELLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
-                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -248,7 +248,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house.id,
                         maker = wallet,
                         status = OrderStatus.ACTIVE,
-                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
@@ -307,7 +307,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house.id,
                         maker = wallet,
                         status = OrderStatus.CANCELLED,
-                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
@@ -398,7 +398,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         maker = sellerWallet,
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
-                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -433,7 +433,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house.id,
                         maker = buyerWallet,
                         status = OrderStatus.ACTIVE,
-                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
@@ -587,7 +587,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         auctionHouse = house.id,
                         maker = buyerWallet,
                         status = OrderStatus.FILLED,
-                        make = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
@@ -620,7 +620,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         maker = sellerWallet,
                         status = OrderStatus.FILLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
-                        take = Asset(WrappedSolAssetType, 5.scaleSupply(9)),
+                        take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         fill = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,

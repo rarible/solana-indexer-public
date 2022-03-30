@@ -43,7 +43,7 @@ class ForwardOrderReducer(
                 maker = event.maker,
                 status = OrderStatus.ACTIVE,
                 make = Asset(
-                    type = WrappedSolAssetType,
+                    type = WrappedSolAssetType(),
                     amount = event.buyPrice
                 ),
                 take = event.buyAsset,
@@ -67,7 +67,7 @@ class ForwardOrderReducer(
                 status = OrderStatus.ACTIVE,
                 make = event.sellAsset,
                 take = Asset(
-                    type = WrappedSolAssetType,
+                    type = WrappedSolAssetType(),
                     amount = event.sellPrice
                 ),
                 fill = BigInteger.ZERO,

@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.repository
 
+import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.util.toBigInteger
@@ -24,26 +25,26 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `save and find by owner`() = runBlocking<Unit> {
-        val balance = createRandomBalance()
+        val balance = createRandomBalance().copy(updatedAt = nowMillis().minusSeconds(1))
         val balance2 = createRandomBalance().copy(mint = balance.mint, owner = balance.owner)
         val balance3 = createRandomBalance().copy(mint = balance.mint)
         balanceRepository.save(balance)
         balanceRepository.save(balance2)
         balanceRepository.save(balance3)
         assertThat(balanceRepository.findByOwner(balance.owner, null, 100).toList())
-            .isEqualTo(listOf(balance, balance2).sortedBy { it.updatedAt })
+            .isEqualTo(listOf(balance, balance2).sortedByDescending { it.updatedAt })
     }
 
     @Test
     fun `save and find by mint`() = runBlocking<Unit> {
-        val balance = createRandomBalance()
+        val balance = createRandomBalance().copy(updatedAt = nowMillis().minusSeconds(1))
         val balance2 = createRandomBalance().copy(mint = balance.mint, owner = balance.owner)
         val balance3 = createRandomBalance().copy(owner = balance.owner)
         balanceRepository.save(balance)
         balanceRepository.save(balance2)
         balanceRepository.save(balance3)
         assertThat(balanceRepository.findByMint(balance.mint, null, 100).toList())
-            .isEqualTo(listOf(balance, balance2).sortedBy { it.updatedAt })
+            .isEqualTo(listOf(balance, balance2).sortedByDescending { it.updatedAt })
     }
 
     @Test
