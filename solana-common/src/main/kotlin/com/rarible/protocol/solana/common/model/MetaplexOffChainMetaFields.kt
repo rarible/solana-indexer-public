@@ -11,7 +11,7 @@ data class MetaplexOffChainMetaFields(
     val symbol: String,
     val description: String,
     val collection: Collection?,
-    val sellerFeeBasisPoints: Int,
+    val sellerFeeBasisPoints: Int?,
     val externalUrl: String?,
     val edition: String?,
     val backgroundColor: String?,

@@ -9,7 +9,7 @@ data class MetaplexOffChainMetadataJsonSchema(
     val symbol: String,
     val description: String,
     val collection: Collection?,
-    val seller_fee_basis_points: Int,
+    val seller_fee_basis_points: Int?,
     val external_url: String?,
     val edition: String?,
     val background_color: String?,
