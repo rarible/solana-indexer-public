@@ -15,7 +15,7 @@ data class MetaplexOffChainMetaFields(
     val externalUrl: String?,
     val edition: String?,
     val backgroundColor: String?,
-    val attributes: List<Attribute>,
+    val attributes: List<Attribute>?,
     val properties: Properties?,
     val image: String?,
     val animationUrl: String?

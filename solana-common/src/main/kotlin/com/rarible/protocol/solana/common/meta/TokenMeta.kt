@@ -12,7 +12,7 @@ data class TokenMeta(
     val creators: List<MetaplexTokenCreator>,
     val collection: Collection?,
     val url: String,
-    val attributes: List<Attribute>,
+    val attributes: List<Attribute>?,
     val contents: List<Content>,
     val externalUrl: String?
 ) {

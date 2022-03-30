@@ -19,7 +19,7 @@ object TokenMetaParser {
         creators = getCreators(onChainMeta, offChainMeta),
         collection = getCollection(onChainMeta, offChainMeta),
         description = offChainMeta?.description,
-        attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() } ?: emptyList(),
+        attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() },
         contents = offChainMeta?.let { parseContents(it) } ?: emptyList(),
         externalUrl = offChainMeta?.externalUrl
     )

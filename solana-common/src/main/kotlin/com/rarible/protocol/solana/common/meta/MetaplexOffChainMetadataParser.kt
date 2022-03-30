@@ -34,7 +34,7 @@ object MetaplexOffChainMetadataParser {
             externalUrl = external_url,
             edition = edition,
             backgroundColor = background_color,
-            attributes = attributes.orEmpty().let { attributes ->
+            attributes = attributes?.let { attributes ->
                 attributes.map {
                     MetaplexOffChainMetaFields.Attribute(
                         traitType = it.trait_type,
