@@ -26,8 +26,6 @@ common:
   metricRootPath: solana-nft-metrics
   featureFlags:
     skipTransfersWithUnknownMint: false
-    enableInMemoryLogRecordHandling: false # Replace default Kafka producer by in-memory handling
-    skipInMemoryLogRecordHandling: false # Skip handling of LogRecord events completely, works only with enableInMemoryLogRecordHandling
     enableAccountToMintAssociationCache: true # Use redis for caching
     tokenFilter: NONE
 

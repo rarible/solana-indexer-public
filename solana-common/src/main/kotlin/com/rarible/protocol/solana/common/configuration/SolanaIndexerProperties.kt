@@ -18,8 +18,6 @@ data class SolanaIndexerProperties(
 
 data class FeatureFlags(
     val skipTransfersWithUnknownMint: Boolean = false,
-    val enableInMemoryLogRecordHandling: Boolean = false,
-    val skipInMemoryLogRecordHandling: Boolean = false,
     val enableCacheApi: Boolean = false,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
     val blacklistTokens: Set<String> = emptySet()
