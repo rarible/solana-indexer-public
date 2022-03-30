@@ -7,6 +7,8 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,10 +17,15 @@ class BalanceApiService(
     private val tokenMetaService: TokenMetaService
 ) {
 
-    suspend fun getBalanceWithMetaByAccountAddress(accountAddress: String): BalanceWithMeta {
-        val balance = (balanceRepository.findByAccount(accountAddress)
-            ?: throw EntityNotFoundApiException("Balance", accountAddress))
-        return tokenMetaService.extendWithAvailableMeta(balance)
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    suspend fun getBalanceWithMetaByMintAndOwner(mint: String, owner: String): BalanceWithMeta {
+        val balances = balanceRepository.findByMintAndOwner(mint, owner).toList()
+        if (balances.isEmpty()) throw EntityNotFoundApiException("Balance", "$mint:$owner")
+        if (balances.size > 1) {
+            logger.warn("Several balances ({}) found for pair mint {} and owner {}", balances.size, mint, owner)
+        }
+        return tokenMetaService.extendWithAvailableMeta(balances.first())
     }
 
     fun getBalanceWithMetaByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =

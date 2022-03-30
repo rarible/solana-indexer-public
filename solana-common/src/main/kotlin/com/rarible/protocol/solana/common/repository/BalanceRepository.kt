@@ -30,6 +30,15 @@ class BalanceRepository(
     suspend fun findByAccount(account: BalanceId): Balance? =
         mongo.findById<Balance>(account).awaitFirstOrNull()
 
+    suspend fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
+        val criteria = Criteria().andOperator(
+            Balance::owner isEqualTo owner,
+            Balance::mint isEqualTo mint
+        )
+        val query = Query(criteria)
+        return mongo.find(query, Balance::class.java).asFlow()
+    }
+
     fun findByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
         val criteria = Criteria
             .where(Balance::owner.name).isEqualTo(owner)
@@ -82,9 +91,14 @@ class BalanceRepository(
             .on(Balance::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
 
+        val OWNER_AND_MINT: Index = Index()
+            .on(Balance::owner.name, Sort.Direction.ASC)
+            .on(Balance::mint.name, Sort.Direction.ASC)
+
         val ALL_INDEXES = listOf(
             OWNER_AND_UPDATED_AT_AND_ID,
-            MINT_AND_UPDATED_AT_AND_ID
+            MINT_AND_UPDATED_AT_AND_ID,
+            OWNER_AND_MINT
         )
     }
 

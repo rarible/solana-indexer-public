@@ -19,8 +19,8 @@ class BalanceController(
     private val balanceApiService: BalanceApiService,
 ) : BalanceControllerApi {
 
-    override suspend fun getBalanceByAccount(accountAddress: String): ResponseEntity<BalanceDto> {
-        val balanceWithMeta = balanceApiService.getBalanceWithMetaByAccountAddress(accountAddress)
+    override suspend fun getBalanceByMintAndOwner(mint: String, owner: String): ResponseEntity<BalanceDto> {
+        val balanceWithMeta = balanceApiService.getBalanceWithMetaByMintAndOwner(mint, owner)
         return ResponseEntity.ok(BalanceWithMetaConverter.convert(balanceWithMeta))
     }
 

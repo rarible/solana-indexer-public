@@ -23,12 +23,15 @@ class BalanceControllerFt : AbstractControllerTest() {
     private lateinit var balanceRepository: BalanceRepository
 
     @Test
-    fun `find balance by account`() = runBlocking<Unit> {
+    fun `find balance by mint and owner`() = runBlocking<Unit> {
         val balanceWithMeta = saveRandomBalanceWithMeta()
 
         val expected = BalanceWithMetaConverter.convert(balanceWithMeta)
 
-        val result = balanceControllerApi.getBalanceByAccount(balanceWithMeta.balance.account).awaitFirst()
+        val result = balanceControllerApi.getBalanceByMintAndOwner(
+            balanceWithMeta.balance.mint,
+            balanceWithMeta.balance.owner
+        ).awaitFirst()
 
         assertThat(result).isEqualTo(expected)
     }
