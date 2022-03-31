@@ -4,7 +4,14 @@ import com.rarible.protocol.solana.api.controller.ActivityControllerApi
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
-import com.rarible.protocol.solana.dto.*
+import com.rarible.protocol.solana.dto.ActivitiesDto
+import com.rarible.protocol.solana.dto.ActivityDto
+import com.rarible.protocol.solana.dto.ActivityFilterAllDto
+import com.rarible.protocol.solana.dto.ActivityFilterByCollectionDto
+import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
+import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
+import com.rarible.protocol.solana.dto.ActivityFilterDto
+import com.rarible.protocol.solana.dto.ActivitySortDto
 import com.rarible.protocol.solana.nft.api.service.ActivityApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity

@@ -15,6 +15,9 @@ import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.nft.api.converter.RecordsAuctionHouseOrderConverter
 import com.rarible.protocol.solana.nft.api.converter.RecordsBalanceConverter
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -58,14 +61,12 @@ class ActivityApiService(
             }
         }
 
-        val activities = (balanceActivitiesDto.take(size).toList() + orderActivitiesDto.take(size).toList())
-            .sortedWith { a, b ->
-                if (a.date == b.date) a.id.compareTo(b.id)
-                else a.date.compareTo(b.date)
-            }
-            .take(size)
-
-        return activities
+        return coroutineScope {
+            listOf(
+                async { balanceActivitiesDto.take(size).toList() },
+                async { orderActivitiesDto.take(size).toList() },
+            )
+        }.awaitAll().flatten()
     }
 
     suspend fun getActivitiesByItem(
@@ -96,14 +97,12 @@ class ActivityApiService(
             }
         }
 
-        val activities = (balanceActivitiesDto.take(size).toList() + orderActivitiesDto.take(size).toList())
-            .sortedWith { a, b ->
-                if (a.date == b.date) a.id.compareTo(b.id)
-                else a.date.compareTo(b.date)
-            }
-            .take(size)
-
-        return activities
+        return coroutineScope {
+            listOf(
+                async { balanceActivitiesDto.take(size).toList() },
+                async { orderActivitiesDto.take(size).toList() },
+            )
+        }.awaitAll().flatten()
     }
 
     suspend fun getActivitiesByCollection(

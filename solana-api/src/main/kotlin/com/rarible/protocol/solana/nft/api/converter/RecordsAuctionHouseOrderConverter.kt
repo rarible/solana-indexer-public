@@ -1,7 +1,12 @@
 package com.rarible.protocol.solana.nft.api.converter
 
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
-import com.rarible.protocol.solana.dto.*
+import com.rarible.protocol.solana.dto.ActivityDto
+import com.rarible.protocol.solana.dto.AssetDto
+import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
+import com.rarible.protocol.solana.dto.OrderListActivityDto
+import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
+import com.rarible.protocol.solana.dto.SolanaSolAssetTypeDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
