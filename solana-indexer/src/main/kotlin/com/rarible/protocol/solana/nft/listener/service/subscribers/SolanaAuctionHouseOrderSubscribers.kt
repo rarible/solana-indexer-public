@@ -13,6 +13,7 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.util.toBigInteger
 import org.springframework.stereotype.Component
+import java.math.BigInteger
 import java.time.Instant
 
 @Component
@@ -32,19 +33,25 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
         val record = when (
             val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
-            is Sell -> SolanaAuctionHouseOrderRecord.SellRecord(
-                maker = log.instruction.accounts[0],
-                sellPrice = instruction.price.toBigInteger(),
-                // Only the token account is available in the record.
-                // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
-                tokenAccount = log.instruction.accounts[1],
-                mint = "",
-                amount = instruction.size.toBigInteger(),
-                auctionHouse = log.instruction.accounts[4],
-                log = log.log,
-                timestamp = Instant.ofEpochSecond(block.timestamp),
-                orderId = ""
-            )
+            is Sell -> {
+                val amount = instruction.size.toBigInteger()
+                if (amount == BigInteger.ZERO) {
+                    return emptyList()
+                }
+                SolanaAuctionHouseOrderRecord.SellRecord(
+                    maker = log.instruction.accounts[0],
+                    sellPrice = instruction.price.toBigInteger(),
+                    // Only the token account is available in the record.
+                    // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
+                    tokenAccount = log.instruction.accounts[1],
+                    mint = "",
+                    amount = amount,
+                    auctionHouse = log.instruction.accounts[4],
+                    log = log.log,
+                    timestamp = Instant.ofEpochSecond(block.timestamp),
+                    orderId = ""
+                )
+            }
             else -> return emptyList()
         }
 
@@ -69,20 +76,26 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
         val record = when (
             val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
-            is Buy -> SolanaAuctionHouseOrderRecord.BuyRecord(
-                maker = log.instruction.accounts[0],
-                treasuryMint = log.instruction.accounts[3],
-                buyPrice = instruction.price.toBigInteger(),
-                // Only the token account is available in the record.
-                // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
-                tokenAccount = log.instruction.accounts[4],
-                mint = "",
-                amount = instruction.size.toBigInteger(),
-                auctionHouse = log.instruction.accounts[8],
-                log = log.log,
-                timestamp = Instant.ofEpochSecond(block.timestamp),
-                orderId = ""
-            )
+            is Buy -> {
+                val amount = instruction.size.toBigInteger()
+                if (amount == BigInteger.ZERO) {
+                    return emptyList()
+                }
+                SolanaAuctionHouseOrderRecord.BuyRecord(
+                    maker = log.instruction.accounts[0],
+                    treasuryMint = log.instruction.accounts[3],
+                    buyPrice = instruction.price.toBigInteger(),
+                    // Only the token account is available in the record.
+                    // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
+                    tokenAccount = log.instruction.accounts[4],
+                    mint = "",
+                    amount = amount,
+                    auctionHouse = log.instruction.accounts[8],
+                    log = log.log,
+                    timestamp = Instant.ofEpochSecond(block.timestamp),
+                    orderId = ""
+                )
+            }
             else -> return emptyList()
         }
 
@@ -103,16 +116,20 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
     override suspend fun getEventRecords(
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
-    ): List<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord> =
-        when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
+    ): List<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord> {
+        return when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is ExecuteSale -> {
+                val amount = instruction.size.toBigInteger()
+                if (amount == BigInteger.ZERO) {
+                    return emptyList()
+                }
                 val sellRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
                     buyer = log.instruction.accounts[0],
                     seller = log.instruction.accounts[1],
                     price = instruction.buyerPrice.toBigInteger(),
                     mint = log.instruction.accounts[3],
                     treasuryMint = log.instruction.accounts[5],
-                    amount = instruction.size.toBigInteger(),
+                    amount = amount,
                     auctionHouse = log.instruction.accounts[10],
                     log = log.log,
                     timestamp = Instant.ofEpochSecond(block.timestamp),
@@ -125,6 +142,7 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
             }
             else -> emptyList()
         }
+    }
 }
 
 @Component
