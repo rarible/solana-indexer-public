@@ -34,7 +34,6 @@ internal fun ByteBuffer.parseMetaplexCreateMetadataAccountInstruction(
     return MetaplexCreateMetadataAccount(createArgs)
 }
 
-// TODO add Uses under version flag
 private fun ByteBuffer.readData(
     version: MetaplexMetadata.DataVersion
 ): MetaplexMetadata.Data {
@@ -47,6 +46,12 @@ private fun ByteBuffer.readData(
         readNullable { readCollection() }
     } else {
         null
+    }
+
+    // If necessary, add Uses to the model here.
+    if (version == MetaplexMetadata.DataVersion.V2) {
+        // Skip the Uses struct (17 bytes).
+        readNullable { repeat(17) { get() } }
     }
 
     return MetaplexMetadata.Data(
