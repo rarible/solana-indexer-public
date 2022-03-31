@@ -4,7 +4,6 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
-import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
@@ -18,11 +17,16 @@ import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
+/**
+ * Interceptor (not really a filter) of Solana scanner's generated records, which is responsible for
+ * - filtering out events of ignored mints (coins and blacklisted mints),
+ * - setting up the "mint" field in log records that do not have it (where possible)
+ * - and more
+ */
 @Component
-class SolanaBalanceLogEventFilter(
+class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
-    private val tokenFilter: SolanaTokenFilter,
-    private val featureFlags: FeatureFlags
+    private val tokenFilter: SolanaTokenFilter
 ) : SolanaLogEventFilter {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -123,11 +127,11 @@ class SolanaBalanceLogEventFilter(
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
                     accounts.addRib(record.owner, record.to)
-                    record.mint?.let { accountToMintMapping[record.owner] = it }
+                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.owner] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
                     accounts.addRib(record.from, record.owner)
-                    record.mint?.let { accountToMintMapping[record.owner] = it }
+                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.owner] = it }
                 }
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
@@ -157,12 +161,20 @@ class SolanaBalanceLogEventFilter(
     ): SolanaBaseLogRecord? = when (record) {
         is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
-        is SolanaBalanceRecord.TransferOutcomeRecord -> {
-            keepIfNft(record.owner, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
-        }
-        is SolanaBalanceRecord.TransferIncomeRecord -> {
-            keepIfNft(record.owner, record.mint, accountToMintMapping, record) { record.copy(mint = it) }
-        }
+        is SolanaBalanceRecord.TransferOutcomeRecord -> keepIfNft(
+            account = record.owner,
+            knownMint = record.mint.takeIf { it.isNotEmpty() },
+            accountToMints = accountToMintMapping,
+            record = record,
+            updateMint = { record.copy(mint = it) }
+        )
+        is SolanaBalanceRecord.TransferIncomeRecord -> keepIfNft(
+            account = record.owner,
+            knownMint = record.mint.takeIf { it.isNotEmpty() },
+            accountToMints = accountToMintMapping,
+            record = record,
+            updateMint = { record.copy(mint = it) }
+        )
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
         is SolanaTokenRecord -> keepIfNft(record, record.mint)
         is SolanaAuctionHouseRecord -> record
@@ -196,17 +208,14 @@ class SolanaBalanceLogEventFilter(
         record: T,
         updateMint: (String) -> T
     ): T? {
-
         val mint = knownMint ?: accountToMints[account]
-        // If mint not found, we can skip record - depends on feature flag
-        ?: return if (featureFlags.skipTransfersWithUnknownMint) null else record
+        // Skip records with unknown mint. We must have seen the account<->mint association before.
+        ?: return null
 
         if (!isAcceptableToken(mint)) {
             return null
         }
 
-        // Update mint field in record if it is not specified,
-        // otherwise return record 'as is' just to save some CPU time
         return if (knownMint == null) {
             updateMint(mint)
         } else {
@@ -226,8 +235,7 @@ class SolanaBalanceLogEventFilter(
         }.toMutableSet()
     }
 
-    private fun isAcceptableToken(mint: String): Boolean {
-        return !accountToMintAssociationService.isCurrencyToken(mint)
-            && tokenFilter.isAcceptableToken(mint)
-    }
+    private fun isAcceptableToken(mint: String): Boolean =
+        !accountToMintAssociationService.isCurrencyToken(mint)
+                && tokenFilter.isAcceptableToken(mint)
 }

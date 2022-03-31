@@ -36,7 +36,7 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
                 maker = log.instruction.accounts[0],
                 sellPrice = instruction.price.toBigInteger(),
                 // Only the token account is available in the record.
-                // Mint will be set in the SolanaBalanceLogEventFilter by account <-> mint association.
+                // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
                 tokenAccount = log.instruction.accounts[1],
                 mint = "",
                 amount = instruction.size.toBigInteger(),
@@ -74,7 +74,7 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
                 treasuryMint = log.instruction.accounts[3],
                 buyPrice = instruction.price.toBigInteger(),
                 // Only the token account is available in the record.
-                // Mint will be set in the SolanaBalanceLogEventFilter by account <-> mint association.
+                // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
                 tokenAccount = log.instruction.accounts[4],
                 mint = "",
                 amount = instruction.size.toBigInteger(),

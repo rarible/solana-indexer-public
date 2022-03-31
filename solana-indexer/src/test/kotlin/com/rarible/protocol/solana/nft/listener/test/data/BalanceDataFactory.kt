@@ -38,7 +38,7 @@ fun randomBalanceBurnRecord(): SolanaBalanceRecord.BurnRecord {
 
 fun randomBalanceIncomeTransfer(): SolanaBalanceRecord.TransferIncomeRecord {
     return SolanaBalanceRecord.TransferIncomeRecord(
-        mint = null,
+        mint = randomString(),
         log = randomSolanaLog(),
         timestamp = nowMillis(),
         from = randomString(),
@@ -51,7 +51,7 @@ fun randomBalanceOutcomeTransfer(): SolanaBalanceRecord.TransferOutcomeRecord {
     return SolanaBalanceRecord.TransferOutcomeRecord(
         to = randomString(),
         owner = randomString(),
-        mint = null,
+        mint = randomString(),
         outcomeAmount = randomBigInt(),
         log = randomSolanaLog(),
         timestamp = nowMillis()

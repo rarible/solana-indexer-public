@@ -5,7 +5,6 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
-import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
@@ -36,10 +35,9 @@ class SolanaLogEventFilterTest {
 
     private val blackListedToken = randomString()
 
-    private val filter = SolanaBalanceLogEventFilter(
+    private val filter = SolanaRecordsLogEventFilter(
         accountToMintAssociationService,
-        SolanaBlackListTokenFilter(setOf(blackListedToken)),
-        FeatureFlags()
+        SolanaBlackListTokenFilter(setOf(blackListedToken))
     )
 
     @BeforeEach
@@ -68,9 +66,9 @@ class SolanaLogEventFilterTest {
     fun `transfer and init records`() = runBlocking<Unit> {
         val init = randomBalanceInitRecord()
 
-        val transferWithInitMint = randomBalanceIncomeTransfer().copy(owner = init.balanceAccount)
-        val transferWithMapping = randomBalanceOutcomeTransfer()
-        val transferWithoutMapping = randomBalanceIncomeTransfer()
+        val transferWithInitMint = randomBalanceIncomeTransfer().copy(mint = "").copy(owner = init.balanceAccount)
+        val transferWithMapping = randomBalanceOutcomeTransfer().copy(mint = "")
+        val transferWithoutMapping = randomBalanceIncomeTransfer().copy(mint = "")
 
         val initMint = init.mint
         val mappedMint = randomString()
@@ -79,8 +77,10 @@ class SolanaLogEventFilterTest {
         coEvery {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
-                    transferWithMapping.to, transferWithMapping.owner,
-                    transferWithoutMapping.owner, transferWithoutMapping.from
+                    transferWithMapping.to,
+                    transferWithMapping.owner,
+                    transferWithoutMapping.owner,
+                    transferWithoutMapping.from
                 )
             )
         } returns mapOf(transferWithMapping.owner to mappedMint)
@@ -104,11 +104,9 @@ class SolanaLogEventFilterTest {
 
         val records = getRecords(result)
 
-        assertThat(records).hasSize(2)
+        assertThat(records).hasSize(1)
         // Passed since type of mint is not a currency, mint for transfer updated
         assertThat(records[0]).isEqualTo(transferWithMapping.copy(mint = mappedMint))
-        // Passed since type of mint not determined, mint not updated since it is not found
-        assertThat(records[1]).isEqualTo(transferWithoutMapping)
     }
 
     @Test
@@ -153,7 +151,7 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `transfer with blacklisted mint`() = runBlocking<Unit> {
-        val incomeTransfer = randomBalanceIncomeTransfer().copy(
+        val incomeTransfer = randomBalanceIncomeTransfer().copy(mint = "").copy(
             mint = blackListedToken
         )
 

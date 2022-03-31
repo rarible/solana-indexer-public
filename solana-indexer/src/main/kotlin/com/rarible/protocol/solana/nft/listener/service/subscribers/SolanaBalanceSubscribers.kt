@@ -142,7 +142,8 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
         val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
             is Transfer -> SolanaBalanceRecord.TransferIncomeRecord(
                 from = log.instruction.accounts[0],
-                mint = null,
+                // Will be set in SolanaRecordsLogEventFilter
+                mint = "",
                 owner = log.instruction.accounts[1],
                 incomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
@@ -181,7 +182,8 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
             is Transfer -> SolanaBalanceRecord.TransferOutcomeRecord(
                 to = log.instruction.accounts[1],
                 owner = log.instruction.accounts[0],
-                mint = null,
+                // Will be set in SolanaRecordsLogEventFilter
+                mint = "",
                 outcomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)

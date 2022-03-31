@@ -43,7 +43,7 @@ class AccountGraph(
         return groups
     }
 
-    fun visit(visited: HashSet<String>, graph: MutableMap<String, MutableSet<String>>, node: String) {
+    private fun visit(visited: HashSet<String>, graph: MutableMap<String, MutableSet<String>>, node: String) {
         if (!visited.contains(node)) {
             visited.add(node)
             graph[node]?.forEach { visit(visited, graph, it) }
@@ -51,7 +51,6 @@ class AccountGraph(
     }
 
     class AccountGroup(
-        // Originally, we don't need it
         val group: Set<String>,
         var mint: String? = null
     )
