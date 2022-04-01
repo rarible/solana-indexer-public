@@ -74,6 +74,14 @@ class ActivityConverter(
         blockchainInfo = blockchainInfo(record.log),
         reverted = reverted,
         purchase = false // TODO should be evaluated
+        // Purchase = true/false should be evaluated in next way (at least, it is done in such way at ETH):
+        // If item transferred to owner from contract, it means item has been purchased, if "to" is not a
+        // contract but regular balance, this transfer is not a purchase.
+
+        // To determine is transfer related to a contract we did next things at ETH:
+        // 1. We started to write field "to" (from - prev owner, owner - end owner, to - exchange contract)
+        // 2. We introduced configuration field "exchage contract addresses" contains most popular exchange contracts
+        // 3. If 'to' contains value from this contract set - it means this transfer is 'purchase'
     )
 
     private fun makeTransferOut(
