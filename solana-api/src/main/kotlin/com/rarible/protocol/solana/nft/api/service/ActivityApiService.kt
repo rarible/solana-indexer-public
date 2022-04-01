@@ -19,6 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.mongodb.core.query.Criteria
@@ -90,7 +91,7 @@ class ActivityApiService(
         val orderActivitiesDto = types.intersect(orderTypes).let {
             if (it.isNotEmpty()) {
                 val criteria = makeOrderCriteria(it, filter.itemId, continuation)
-                val records = recordsOrderRepository.findBy(criteria, size, sort)
+                val records = recordsOrderRepository.findBy(criteria, null, sort)
                 RecordsAuctionHouseOrderConverter.convert(records)
             } else {
                 emptyFlow()
