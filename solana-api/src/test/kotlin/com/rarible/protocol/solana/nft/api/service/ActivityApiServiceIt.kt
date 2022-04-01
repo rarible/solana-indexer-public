@@ -1,16 +1,25 @@
 package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
 import com.rarible.protocol.solana.common.repository.RecordsOrderRepository
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
+import com.rarible.protocol.solana.dto.OrderBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
+import com.rarible.protocol.solana.dto.OrderListActivityDto
+import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
 import com.rarible.protocol.solana.test.ActivityDataFactory
+import com.rarible.protocol.solana.test.ActivityDataFactory.turnLog
+import com.rarible.protocol.solana.test.randomSolanaLog
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -68,19 +77,16 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             val filter = ActivityFilterAllDto(listOf(type))
             val result = service.getAllActivities(filter, null, 50, true)
             assertEquals(3, result.size)
-            println(result)
         }
 
         ActivityFilterAllDto(listOf(ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.BURN)).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
             assertEquals(6, result.size)
-            println(result)
         }
 
         ActivityFilterAllDto(listOf(ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.LIST)).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
             assertEquals(6, result.size)
-            println(result)
         }
 
         ActivityFilterAllDto(emptyList()).let { filter ->
@@ -91,7 +97,6 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         ActivityFilterAllDto(allTypes).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
             assertEquals(18, result.size)
-            println(result)
         }
     }
 
@@ -166,6 +171,116 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             val result = service.getActivitiesByItem(filter, null, 50, true)
             assertEquals(6, result.size)
             println(result)
+        }
+    }
+
+    @Test
+    fun `order activities formation`() = runBlocking<Unit> {
+        val orderTypes = listOf(
+            ActivityFilterByItemTypeDto.LIST, ActivityFilterByItemTypeDto.CANCEL_LIST,
+            ActivityFilterByItemTypeDto.BID, ActivityFilterByItemTypeDto.CANCEL_BID,
+            ActivityFilterByItemTypeDto.SELL,
+        )
+        val mint1 = randomString()
+        val mint2 = randomString()
+
+        val list = ActivityDataFactory.randomSellRecord()
+        val cancelList = ActivityDataFactory.randomCancel(direction = OrderDirection.SELL)
+        val simpleSell = ActivityDataFactory.randomExecuteSaleRecord(direction = OrderDirection.SELL)
+        val fullSell = listOf(
+            ActivityDataFactory.randomBuyRecord(mint = mint1),
+            ActivityDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.BUY),
+            ActivityDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.SELL),
+        ).turnLog(randomSolanaLog())
+        val fullSellActual = fullSell.last()
+
+        val bid = ActivityDataFactory.randomBuyRecord()
+        val cancelBid = ActivityDataFactory.randomCancel(direction = OrderDirection.BUY)
+        val simpleAcceptBid = ActivityDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
+        val fullBid = listOf(
+            ActivityDataFactory.randomSellRecord(mint = mint2),
+            ActivityDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
+            ActivityDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
+        ).turnLog(randomSolanaLog())
+        val fullAcceptBidActual = fullBid.last()
+
+        val data = listOf(list, cancelList, simpleSell) + fullSell + listOf(bid, cancelBid, simpleAcceptBid) + fullBid
+        data.map { recordsOrderRepository.save(it) }
+
+        ActivityFilterByItemDto(list.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderListActivityDto)
+            assertEquals(list.id, activity.id)
+            assertEquals(list.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(cancelList.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderCancelListActivityDto)
+            assertEquals(cancelList.id, activity.id)
+            assertEquals(cancelList.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(simpleSell.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderMatchActivityDto)
+            assertEquals(OrderMatchActivityDto.Type.SELL, (activity as OrderMatchActivityDto).type)
+            assertEquals(simpleSell.id, activity.id)
+            assertEquals(simpleSell.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(fullSellActual.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderMatchActivityDto)
+            assertEquals(OrderMatchActivityDto.Type.SELL, (activity as OrderMatchActivityDto).type)
+            assertEquals(fullSellActual.id, activity.id)
+            assertEquals(fullSellActual.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(bid.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderBidActivityDto)
+            assertEquals(bid.id, activity.id)
+            assertEquals(bid.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(cancelBid.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderCancelBidActivityDto)
+            assertEquals(cancelBid.id, activity.id)
+            assertEquals(cancelBid.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(simpleAcceptBid.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderMatchActivityDto)
+            assertEquals(OrderMatchActivityDto.Type.ACCEPT_BID, (activity as OrderMatchActivityDto).type)
+            assertEquals(simpleAcceptBid.id, activity.id)
+            assertEquals(simpleAcceptBid.timestamp, activity.date)
+        }
+
+        ActivityFilterByItemDto(fullAcceptBidActual.mint, orderTypes).let { filter ->
+            val result = service.getActivitiesByItem(filter, null, 50, true)
+            assertEquals(1, result.size)
+            val activity = result.single()
+            assertTrue(activity is OrderMatchActivityDto)
+            assertEquals(OrderMatchActivityDto.Type.ACCEPT_BID, (activity as OrderMatchActivityDto).type)
+            assertEquals(fullAcceptBidActual.id, activity.id)
+            assertEquals(fullAcceptBidActual.timestamp, activity.date)
         }
     }
 }

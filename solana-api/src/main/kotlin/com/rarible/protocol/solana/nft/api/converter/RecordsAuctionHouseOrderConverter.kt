@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.AssetDto
+import com.rarible.protocol.solana.dto.OrderBidActivityDto
 import com.rarible.protocol.solana.dto.OrderCancelBidActivityDto
 import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
 import com.rarible.protocol.solana.dto.OrderListActivityDto
@@ -24,7 +25,6 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             if (hash == record.hash()) {
                 current.add(record)
             } else {
-                println(current)
                 process(current).forEach { emit(it) }
                 current.clear()
                 current.add(record)
@@ -41,6 +41,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
                 log.transactionIndex.toLong().toFixedLengthString(8) + ":" + log.transactionIndex
 
     private fun process(records: List<SolanaAuctionHouseOrderRecord>) = when {
+        records.isEmpty() -> emptyList()
         records.size == 1 -> listOf(convert(records.single()))
         records.any { it is SolanaAuctionHouseOrderRecord.BuyRecord } -> {
             records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.SELL }
@@ -94,7 +95,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
         )
 
     private fun makeBidActivity(record: SolanaAuctionHouseOrderRecord.BuyRecord) =
-        OrderListActivityDto(
+        OrderBidActivityDto(
             id = record.id,
             date = record.timestamp,
             hash = record.orderId,

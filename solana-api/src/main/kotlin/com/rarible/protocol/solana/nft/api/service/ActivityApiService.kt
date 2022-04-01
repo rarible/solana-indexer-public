@@ -13,13 +13,21 @@ import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.BurnActivityDto
+import com.rarible.protocol.solana.dto.MintActivityDto
+import com.rarible.protocol.solana.dto.OrderBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
+import com.rarible.protocol.solana.dto.OrderListActivityDto
+import com.rarible.protocol.solana.dto.OrderMatchActivityDto
+import com.rarible.protocol.solana.dto.TransferActivityDto
 import com.rarible.protocol.solana.nft.api.converter.RecordsAuctionHouseOrderConverter
 import com.rarible.protocol.solana.nft.api.converter.RecordsBalanceConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.mongodb.core.query.Criteria
@@ -88,11 +96,11 @@ class ActivityApiService(
             }
         }
 
-        val orderActivitiesDto = types.intersect(orderTypes).let {
-            if (it.isNotEmpty()) {
-                val criteria = makeOrderCriteria(it, filter.itemId, continuation)
+        val orderActivitiesDto = types.intersect(orderTypes).let { t ->
+            if (t.isNotEmpty()) {
+                val criteria = makeOrderCriteria(t, filter.itemId, continuation)
                 val records = recordsOrderRepository.findBy(criteria, null, sort)
-                RecordsAuctionHouseOrderConverter.convert(records)
+                RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in t }
             } else {
                 emptyFlow()
             }
@@ -105,6 +113,18 @@ class ActivityApiService(
             )
         }.awaitAll().flatten()
     }
+
+    private fun activityType(a: ActivityDto) = when (a) {
+        is MintActivityDto -> ActivityTypeDto.MINT
+        is BurnActivityDto -> ActivityTypeDto.BURN
+        is TransferActivityDto -> ActivityTypeDto.TRANSFER
+        is OrderMatchActivityDto -> ActivityTypeDto.SELL
+        is OrderListActivityDto -> ActivityTypeDto.LIST
+        is OrderCancelListActivityDto -> ActivityTypeDto.CANCEL_LIST
+        is OrderBidActivityDto -> ActivityTypeDto.BID
+        is OrderCancelBidActivityDto -> ActivityTypeDto.CANCEL_BID
+    }
+
 
     suspend fun getActivitiesByCollection(
         filter: ActivityFilterByCollectionDto,
@@ -143,7 +163,7 @@ class ActivityApiService(
         itemId: String,
         continuation: DateIdContinuation?,
     ) =
-        Criteria("_class").`in`(types.mapNotNull(Companion.orderTypeMapping::get))
+        Criteria("_class").`in`(types.mapNotNull(orderTypeMapping::get) + EXECUTE_SALE_RECORD)
             .and("mint").isEqualTo(itemId)
             .addContinuation(continuation)
 
