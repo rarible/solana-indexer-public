@@ -29,30 +29,29 @@ class CollectionService(
         return collectionRepository.findAll(fromId, limit).toList()
     }
 
-    suspend fun updateCollectionV1(meta: MetaplexOffChainMeta) {
-        val collection = meta.metaFields.collection ?: return
+    suspend fun updateCollectionV1(meta: MetaplexOffChainMeta): SolanaCollectionV1? {
+        val collection = meta.metaFields.collection ?: return null
         val exist = findById(collection.hash)
         if (exist != null) {
-            return
+            return null
         }
 
         logger.info("Saved SolanaCollection: {}", collection)
-        save(
+        return save(
             SolanaCollectionV1(
                 id = collection.hash,
                 name = collection.name,
                 family = collection.family
             )
-        )
-        // TODO send notification about collection update?
+        ) as SolanaCollectionV1
     }
 
-    suspend fun updateCollectionV2(meta: MetaplexMeta) {
-        val collectionAddress = meta.metaFields.collection?.address ?: return
+    suspend fun updateCollectionV2(meta: MetaplexMeta): SolanaCollection? {
+        val collectionAddress = meta.metaFields.collection?.address ?: return null
         val exist = findById(collectionAddress)
-        if (exist == null) {
-            save(SolanaCollectionV2(collectionAddress))
-            // TODO send notification about collection update?
+        if (exist != null) {
+            return null
         }
+        return save(SolanaCollectionV2(collectionAddress))
     }
 }

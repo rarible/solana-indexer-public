@@ -6,10 +6,12 @@ import com.rarible.protocol.solana.dto.BalanceUpdateEventDto
 import java.util.*
 
 object BalanceWithMetaEventConverter {
+
     fun convert(balanceWithMeta: BalanceWithMeta): BalanceEventDto {
         val eventId = UUID.randomUUID().toString()
         return BalanceUpdateEventDto(
             eventId = eventId,
+            mint = balanceWithMeta.balance.mint,
             account = balanceWithMeta.balance.account,
             balance = BalanceWithMetaConverter.convert(balanceWithMeta)
         )

@@ -61,6 +61,7 @@ class TokenMetaService(
             tokenAddress = tokenAddress,
             metadataUrl = metadataUrl
         ) ?: return null
+
         val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(metaFields, metaplexOffChainMeta.metaFields)
         metaplexMetaUpdateListener.onTokenMetaChanged(tokenAddress, tokenMeta)
         return tokenMeta

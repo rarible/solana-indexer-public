@@ -24,6 +24,10 @@ class BalanceRepository(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    suspend fun findById(accountAddress: String): Balance? {
+        return mongo.findById<Balance>(accountAddress).awaitFirstOrNull()
+    }
+
     suspend fun save(balance: Balance): Balance =
         mongo.save(balance).awaitFirst()
 

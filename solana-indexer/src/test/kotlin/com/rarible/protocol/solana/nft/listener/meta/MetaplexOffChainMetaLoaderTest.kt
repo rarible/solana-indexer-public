@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.update.CollectionEventListener
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -23,11 +24,13 @@ class MetaplexOffChainMetaLoaderTest {
 
     private val externalHttpClient = ExternalHttpClient()
     private val collectionService: CollectionService = mockk()
+    private val collectionEventListener: CollectionEventListener = mockk()
     private val metaplexOffChainMetaLoader = MetaplexOffChainMetaLoader(
         metaplexOffChainMetaRepository = mockk {
             coEvery { save(any()) } answers { firstArg() }
         },
         collectionService,
+        collectionEventListener,
         externalHttpClient = externalHttpClient,
         solanaIndexerProperties = mockk<SolanaIndexerProperties>().apply { every { this@apply.metaplexOffChainMetaLoadingTimeout } returns 20000 },
         metaMetrics = mockk(),
@@ -90,7 +93,7 @@ class MetaplexOffChainMetaLoaderTest {
             loadedAt = Instant.EPOCH
         )
 
-        coEvery { collectionService.updateCollectionV1(expected) } returns Unit
+        coEvery { collectionService.updateCollectionV1(expected) } returns null
 
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(tokenAddress, url)
 

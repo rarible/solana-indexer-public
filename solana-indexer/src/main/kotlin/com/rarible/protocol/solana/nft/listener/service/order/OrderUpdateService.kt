@@ -4,12 +4,14 @@ import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.repository.OrderRepository
+import com.rarible.protocol.solana.common.update.OrderUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class OrderUpdateService(
-    private val repository: OrderRepository
+    private val repository: OrderRepository,
+    private val orderUpdateListener: OrderUpdateListener
 ) : EntityService<OrderId, Order> {
 
     override suspend fun get(id: OrderId): Order? =
@@ -21,6 +23,9 @@ class OrderUpdateService(
         }
         val order = repository.save(entity)
         logger.info("Updated order: $entity")
+
+        // TODO do we need here any conditions?
+        orderUpdateListener.onOrderChanged(order)
         return order
     }
 

@@ -5,7 +5,9 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
+import com.rarible.protocol.solana.common.service.CollectionConversionService
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.update.CollectionEventListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -13,7 +15,9 @@ import org.springframework.stereotype.Component
 class MetaUpdateService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val tokenMetaService: TokenMetaService,
-    private val collectionService: CollectionService
+    private val collectionService: CollectionService,
+    private val collectionConversionService: CollectionConversionService,
+    private val collectionEventListener: CollectionEventListener
 ) : EntityService<MetaId, MetaplexMeta> {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -24,11 +28,18 @@ class MetaUpdateService(
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
         // We need to update collection before item, otherwise there could be situation item belongs to collection
         // which is not exists in DB
-        collectionService.updateCollectionV2(entity)
+        updateCollection(entity)
+
         val meta = metaplexMetaRepository.save(entity)
         logger.info("Updated metaplex meta: $entity")
         tokenMetaService.onMetaplexMetaChanged(meta)
         return meta
+    }
+
+    private suspend fun updateCollection(entity: MetaplexMeta) {
+        val collection = collectionService.updateCollectionV2(entity) ?: return
+        val dto = collectionConversionService.toDto(collection)
+        collectionEventListener.onCollectionChanged(dto)
     }
 
 }

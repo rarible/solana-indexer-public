@@ -1,10 +1,12 @@
 package com.rarible.protocol.solana.common.meta
 
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.converter.CollectionConverter
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.util.nowMillis
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
@@ -18,6 +20,7 @@ import java.time.Duration
 class MetaplexOffChainMetaLoader(
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
     private val collectionService: CollectionService,
+    private val collectionEventListener: CollectionEventListener,
     private val externalHttpClient: ExternalHttpClient,
     private val metaMetrics: MetaMetrics,
     private val solanaIndexerProperties: SolanaIndexerProperties,
@@ -59,8 +62,14 @@ class MetaplexOffChainMetaLoader(
             metaFields = metaplexOffChainMetaFields,
             loadedAt = clock.nowMillis()
         )
-        collectionService.updateCollectionV1(metaplexOffChainMeta)
+        updateCollection(metaplexOffChainMeta)
         return metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
+    }
+
+    private suspend fun updateCollection(metaplexOffChainMeta: MetaplexOffChainMeta) {
+        val collection = collectionService.updateCollectionV1(metaplexOffChainMeta) ?: return
+        val dto = CollectionConverter.convertV1(collection)
+        collectionEventListener.onCollectionChanged(dto)
     }
 
 }
