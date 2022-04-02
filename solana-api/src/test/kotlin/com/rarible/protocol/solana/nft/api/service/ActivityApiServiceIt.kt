@@ -150,7 +150,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         allTypes.forEach { type ->
             val filter = ActivityFilterByItemDto(mint, listOf(type))
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertThat(result).hasSize(1).withFailMessage { type.name }
+            assertThat(result).withFailMessage { type.name }.hasSize(1)
         }
 
         ActivityFilterByItemDto(
@@ -181,7 +181,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `order activities - sell`() = runBlocking<Unit> {
+    fun `order activities - list`() = runBlocking<Unit> {
         val orderTypes = listOf(
             ActivityFilterByItemTypeDto.LIST,
             ActivityFilterByItemTypeDto.CANCEL_LIST,
@@ -207,7 +207,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(list.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderListActivityDto)
             assertEquals(list.id, activity.id)
@@ -216,7 +216,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(cancelList.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderCancelListActivityDto)
             assertEquals(cancelList.id, activity.id)
@@ -225,7 +225,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(simpleSell.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.SELL, (activity as OrderMatchActivityDto).type)
@@ -235,7 +235,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(fullSellActual.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.SELL, (activity as OrderMatchActivityDto).type)
@@ -280,7 +280,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(cancelBid.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderCancelBidActivityDto)
             assertEquals(cancelBid.id, activity.id)
@@ -289,7 +289,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(simpleAcceptBid.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.ACCEPT_BID, (activity as OrderMatchActivityDto).type)
@@ -299,7 +299,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
         ActivityFilterByItemDto(fullAcceptBidActual.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.ACCEPT_BID, (activity as OrderMatchActivityDto).type)
