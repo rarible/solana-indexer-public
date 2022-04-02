@@ -43,14 +43,14 @@ class SolanaBalanceRecordsRepository(
     private fun Sort.direction(asc: Boolean) =
         if (asc) ascending() else descending()
 
-    suspend fun createIndices() {
+    suspend fun createIndexes() {
+        logger.info("Ensuring indexes on $COLLECTION")
         ALL.forEach { index ->
-            logger.info("Ensure index '{}' for collection '{}'", index, COLLECTION)
             mongo.indexOps(COLLECTION).ensureIndex(index).awaitFirst()
         }
     }
 
-    companion object {
+    private companion object {
         private val COLLECTION = SubscriberGroup.BALANCE.collectionName
 
         private val BALANCE_ACTIVITY_BY_ITEM: Index = Index()
