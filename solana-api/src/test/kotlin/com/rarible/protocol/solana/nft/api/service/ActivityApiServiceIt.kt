@@ -2,8 +2,8 @@ package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.records.OrderDirection
-import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
-import com.rarible.protocol.solana.common.repository.RecordsOrderRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
+import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired
 class ActivityApiServiceIt : AbstractIntegrationTest() {
 
     @Autowired
-    private lateinit var recordsBalanceRepository: RecordsBalanceRepository
+    private lateinit var solanaBalanceRecordsRepository: SolanaBalanceRecordsRepository
 
     @Autowired
-    private lateinit var recordsOrderRepository: RecordsOrderRepository
+    private lateinit var orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository
 
     @Autowired
     private lateinit var service: ActivityApiService
@@ -50,7 +50,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomOutcomeRecord(),
             ActivityDataFactory.randomOutcomeRecord(),
         )
-        balances.map { recordsBalanceRepository.save(it) }
+        balances.map { solanaBalanceRecordsRepository.save(it) }
 
         val orders = listOf(
             ActivityDataFactory.randomBuyRecord(),
@@ -66,7 +66,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomExecuteSaleRecord(),
             ActivityDataFactory.randomExecuteSaleRecord(),
         )
-        orders.map { recordsOrderRepository.save(it) }
+        orders.map { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
             ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.BURN, ActivityFilterAllTypeDto.TRANSFER,
@@ -118,7 +118,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomOutcomeRecord(),
             ActivityDataFactory.randomOutcomeRecord(),
         )
-        balances.map { recordsBalanceRepository.save(it) }
+        balances.map { solanaBalanceRecordsRepository.save(it) }
 
         val orders = listOf(
             ActivityDataFactory.randomBuyRecord(mint = mint),
@@ -134,7 +134,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomExecuteSaleRecord(),
             ActivityDataFactory.randomExecuteSaleRecord(),
         )
-        orders.map { recordsOrderRepository.save(it) }
+        orders.map { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
             ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.BURN, ActivityFilterByItemTypeDto.TRANSFER,
@@ -205,7 +205,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         val fullAcceptBidActual = fullBid.last()
 
         val data = listOf(list, cancelList, simpleSell) + fullSell + listOf(bid, cancelBid, simpleAcceptBid) + fullBid
-        data.map { recordsOrderRepository.save(it) }
+        data.map { orderRecordsRepository.save(it) }
 
         ActivityFilterByItemDto(list.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)

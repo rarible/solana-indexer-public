@@ -1,9 +1,8 @@
 package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
-import com.rarible.protocol.solana.common.converter.ActivityConverter
-import com.rarible.protocol.solana.common.repository.RecordsBalanceRepository
-import com.rarible.protocol.solana.common.repository.RecordsOrderRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
+import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
@@ -36,8 +35,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class ActivityApiService(
-    private val recordsBalanceRepository: RecordsBalanceRepository,
-    private val recordsOrderRepository: RecordsOrderRepository,
+    private val solanaBalanceRecordsRepository: SolanaBalanceRecordsRepository,
+    private val solanaAuctionHouseOrderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
 //    todo get rid of ActivityConverter's
 //    private val activityConverter: ActivityConverter,
 ) {
@@ -53,7 +52,7 @@ class ActivityApiService(
         val balanceActivitiesDto = types.intersect(balanceTypes).let {
             if (it.isNotEmpty()) {
                 val criteria = makeBalanceCriteria(it, continuation)
-                val records = recordsBalanceRepository.findBy(criteria, size, sort)
+                val records = solanaBalanceRecordsRepository.findBy(criteria, size, sort)
                 RecordsBalanceConverter.convert(records)
             } else {
                 emptyFlow()
@@ -63,7 +62,7 @@ class ActivityApiService(
         val orderActivitiesDto = types.intersect(orderTypes).let {
             if (it.isNotEmpty()) {
                 val criteria = makeOrderCriteria(it, continuation)
-                val records = recordsOrderRepository.findBy(criteria, size, sort)
+                val records = solanaAuctionHouseOrderRecordsRepository.findBy(criteria, size, sort)
                 RecordsAuctionHouseOrderConverter.convert(records)
             } else {
                 emptyFlow()
@@ -89,7 +88,7 @@ class ActivityApiService(
         val balanceActivitiesDto = types.intersect(balanceTypes).let {
             if (it.isNotEmpty()) {
                 val criteria = makeBalanceCriteria(it, filter.itemId, continuation)
-                val records = recordsBalanceRepository.findBy(criteria, size, sort)
+                val records = solanaBalanceRecordsRepository.findBy(criteria, size, sort)
                 RecordsBalanceConverter.convert(records)
             } else {
                 emptyFlow()
@@ -99,7 +98,7 @@ class ActivityApiService(
         val orderActivitiesDto = types.intersect(orderTypes).let { t ->
             if (t.isNotEmpty()) {
                 val criteria = makeOrderCriteria(t, filter.itemId, continuation)
-                val records = recordsOrderRepository.findBy(criteria, null, sort)
+                val records = solanaAuctionHouseOrderRecordsRepository.findBy(criteria, null, sort)
                 RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in t }
             } else {
                 emptyFlow()
