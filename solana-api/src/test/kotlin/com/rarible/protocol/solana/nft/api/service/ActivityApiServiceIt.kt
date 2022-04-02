@@ -2,8 +2,8 @@ package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.records.OrderDirection
-import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
@@ -19,6 +19,7 @@ import com.rarible.protocol.solana.test.OrderRecordDataFactory
 import com.rarible.protocol.solana.test.randomSolanaLog
 import com.rarible.protocol.solana.test.withUpdatedLog
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -70,34 +71,38 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         orders.map { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
-            ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.BURN, ActivityFilterAllTypeDto.TRANSFER,
-            ActivityFilterAllTypeDto.LIST, ActivityFilterAllTypeDto.CANCEL_LIST, ActivityFilterAllTypeDto.SELL,
+            ActivityFilterAllTypeDto.MINT,
+            ActivityFilterAllTypeDto.BURN,
+            ActivityFilterAllTypeDto.TRANSFER,
+            ActivityFilterAllTypeDto.LIST,
+            ActivityFilterAllTypeDto.CANCEL_LIST,
+            ActivityFilterAllTypeDto.SELL,
         )
 
         allTypes.forEach { type ->
             val filter = ActivityFilterAllDto(listOf(type))
             val result = service.getAllActivities(filter, null, 50, true)
-            assertEquals(3, result.size)
+            assertThat(result).hasSize(3).withFailMessage { type.name }
         }
 
         ActivityFilterAllDto(listOf(ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.BURN)).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
-            assertEquals(6, result.size)
+            assertThat(result).hasSize(6)
         }
 
         ActivityFilterAllDto(listOf(ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.LIST)).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
-            assertEquals(6, result.size)
+            assertThat(result).hasSize(6)
         }
 
         ActivityFilterAllDto(emptyList()).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
-            assertEquals(0, result.size)
+            assertThat(result).isEmpty()
         }
 
         ActivityFilterAllDto(allTypes).let { filter ->
             val result = service.getAllActivities(filter, null, 50, true)
-            assertEquals(18, result.size)
+            assertThat(result).hasSize(18)
         }
     }
 
@@ -138,40 +143,44 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         orders.map { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
-            ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.BURN, ActivityFilterByItemTypeDto.TRANSFER,
-            ActivityFilterByItemTypeDto.LIST, ActivityFilterByItemTypeDto.CANCEL_LIST, ActivityFilterByItemTypeDto.SELL,
+            ActivityFilterByItemTypeDto.MINT,
+            ActivityFilterByItemTypeDto.BURN,
+            ActivityFilterByItemTypeDto.TRANSFER,
+            ActivityFilterByItemTypeDto.LIST,
+            ActivityFilterByItemTypeDto.CANCEL_LIST,
+            ActivityFilterByItemTypeDto.SELL,
         )
 
         allTypes.forEach { type ->
             val filter = ActivityFilterByItemDto(mint, listOf(type))
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
-            println(result)
+            assertThat(result).hasSize(1).withFailMessage { type.name }
         }
 
-        ActivityFilterByItemDto(mint,
-            listOf(ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.BURN)).let { filter ->
+        ActivityFilterByItemDto(
+            mint,
+            listOf(ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.BURN)
+        ).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(2, result.size)
-            println(result)
+            assertThat(result).hasSize(2)
         }
 
-        ActivityFilterByItemDto(mint,
-            listOf(ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.LIST)).let { filter ->
+        ActivityFilterByItemDto(
+            mint,
+            listOf(ActivityFilterByItemTypeDto.MINT, ActivityFilterByItemTypeDto.LIST)
+        ).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(2, result.size)
-            println(result)
+            assertThat(result).hasSize(2)
         }
 
         ActivityFilterByItemDto(mint, emptyList()).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(0, result.size)
+            assertThat(result).isEmpty()
         }
 
         ActivityFilterByItemDto(mint, allTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(6, result.size)
-            println(result)
+            assertThat(result).hasSize(6)
         }
     }
 

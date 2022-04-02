@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsReposit
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,9 +21,8 @@ internal class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
         val record = BalanceRecordDataFactory.randomMintToRecord()
         balanceRecordsRepository.save(record)
 
-        val result = balanceRecordsRepository.findBy(Criteria()).toList()
-
-        assertEquals(record, result.single())
+        val result = balanceRecordsRepository.findBy(Criteria(), size = 50).toList()
+        assertThat(result).isEqualTo(listOf(record))
     }
 
     @Test
@@ -35,7 +35,7 @@ internal class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
         )
         records.forEach { balanceRecordsRepository.save(it) }
 
-        balanceRecordsRepository.findBy(Criteria(), asc = true).toList().let { result ->
+        balanceRecordsRepository.findBy(Criteria(), asc = true, size = 50).toList().let { result ->
             val expected = records.sortedWith { a, b ->
                 if (a.timestamp == b.timestamp) a.id.compareTo(b.id) else a.timestamp.compareTo(b.timestamp)
             }
@@ -43,7 +43,7 @@ internal class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
             assertEquals(expected, result)
         }
 
-        balanceRecordsRepository.findBy(Criteria(), asc = false).toList().let { result ->
+        balanceRecordsRepository.findBy(Criteria(), asc = false, size = 50).toList().let { result ->
             val expected = records.sortedWith { a, b ->
                 if (a.timestamp == b.timestamp) -a.id.compareTo(b.id) else -a.timestamp.compareTo(b.timestamp)
             }

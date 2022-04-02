@@ -23,13 +23,12 @@ class SolanaAuctionHouseOrderRecordsRepository(
 
     fun findBy(
         criteria: Criteria,
-        size: Int? = null,
+        size: Int,
         asc: Boolean = true
     ): Flow<SolanaAuctionHouseOrderRecord> {
         val query = Query(criteria)
-            .with(Sort.by(SolanaAuctionHouseOrderRecord::timestamp.name, "_id").direction(asc))
-        size?.let(query::limit)
-
+            .with(Sort.by("_id").direction(asc))
+            .limit(size)
         return mongo.find(query, SolanaAuctionHouseOrderRecord::class.java, COLLECTION).asFlow()
     }
 

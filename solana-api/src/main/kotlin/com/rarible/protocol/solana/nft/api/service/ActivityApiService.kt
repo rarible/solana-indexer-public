@@ -85,7 +85,7 @@ class ActivityApiService(
 
         val orderActivitiesDto = if (orderTypes.isNotEmpty()) {
             val criteria = makeOrderCriteria(orderTypes, filter.itemId, continuation)
-            val records = orderRecordsRepository.findBy(criteria, null, sort)
+            val records = orderRecordsRepository.findBy(criteria, size, sort)
             RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in orderTypes }
         } else {
             emptyFlow()
