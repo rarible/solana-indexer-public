@@ -35,20 +35,16 @@ internal class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationT
         )
         records.forEach { orderRecordsRepository.save(it) }
 
-        orderRecordsRepository.findBy(Criteria(), asc = true).toList().let { result ->
-            val expected = records.sortedWith { a, b ->
-                if (a.timestamp == b.timestamp) a.id.compareTo(b.id) else a.timestamp.compareTo(b.timestamp)
-            }
-
-            assertEquals(expected, result)
+        val ascResult = orderRecordsRepository.findBy(Criteria(), asc = true).toList()
+        val ascExpected = records.sortedWith { a, b ->
+            if (a.timestamp == b.timestamp) a.id.compareTo(b.id) else a.timestamp.compareTo(b.timestamp)
         }
+        assertEquals(ascExpected, ascResult)
 
-        orderRecordsRepository.findBy(Criteria(), asc = false).toList().let { result ->
-            val expected = records.sortedWith { a, b ->
-                if (a.timestamp == b.timestamp) -a.id.compareTo(b.id) else -a.timestamp.compareTo(b.timestamp)
-            }
-
-            assertEquals(expected, result)
+        val descResult = orderRecordsRepository.findBy(Criteria(), asc = false).toList()
+        val descExpected = records.sortedWith { a, b ->
+            if (a.timestamp == b.timestamp) -a.id.compareTo(b.id) else -a.timestamp.compareTo(b.timestamp)
         }
+        assertEquals(descExpected, descResult)
     }
 }

@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class ActivityApiServiceIt : AbstractIntegrationTest() {
 
     @Autowired
-    private lateinit var solanaBalanceRecordsRepository: SolanaBalanceRecordsRepository
+    private lateinit var balanceRecordsRepository: SolanaBalanceRecordsRepository
 
     @Autowired
     private lateinit var orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository
@@ -50,7 +50,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomOutcomeRecord(),
             ActivityDataFactory.randomOutcomeRecord(),
         )
-        balances.map { solanaBalanceRecordsRepository.save(it) }
+        balances.map { balanceRecordsRepository.save(it) }
 
         val orders = listOf(
             ActivityDataFactory.randomBuyRecord(),
@@ -118,7 +118,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityDataFactory.randomOutcomeRecord(),
             ActivityDataFactory.randomOutcomeRecord(),
         )
-        balances.map { solanaBalanceRecordsRepository.save(it) }
+        balances.map { balanceRecordsRepository.save(it) }
 
         val orders = listOf(
             ActivityDataFactory.randomBuyRecord(mint = mint),
