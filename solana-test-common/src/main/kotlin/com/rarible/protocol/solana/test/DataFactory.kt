@@ -173,11 +173,12 @@ fun createRandomTokenCreator(): MetaplexTokenCreator =
     )
 
 fun createRandomBalance(
+    account: String = randomString(),
     owner: String = randomString(),
     mint: String = randomString(),
     updatedAt: Instant = nowMillis()
 ): Balance = Balance(
-    account = randomString(),
+    account = account,
     owner = owner,
     mint = mint,
     value = randomBigInt(),
@@ -187,11 +188,12 @@ fun createRandomBalance(
 )
 
 fun createRandomBalanceWithMeta(
+    account: String = randomString(),
     owner: String = randomString(),
     mint: String = randomString(),
     updatedAt: Instant = nowMillis()
 ): BalanceWithMeta = BalanceWithMeta(
-    balance = createRandomBalance(owner, mint, updatedAt),
+    balance = createRandomBalance(account = account, owner = owner, mint = mint, updatedAt = updatedAt),
     tokenMeta = createRandomTokenMeta()
 )
 

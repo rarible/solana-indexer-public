@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.records.OrderDirection
+import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
 import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
@@ -16,6 +17,7 @@ import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import com.rarible.protocol.solana.test.OrderRecordDataFactory
+import com.rarible.protocol.solana.test.createRandomBalance
 import com.rarible.protocol.solana.test.randomSolanaLog
 import com.rarible.protocol.solana.test.withUpdatedLog
 import kotlinx.coroutines.runBlocking
@@ -26,6 +28,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class ActivityApiServiceIt : AbstractIntegrationTest() {
+
+    @Autowired
+    private lateinit var balanceRepository: BalanceRepository
 
     @Autowired
     private lateinit var balanceRecordsRepository: SolanaBalanceRecordsRepository
@@ -51,7 +56,11 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
-        ).forEach { balanceRecordsRepository.save(it) }
+        ).forEach {
+            balanceRecordsRepository.save(it)
+            // Save balance for this account to have 'account -> owner' mapping in the converter.
+            balanceRepository.save(createRandomBalance(account = it.account))
+        }
 
         listOf(
             OrderRecordDataFactory.randomBuyRecord(),
@@ -121,7 +130,11 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             BalanceRecordDataFactory.randomOutcomeRecord(mint = mint),
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
-        ).forEach { balanceRecordsRepository.save(it) }
+        ).forEach {
+            balanceRecordsRepository.save(it)
+            // Save balance for this account to have 'account -> owner' mapping in the converter.
+            balanceRepository.save(createRandomBalance(account = it.account))
+        }
 
         listOf(
             OrderRecordDataFactory.randomBuyRecord(mint = mint),

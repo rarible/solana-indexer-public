@@ -125,7 +125,7 @@ class BalanceControllerFt : AbstractControllerTest() {
         mint: String = randomString(),
         updatedAt: Instant = nowMillis()
     ): BalanceWithMeta {
-        val balance = createRandomBalance(owner, mint, updatedAt)
+        val balance = createRandomBalance(owner = owner, mint = mint, updatedAt = updatedAt)
 
         balanceRepository.save(balance)
         val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(
