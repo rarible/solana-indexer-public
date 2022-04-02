@@ -3,6 +3,9 @@ package com.rarible.protocol.solana.nft.api.service
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.converter.RecordsAuctionHouseOrderConverter
 import com.rarible.protocol.solana.common.converter.SolanaBalanceActivityConverter
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
+import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
 import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.toList
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
+import kotlin.reflect.KClass
 
 @Component
 class ActivityApiService(
@@ -36,7 +40,7 @@ class ActivityApiService(
         val activityTypes = filter.types.map { convert(it) }
 
         val balanceCriteria = makeBalanceCriteria(types = activityTypes, mint = null, continuation = continuation)
-        val balanceActivitiesDto = if (balanceCriteria != null) {
+        val balanceActivitiesDto = if (balanceCriteria !== null) {
             balanceRecordsRepository
                 .findBy(balanceCriteria, size, sort)
                 .mapNotNull { balanceActivityConverter.convert(it, false) }
@@ -45,7 +49,7 @@ class ActivityApiService(
         }
 
         val orderCriteria = makeOrderCriteria(types = activityTypes, mint = null, continuation = continuation)
-        val orderActivitiesDto = if (orderCriteria != null) {
+        val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sort)
             RecordsAuctionHouseOrderConverter.convert(records)
         } else {
@@ -64,7 +68,7 @@ class ActivityApiService(
         val activityTypes = filter.types.map { convert(it) }
 
         val balanceCriteria = makeBalanceCriteria(activityTypes, filter.itemId, continuation)
-        val balanceActivitiesDto = if (balanceCriteria != null) {
+        val balanceActivitiesDto = if (balanceCriteria !== null) {
             val records = balanceRecordsRepository.findBy(balanceCriteria, size, sortAscending)
             records.mapNotNull { balanceActivityConverter.convert(it, false) }
         } else {
@@ -72,7 +76,7 @@ class ActivityApiService(
         }
 
         val orderCriteria = makeOrderCriteria(activityTypes, filter.itemId, continuation)
-        val orderActivitiesDto = if (orderCriteria != null) {
+        val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sortAscending)
             RecordsAuctionHouseOrderConverter.convert(records)
         } else {
@@ -87,14 +91,14 @@ class ActivityApiService(
         continuation: DateIdContinuation?,
         size: Int,
         sort: Boolean,
-    ) = emptyList<ActivityDto>()
+    ) = emptyList<ActivityDto>() // TODO: not implemented yet.
 
     suspend fun getActivitiesByUser(
         filter: ActivityFilterByUserDto,
         continuation: DateIdContinuation?,
         size: Int,
         sort: Boolean,
-    ) = emptyList<ActivityDto>()
+    ) = emptyList<ActivityDto>() // TODO: not implemented yet.
 
     private fun makeBalanceCriteria(
         types: Collection<ActivityTypeDto>,
@@ -167,44 +171,16 @@ class ActivityApiService(
 
     companion object {
 
-        private const val MINT_TO_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaBalanceRecord\$MintToRecord"
-
-        private const val BURN_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaBalanceRecord\$BurnRecord"
-
-        private const val TRANSFER_INCOME_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaBalanceRecord\$TransferIncomeRecord"
-
-        private const val CANCEL_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$CancelRecord"
-
-        private const val EXECUTE_SALE_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$ExecuteSaleRecord"
-
-        private const val SELL_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$SellRecord"
-
-
-        private val balanceTypes = setOf(
-            ActivityTypeDto.MINT,
-            ActivityTypeDto.BURN,
-            ActivityTypeDto.TRANSFER,
-        )
-
-        private val orderTypes = setOf(
-            ActivityTypeDto.LIST,
-            ActivityTypeDto.CANCEL_LIST,
-            ActivityTypeDto.BID,
-            ActivityTypeDto.CANCEL_BID,
-            ActivityTypeDto.SELL,
-        )
+        private fun <T: SolanaBaseLogRecord> jvmClassName(kClass: KClass<T>): String {
+            val fullClassName = kClass.qualifiedName!!
+            return fullClassName.substringBeforeLast(".") + "\$" + fullClassName.substringAfterLast(".")
+        }
 
         private fun getBalanceRecordClassByActivityType(activityTypeDto: ActivityTypeDto): String? =
             when (activityTypeDto) {
-                ActivityTypeDto.MINT -> MINT_TO_RECORD
-                ActivityTypeDto.BURN -> BURN_RECORD
-                ActivityTypeDto.TRANSFER -> TRANSFER_INCOME_RECORD
+                ActivityTypeDto.MINT -> jvmClassName(SolanaBalanceRecord.MintToRecord::class)
+                ActivityTypeDto.BURN -> jvmClassName(SolanaBalanceRecord.BurnRecord::class)
+                ActivityTypeDto.TRANSFER -> jvmClassName(SolanaBalanceRecord.TransferIncomeRecord::class)
                 // Ignored. Do not use 'else' here.
                 ActivityTypeDto.BID -> null
                 ActivityTypeDto.LIST -> null
@@ -221,10 +197,10 @@ class ActivityApiService(
 
         private fun getOrderRecordClassByActivityType(activityTypeDto: ActivityTypeDto): String? =
             when (activityTypeDto) {
-                ActivityTypeDto.SELL -> EXECUTE_SALE_RECORD
-                ActivityTypeDto.CANCEL_LIST -> CANCEL_RECORD
-                ActivityTypeDto.CANCEL_BID -> CANCEL_RECORD
-                ActivityTypeDto.LIST -> SELL_RECORD
+                ActivityTypeDto.SELL -> jvmClassName(SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::class)
+                ActivityTypeDto.CANCEL_LIST -> jvmClassName(SolanaAuctionHouseOrderRecord.CancelRecord::class)
+                ActivityTypeDto.CANCEL_BID -> jvmClassName(SolanaAuctionHouseOrderRecord.CancelRecord::class)
+                ActivityTypeDto.LIST -> jvmClassName(SolanaAuctionHouseOrderRecord.SellRecord::class)
                 // Ignored. Do not use 'else' here.
                 ActivityTypeDto.TRANSFER -> null
                 ActivityTypeDto.MINT -> null

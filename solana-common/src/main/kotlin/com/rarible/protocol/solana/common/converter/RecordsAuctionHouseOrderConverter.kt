@@ -71,7 +71,10 @@ object RecordsAuctionHouseOrderConverter {
         OrderMatchActivityDto(
             id = record.id,
             date = record.timestamp,
-            type = if (record.direction == OrderDirection.SELL) OrderMatchActivityDto.Type.SELL else OrderMatchActivityDto.Type.ACCEPT_BID,
+            type = when (record.direction) {
+                OrderDirection.SELL -> OrderMatchActivityDto.Type.SELL
+                else -> OrderMatchActivityDto.Type.ACCEPT_BID
+            },
             nft = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
             payment = AssetDto(SolanaSolAssetTypeDto(), record.price.toBigDecimal(DIGITS)),
             buyer = record.buyer,
@@ -106,7 +109,6 @@ object RecordsAuctionHouseOrderConverter {
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
-
 
     private fun makeCancelActivity(record: SolanaAuctionHouseOrderRecord.CancelRecord) = when (record.direction) {
         OrderDirection.SELL -> OrderCancelListActivityDto(
