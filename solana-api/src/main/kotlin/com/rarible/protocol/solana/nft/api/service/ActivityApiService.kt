@@ -1,13 +1,14 @@
 package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
-import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
+import com.rarible.protocol.solana.common.converter.RecordsAuctionHouseOrderConverter
+import com.rarible.protocol.solana.common.converter.SolanaBalanceActivityConverter
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByCollectionDto
-import com.rarible.protocol.solana.dto.ActivityFilterByCollectionTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
@@ -20,14 +21,9 @@ import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
 import com.rarible.protocol.solana.dto.OrderListActivityDto
 import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.dto.TransferActivityDto
-import com.rarible.protocol.solana.nft.api.converter.RecordsAuctionHouseOrderConverter
-import com.rarible.protocol.solana.nft.api.converter.RecordsBalanceConverter
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.isEqualTo
@@ -35,10 +31,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class ActivityApiService(
-    private val solanaBalanceRecordsRepository: SolanaBalanceRecordsRepository,
-    private val solanaAuctionHouseOrderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
-//    todo get rid of ActivityConverter's
-//    private val activityConverter: ActivityConverter,
+    private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
+    private val orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
+    private val balanceActivityConverter: SolanaBalanceActivityConverter
 ) {
 
     suspend fun getAllActivities(
@@ -47,34 +42,27 @@ class ActivityApiService(
         size: Int,
         sort: Boolean,
     ): List<ActivityDto> {
-        val types = filter.types.map { convert(it) }
+        val allTypes = filter.types.map { convert(it) }
+        val balanceTypes = allTypes.intersect(balanceTypes)
+        val orderTypes = allTypes.intersect(orderTypes)
 
-        val balanceActivitiesDto = types.intersect(balanceTypes).let {
-            if (it.isNotEmpty()) {
-                val criteria = makeBalanceCriteria(it, continuation)
-                val records = solanaBalanceRecordsRepository.findBy(criteria, size, sort)
-                RecordsBalanceConverter.convert(records)
-            } else {
-                emptyFlow()
-            }
+        val balanceActivitiesDto = if (balanceTypes.isNotEmpty()) {
+            val criteria = makeBalanceCriteria(balanceTypes, continuation)
+            val records = balanceRecordsRepository.findBy(criteria, size, sort)
+            records.mapNotNull { balanceActivityConverter.convert(it, false) }
+        } else {
+            emptyFlow()
         }
 
-        val orderActivitiesDto = types.intersect(orderTypes).let {
-            if (it.isNotEmpty()) {
-                val criteria = makeOrderCriteria(it, continuation)
-                val records = solanaAuctionHouseOrderRecordsRepository.findBy(criteria, size, sort)
-                RecordsAuctionHouseOrderConverter.convert(records)
-            } else {
-                emptyFlow()
-            }
+        val orderActivitiesDto = if (orderTypes.isNotEmpty()) {
+            val criteria = makeOrderCriteria(orderTypes, continuation)
+            val records = orderRecordsRepository.findBy(criteria, size, sort)
+            RecordsAuctionHouseOrderConverter.convert(records)
+        } else {
+            emptyFlow()
         }
 
-        return coroutineScope {
-            listOf(
-                async { balanceActivitiesDto.take(size).toList() },
-                async { orderActivitiesDto.take(size).toList() },
-            )
-        }.awaitAll().flatten()
+        return balanceActivitiesDto.toList() + orderActivitiesDto.toList()
     }
 
     suspend fun getActivitiesByItem(
@@ -83,37 +71,30 @@ class ActivityApiService(
         size: Int,
         sort: Boolean,
     ): List<ActivityDto> {
-        val types = filter.types.map { convert(it) }
+        val allTypes = filter.types.map { convert(it) }
+        val balanceTypes = allTypes.intersect(balanceTypes)
+        val orderTypes = allTypes.intersect(orderTypes)
 
-        val balanceActivitiesDto = types.intersect(balanceTypes).let {
-            if (it.isNotEmpty()) {
-                val criteria = makeBalanceCriteria(it, filter.itemId, continuation)
-                val records = solanaBalanceRecordsRepository.findBy(criteria, size, sort)
-                RecordsBalanceConverter.convert(records)
-            } else {
-                emptyFlow()
-            }
+        val balanceActivitiesDto = if (balanceTypes.isNotEmpty()) {
+            val criteria = makeBalanceCriteria(balanceTypes, filter.itemId, continuation)
+            val records = balanceRecordsRepository.findBy(criteria, size, sort)
+            records.mapNotNull { balanceActivityConverter.convert(it, false) }
+        } else {
+            emptyFlow()
         }
 
-        val orderActivitiesDto = types.intersect(orderTypes).let { t ->
-            if (t.isNotEmpty()) {
-                val criteria = makeOrderCriteria(t, filter.itemId, continuation)
-                val records = solanaAuctionHouseOrderRecordsRepository.findBy(criteria, null, sort)
-                RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in t }
-            } else {
-                emptyFlow()
-            }
+        val orderActivitiesDto = if (orderTypes.isNotEmpty()) {
+            val criteria = makeOrderCriteria(orderTypes, filter.itemId, continuation)
+            val records = orderRecordsRepository.findBy(criteria, null, sort)
+            RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in orderTypes }
+        } else {
+            emptyFlow()
         }
 
-        return coroutineScope {
-            listOf(
-                async { balanceActivitiesDto.take(size).toList() },
-                async { orderActivitiesDto.take(size).toList() },
-            )
-        }.awaitAll().flatten()
+        return balanceActivitiesDto.toList() + orderActivitiesDto.toList()
     }
 
-    private fun activityType(a: ActivityDto) = when (a) {
+    private fun activityType(activity: ActivityDto) = when (activity) {
         is MintActivityDto -> ActivityTypeDto.MINT
         is BurnActivityDto -> ActivityTypeDto.BURN
         is TransferActivityDto -> ActivityTypeDto.TRANSFER
@@ -141,11 +122,11 @@ class ActivityApiService(
 
 
     private fun makeBalanceCriteria(types: Collection<ActivityTypeDto>, continuation: DateIdContinuation?) =
-        Criteria("_class").`in`(types.mapNotNull(Companion.balanceTypeMapping::get))
+        Criteria("_class").`in`(types.mapNotNull(balanceTypeMapping::get))
             .addContinuation(continuation)
 
     private fun makeOrderCriteria(types: Collection<ActivityTypeDto>, continuation: DateIdContinuation?) =
-        Criteria("_class").`in`(types.mapNotNull(Companion.orderTypeMapping::get))
+        Criteria("_class").`in`(types.mapNotNull(orderTypeMapping::get))
             .addContinuation(continuation)
 
     private fun makeBalanceCriteria(
@@ -179,19 +160,6 @@ class ActivityApiService(
                     Criteria("timestamp").lt(continuation.date)
                 )
             }
-        }
-    }
-
-    private fun convert(type: ActivityFilterByCollectionTypeDto): ActivityTypeDto {
-        return when (type) {
-            ActivityFilterByCollectionTypeDto.TRANSFER -> ActivityTypeDto.TRANSFER
-            ActivityFilterByCollectionTypeDto.MINT -> ActivityTypeDto.MINT
-            ActivityFilterByCollectionTypeDto.BURN -> ActivityTypeDto.BURN
-            ActivityFilterByCollectionTypeDto.BID -> ActivityTypeDto.BID
-            ActivityFilterByCollectionTypeDto.LIST -> ActivityTypeDto.LIST
-            ActivityFilterByCollectionTypeDto.SELL -> ActivityTypeDto.SELL
-            ActivityFilterByCollectionTypeDto.CANCEL_BID -> ActivityTypeDto.CANCEL_BID
-            ActivityFilterByCollectionTypeDto.CANCEL_LIST -> ActivityTypeDto.CANCEL_LIST
         }
     }
 
@@ -232,20 +200,16 @@ class ActivityApiService(
         private const val TRANSFER_INCOME_RECORD =
             "com.rarible.protocol.solana.common.records.SolanaBalanceRecord\$TransferIncomeRecord"
 
-        private const val TRANSFER_OUTCOME_RECORD =
-            "com.rarible.protocol.solana.common.records.SolanaBalanceRecord\$TransferOutcomeRecord"
-
-
-        const val BUY_RECORD =
+        private const val BUY_RECORD =
             "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$BuyRecord"
 
-        const val CANCEL_RECORD =
+        private const val CANCEL_RECORD =
             "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$CancelRecord"
 
-        const val EXECUTE_SALE_RECORD =
+        private const val EXECUTE_SALE_RECORD =
             "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$ExecuteSaleRecord"
 
-        const val SELL_RECORD =
+        private const val SELL_RECORD =
             "com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord\$SellRecord"
 
 

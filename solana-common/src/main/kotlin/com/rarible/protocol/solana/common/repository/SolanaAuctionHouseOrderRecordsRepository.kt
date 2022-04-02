@@ -21,7 +21,11 @@ class SolanaAuctionHouseOrderRecordsRepository(
     suspend fun save(record: SolanaAuctionHouseOrderRecord): SolanaAuctionHouseOrderRecord =
         mongo.save(record, COLLECTION).awaitSingle()
 
-    fun findBy(criteria: Criteria, size: Int? = null, asc: Boolean = true): Flow<SolanaAuctionHouseOrderRecord> {
+    fun findBy(
+        criteria: Criteria,
+        size: Int? = null,
+        asc: Boolean = true
+    ): Flow<SolanaAuctionHouseOrderRecord> {
         val query = Query(criteria)
             .with(Sort.by(SolanaAuctionHouseOrderRecord::timestamp.name, "_id").direction(asc))
         size?.let(query::limit)

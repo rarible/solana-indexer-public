@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
-import com.rarible.protocol.solana.common.converter.ActivityConverter
+import com.rarible.protocol.solana.common.converter.SolanaBalanceActivityConverter
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.update.ActivityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
@@ -19,7 +19,7 @@ class BalanceEventReduceService(
     reducer: BalanceReducer,
     environmentInfo: ApplicationEnvironmentInfo,
     private val converter: BalanceEventConverter,
-    private val activityConverter: ActivityConverter,
+    private val balanceActivityConverter: SolanaBalanceActivityConverter,
     private val activityEventListener: ActivityEventListener
 ) : LogRecordEventListener {
 
@@ -42,7 +42,7 @@ class BalanceEventReduceService(
 
     private suspend fun publishActivityEvents(events: List<SolanaLogRecordEvent>) {
         val dto = events.mapNotNull {
-            activityConverter.convert(it.record as SolanaBalanceRecord, it.reversed)
+            balanceActivityConverter.convert(it.record as SolanaBalanceRecord, it.reversed)
         }
         activityEventListener.onActivities(dto)
     }
