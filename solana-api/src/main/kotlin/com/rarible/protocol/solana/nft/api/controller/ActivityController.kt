@@ -29,27 +29,27 @@ class ActivityController(
         sort: ActivitySortDto?,
     ): ResponseEntity<ActivitiesDto> {
 
-        val safeSort = sort == ActivitySortDto.EARLIEST_FIRST
+        val sortAscending = sort == ActivitySortDto.EARLIEST_FIRST
         val safeSize = PageSize.ACTIVITY.limit(size)
 
         val dateIdContinuation = DateIdContinuation.parse(continuation)
 
         val result = when (filter) {
             is ActivityFilterAllDto -> activityApiService.getAllActivities(
-                filter, dateIdContinuation, safeSize, safeSort
+                filter, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByItemDto -> activityApiService.getActivitiesByItem(
-                filter, dateIdContinuation, safeSize, safeSort
+                filter, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByCollectionDto -> activityApiService.getActivitiesByCollection(
-                filter, dateIdContinuation, safeSize, safeSort
+                filter, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByUserDto -> activityApiService.getActivitiesByUser(
-                filter, dateIdContinuation, safeSize, safeSort
+                filter, dateIdContinuation, safeSize, sortAscending
             )
         }
 
-        val dto = toSlice(result, safeSort, safeSize)
+        val dto = toSlice(result, sortAscending, safeSize)
 
         return ResponseEntity.ok(dto)
     }

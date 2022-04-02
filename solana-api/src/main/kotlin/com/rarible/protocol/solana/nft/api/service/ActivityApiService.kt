@@ -69,7 +69,7 @@ class ActivityApiService(
         filter: ActivityFilterByItemDto,
         continuation: DateIdContinuation?,
         size: Int,
-        sort: Boolean,
+        sortAscending: Boolean,
     ): List<ActivityDto> {
         val allTypes = filter.types.map { convert(it) }
         val balanceTypes = allTypes.intersect(balanceTypes)
@@ -77,7 +77,7 @@ class ActivityApiService(
 
         val balanceActivitiesDto = if (balanceTypes.isNotEmpty()) {
             val criteria = makeBalanceCriteria(balanceTypes, filter.itemId, continuation)
-            val records = balanceRecordsRepository.findBy(criteria, size, sort)
+            val records = balanceRecordsRepository.findBy(criteria, size, sortAscending)
             records.mapNotNull { balanceActivityConverter.convert(it, false) }
         } else {
             emptyFlow()
@@ -85,7 +85,7 @@ class ActivityApiService(
 
         val orderActivitiesDto = if (orderTypes.isNotEmpty()) {
             val criteria = makeOrderCriteria(orderTypes, filter.itemId, continuation)
-            val records = orderRecordsRepository.findBy(criteria, size, sort)
+            val records = orderRecordsRepository.findBy(criteria, size, sortAscending)
             RecordsAuctionHouseOrderConverter.convert(records).filter { activityType(it) in orderTypes }
         } else {
             emptyFlow()

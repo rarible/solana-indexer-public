@@ -37,8 +37,8 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     private lateinit var service: ActivityApiService
 
     @Test
-    fun `all activities  filter by types`() = runBlocking<Unit> {
-        val balances = listOf(
+    fun `all activities filter by types`() = runBlocking<Unit> {
+        listOf(
             BalanceRecordDataFactory.randomMintToRecord(),
             BalanceRecordDataFactory.randomMintToRecord(),
             BalanceRecordDataFactory.randomMintToRecord(),
@@ -51,10 +51,9 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
-        )
-        balances.map { balanceRecordsRepository.save(it) }
+        ).forEach { balanceRecordsRepository.save(it) }
 
-        val orders = listOf(
+        listOf(
             OrderRecordDataFactory.randomBuyRecord(),
             OrderRecordDataFactory.randomBuyRecord(),
             OrderRecordDataFactory.randomBuyRecord(),
@@ -67,8 +66,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             OrderRecordDataFactory.randomExecuteSaleRecord(),
             OrderRecordDataFactory.randomExecuteSaleRecord(),
             OrderRecordDataFactory.randomExecuteSaleRecord(),
-        )
-        orders.map { orderRecordsRepository.save(it) }
+        ).forEach { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
             ActivityFilterAllTypeDto.MINT,
@@ -82,7 +80,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         allTypes.forEach { type ->
             val filter = ActivityFilterAllDto(listOf(type))
             val result = service.getAllActivities(filter, null, 50, true)
-            assertThat(result).hasSize(3).withFailMessage { type.name }
+            assertThat(result).withFailMessage { type.name }.hasSize(3)
         }
 
         ActivityFilterAllDto(listOf(ActivityFilterAllTypeDto.MINT, ActivityFilterAllTypeDto.BURN)).let { filter ->
@@ -107,10 +105,10 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `byItem activities  filter by types`() = runBlocking<Unit> {
+    fun `byItem activities filter by types`() = runBlocking<Unit> {
         val mint = randomString()
 
-        val balances = listOf(
+        listOf(
             BalanceRecordDataFactory.randomMintToRecord(mint = mint),
             BalanceRecordDataFactory.randomMintToRecord(),
             BalanceRecordDataFactory.randomMintToRecord(),
@@ -123,10 +121,9 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             BalanceRecordDataFactory.randomOutcomeRecord(mint = mint),
             BalanceRecordDataFactory.randomOutcomeRecord(),
             BalanceRecordDataFactory.randomOutcomeRecord(),
-        )
-        balances.map { balanceRecordsRepository.save(it) }
+        ).forEach { balanceRecordsRepository.save(it) }
 
-        val orders = listOf(
+        listOf(
             OrderRecordDataFactory.randomBuyRecord(mint = mint),
             OrderRecordDataFactory.randomBuyRecord(),
             OrderRecordDataFactory.randomBuyRecord(),
@@ -139,8 +136,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint),
             OrderRecordDataFactory.randomExecuteSaleRecord(),
             OrderRecordDataFactory.randomExecuteSaleRecord(),
-        )
-        orders.map { orderRecordsRepository.save(it) }
+        ).forEach { orderRecordsRepository.save(it) }
 
         val allTypes = listOf(
             ActivityFilterByItemTypeDto.MINT,
@@ -185,14 +181,15 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `order activities formation`() = runBlocking<Unit> {
+    fun `order activities - sell`() = runBlocking<Unit> {
         val orderTypes = listOf(
-            ActivityFilterByItemTypeDto.LIST, ActivityFilterByItemTypeDto.CANCEL_LIST,
-            ActivityFilterByItemTypeDto.BID, ActivityFilterByItemTypeDto.CANCEL_BID,
+            ActivityFilterByItemTypeDto.LIST,
+            ActivityFilterByItemTypeDto.CANCEL_LIST,
+            ActivityFilterByItemTypeDto.BID,
+            ActivityFilterByItemTypeDto.CANCEL_BID,
             ActivityFilterByItemTypeDto.SELL,
         )
         val mint1 = randomString()
-        val mint2 = randomString()
 
         val list = OrderRecordDataFactory.randomSellRecord()
         val cancelList = OrderRecordDataFactory.randomCancel(direction = OrderDirection.SELL)
@@ -205,18 +202,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         ).map { it.withUpdatedLog(saleSolanaLog) }
         val fullSellActual = fullSell.last()
 
-        val bid = OrderRecordDataFactory.randomBuyRecord()
-        val cancelBid = OrderRecordDataFactory.randomCancel(direction = OrderDirection.BUY)
-        val simpleAcceptBid = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
-        val bidSolanaLog = randomSolanaLog()
-        val fullBid = listOf(
-            OrderRecordDataFactory.randomSellRecord(mint = mint2),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
-        ).map { it.withUpdatedLog(bidSolanaLog) }
-        val fullAcceptBidActual = fullBid.last()
-
-        val data = listOf(list, cancelList, simpleSell) + fullSell + listOf(bid, cancelBid, simpleAcceptBid) + fullBid
+        val data = listOf(list, cancelList, simpleSell) + fullSell
         data.map { orderRecordsRepository.save(it) }
 
         ActivityFilterByItemDto(list.mint, orderTypes).let { filter ->
@@ -256,6 +242,32 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             assertEquals(fullSellActual.id, activity.id)
             assertEquals(fullSellActual.timestamp, activity.date)
         }
+    }
+
+    @Test
+    fun `order activities - bid`() = runBlocking<Unit> {
+        val orderTypes = listOf(
+            ActivityFilterByItemTypeDto.LIST,
+            ActivityFilterByItemTypeDto.CANCEL_LIST,
+            ActivityFilterByItemTypeDto.BID,
+            ActivityFilterByItemTypeDto.CANCEL_BID,
+            ActivityFilterByItemTypeDto.SELL,
+        )
+        val mint2 = randomString()
+
+        val bid = OrderRecordDataFactory.randomBuyRecord()
+        val cancelBid = OrderRecordDataFactory.randomCancel(direction = OrderDirection.BUY)
+        val simpleAcceptBid = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
+        val bidSolanaLog = randomSolanaLog()
+        val fullBid = listOf(
+            OrderRecordDataFactory.randomSellRecord(mint = mint2),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
+        ).map { it.withUpdatedLog(bidSolanaLog) }
+        val fullAcceptBidActual = fullBid.last()
+
+        val data = listOf(bid, cancelBid, simpleAcceptBid) + fullBid
+        data.map { orderRecordsRepository.save(it) }
 
         ActivityFilterByItemDto(bid.mint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
