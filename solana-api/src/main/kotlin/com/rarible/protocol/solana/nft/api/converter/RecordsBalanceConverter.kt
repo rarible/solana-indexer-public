@@ -19,7 +19,7 @@ object RecordsBalanceConverter : ActivityConverter<SolanaBalanceRecord> {
             owner = record.account,
             tokenAddress = record.mint,
             value = record.mintAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false
         )
         is SolanaBalanceRecord.BurnRecord -> BurnActivityDto(
@@ -28,7 +28,7 @@ object RecordsBalanceConverter : ActivityConverter<SolanaBalanceRecord> {
             owner = record.account,
             tokenAddress = record.mint,
             value = record.burnAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false
         )
         is SolanaBalanceRecord.TransferIncomeRecord -> TransferActivityDto(
@@ -38,7 +38,7 @@ object RecordsBalanceConverter : ActivityConverter<SolanaBalanceRecord> {
             owner = record.owner,
             tokenAddress = record.mint,
             value = record.incomeAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
             purchase = false // TODO should be evaluated
         )
@@ -49,7 +49,7 @@ object RecordsBalanceConverter : ActivityConverter<SolanaBalanceRecord> {
             owner = record.to,
             tokenAddress = record.mint,
             value = record.outcomeAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
             purchase = false // TODO should be evaluated
         )

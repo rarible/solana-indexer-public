@@ -77,7 +77,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             buyer = record.buyer,
             seller = record.seller,
             price = record.price.toBigDecimal(DIGITS),
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
 
@@ -90,7 +90,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             make = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
             take = AssetDto(SolanaSolAssetTypeDto(), record.sellPrice.toBigDecimal(DIGITS)),
             price = record.sellPrice.toBigDecimal(),
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
 
@@ -103,7 +103,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             make = AssetDto(SolanaSolAssetTypeDto(), record.buyPrice.toBigDecimal(DIGITS)),
             take = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
             price = record.buyPrice.toBigDecimal(DIGITS),
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
 
@@ -116,7 +116,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             maker = record.maker,
             make = SolanaNftAssetTypeDto(record.mint),
             take = SolanaSolAssetTypeDto(),
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
         OrderDirection.BUY -> OrderCancelBidActivityDto(
@@ -126,7 +126,7 @@ object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseO
             maker = record.maker,
             make = SolanaSolAssetTypeDto(),
             take = SolanaNftAssetTypeDto(record.mint),
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
     }
