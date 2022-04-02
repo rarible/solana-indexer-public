@@ -25,7 +25,7 @@ class SolanaAuctionHouseOrderActivityConverter(
     private val priceNormalizer: PriceNormalizer
 ) {
 
-    fun convert(flow: Flow<SolanaAuctionHouseOrderRecord>): Flow<ActivityDto> = flow {
+    fun convert(flow: Flow<SolanaAuctionHouseOrderRecord>, reverted: Boolean): Flow<ActivityDto> = flow {
         val current: MutableList<SolanaAuctionHouseOrderRecord> = mutableListOf()
         var hash: String? = null
 
@@ -33,47 +33,45 @@ class SolanaAuctionHouseOrderActivityConverter(
             if (hash == record.hash()) {
                 current.add(record)
             } else {
-                process(current).forEach { emit(it) }
+                process(current, reverted).forEach { emit(it) }
                 current.clear()
                 current.add(record)
                 hash = record.hash()
             }
         }
-        process(current).forEach { emit(it) }
+        process(current, reverted).forEach { emit(it) }
     }
 
     private fun SolanaAuctionHouseOrderRecord.hash() =
         log.blockNumber.toFixedLengthString(12) + ":" + log.blockHash + ":" +
                 log.transactionIndex.toLong().toFixedLengthString(8) + ":" + log.transactionIndex
 
-    private suspend fun process(records: List<SolanaAuctionHouseOrderRecord>) = when {
+    private suspend fun process(records: List<SolanaAuctionHouseOrderRecord>, reverted: Boolean) = when {
         records.isEmpty() -> emptyList()
-        records.size == 1 -> listOf(convert(records.single()))
+        records.size == 1 -> listOf(convert(records.single(), reverted))
         records.any { it is SolanaAuctionHouseOrderRecord.BuyRecord } -> {
             records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.SELL }
-                ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord)) }
-                ?: records.map { convert(it) }
+                ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
+                ?: records.map { convert(it, reverted) }
         }
         records.any { it is SolanaAuctionHouseOrderRecord.SellRecord } -> {
             records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.BUY }
-                ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord)) }
-                ?: records.map { convert(it) }
+                ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
+                ?: records.map { convert(it, reverted) }
         }
-        else -> {
-            records.map { convert(it) }
-        }
+        else -> records.map { convert(it, reverted) }
     }
 
-    private suspend fun convert(record: SolanaAuctionHouseOrderRecord): ActivityDto {
+    private suspend fun convert(record: SolanaAuctionHouseOrderRecord, reverted: Boolean): ActivityDto {
         return when (record) {
-            is SolanaAuctionHouseOrderRecord.SellRecord -> makeListActivity(record)
-            is SolanaAuctionHouseOrderRecord.BuyRecord -> makeBidActivity(record)
-            is SolanaAuctionHouseOrderRecord.CancelRecord -> makeCancelActivity(record)
-            is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> makeMatchActivity(record)
+            is SolanaAuctionHouseOrderRecord.SellRecord -> makeListActivity(record, reverted)
+            is SolanaAuctionHouseOrderRecord.BuyRecord -> makeBidActivity(record, reverted)
+            is SolanaAuctionHouseOrderRecord.CancelRecord -> makeCancelActivity(record, reverted)
+            is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> makeMatchActivity(record, reverted)
         }
     }
 
-    private suspend fun makeMatchActivity(record: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord) =
+    private suspend fun makeMatchActivity(record: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted: Boolean) =
         OrderMatchActivityDto(
             id = record.id,
             date = record.timestamp,
@@ -87,10 +85,10 @@ class SolanaAuctionHouseOrderActivityConverter(
             seller = record.seller,
             price = priceNormalizer.normalize(Asset(WrappedSolAssetType(), record.price)),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-            reverted = false,
+            reverted = reverted,
         )
 
-    private suspend fun makeListActivity(record: SolanaAuctionHouseOrderRecord.SellRecord) =
+    private suspend fun makeListActivity(record: SolanaAuctionHouseOrderRecord.SellRecord, reverted: Boolean) =
         OrderListActivityDto(
             id = record.id,
             date = record.timestamp,
@@ -100,10 +98,10 @@ class SolanaAuctionHouseOrderActivityConverter(
             take = assetConverter.convert(Asset(WrappedSolAssetType(), record.sellPrice)),
             price = priceNormalizer.normalize(WrappedSolAssetType(), record.sellPrice),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-            reverted = false,
+            reverted = reverted,
         )
 
-    private suspend fun makeBidActivity(record: SolanaAuctionHouseOrderRecord.BuyRecord) =
+    private suspend fun makeBidActivity(record: SolanaAuctionHouseOrderRecord.BuyRecord, reverted: Boolean) =
         OrderBidActivityDto(
             id = record.id,
             date = record.timestamp,
@@ -113,10 +111,13 @@ class SolanaAuctionHouseOrderActivityConverter(
             take = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
             price = priceNormalizer.normalize(WrappedSolAssetType(), record.buyPrice),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-            reverted = false,
+            reverted = reverted,
         )
 
-    private fun makeCancelActivity(record: SolanaAuctionHouseOrderRecord.CancelRecord) = when (record.direction) {
+    private fun makeCancelActivity(
+        record: SolanaAuctionHouseOrderRecord.CancelRecord,
+        reverted: Boolean
+    ) = when (record.direction) {
         OrderDirection.SELL -> OrderCancelListActivityDto(
             id = record.id,
             date = record.timestamp,
@@ -125,7 +126,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             make = SolanaNftAssetTypeDto(record.mint),
             take = SolanaSolAssetTypeDto(),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-            reverted = false,
+            reverted = reverted,
         )
         OrderDirection.BUY -> OrderCancelBidActivityDto(
             id = record.id,
@@ -135,7 +136,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             make = SolanaSolAssetTypeDto(),
             take = SolanaNftAssetTypeDto(record.mint),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-            reverted = false,
+            reverted = reverted,
         )
     }
 }

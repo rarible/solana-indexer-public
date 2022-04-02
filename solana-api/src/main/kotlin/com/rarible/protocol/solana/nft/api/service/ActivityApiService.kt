@@ -52,7 +52,7 @@ class ActivityApiService(
         val orderCriteria = makeOrderCriteria(types = activityTypes, mint = null, continuation = continuation)
         val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sort)
-            orderActivityConverter.convert(records)
+            orderActivityConverter.convert(records, false)
         } else {
             emptyFlow()
         }
@@ -79,7 +79,7 @@ class ActivityApiService(
         val orderCriteria = makeOrderCriteria(activityTypes, filter.itemId, continuation)
         val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sortAscending)
-            orderActivityConverter.convert(records)
+            orderActivityConverter.convert(records, false)
         } else {
             emptyFlow()
         }
