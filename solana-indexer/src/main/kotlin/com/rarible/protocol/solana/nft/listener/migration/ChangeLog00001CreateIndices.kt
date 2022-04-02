@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.nft.listener.migration
 
 import com.github.cloudyrock.mongock.ChangeLog
 import com.github.cloudyrock.mongock.ChangeSet
-import com.rarible.protocol.solana.nft.listener.repository.BalanceLogRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import io.changock.migration.api.annotations.NonLockGuarded
 import kotlinx.coroutines.runBlocking
 
@@ -16,8 +16,8 @@ class ChangeLog00001CreateIndices {
         runAlways = true
     )
     fun createIndicesForAllCollections(
-        @NonLockGuarded balanceLogRepository: BalanceLogRepository
+        @NonLockGuarded balanceRecordsRepository: SolanaBalanceRecordsRepository
     ) = runBlocking {
-        balanceLogRepository.createIndices()
+        balanceRecordsRepository.createIndices()
     }
 }
