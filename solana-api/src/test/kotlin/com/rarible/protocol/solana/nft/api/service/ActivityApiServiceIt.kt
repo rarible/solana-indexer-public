@@ -14,9 +14,10 @@ import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
 import com.rarible.protocol.solana.dto.OrderListActivityDto
 import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.nft.api.test.AbstractIntegrationTest
-import com.rarible.protocol.solana.test.ActivityDataFactory
-import com.rarible.protocol.solana.test.ActivityDataFactory.turnLog
+import com.rarible.protocol.solana.test.BalanceRecordDataFactory
+import com.rarible.protocol.solana.test.OrderRecordDataFactory
 import com.rarible.protocol.solana.test.randomSolanaLog
+import com.rarible.protocol.solana.test.withUpdatedLog
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -37,34 +38,34 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     @Test
     fun `all activities  filter by types`() = runBlocking<Unit> {
         val balances = listOf(
-            ActivityDataFactory.randomMintToRecord(),
-            ActivityDataFactory.randomMintToRecord(),
-            ActivityDataFactory.randomMintToRecord(),
-            ActivityDataFactory.randomBurnRecord(),
-            ActivityDataFactory.randomBurnRecord(),
-            ActivityDataFactory.randomBurnRecord(),
-            ActivityDataFactory.randomIncomeRecord(),
-            ActivityDataFactory.randomIncomeRecord(),
-            ActivityDataFactory.randomIncomeRecord(),
-            ActivityDataFactory.randomOutcomeRecord(),
-            ActivityDataFactory.randomOutcomeRecord(),
-            ActivityDataFactory.randomOutcomeRecord(),
+            BalanceRecordDataFactory.randomMintToRecord(),
+            BalanceRecordDataFactory.randomMintToRecord(),
+            BalanceRecordDataFactory.randomMintToRecord(),
+            BalanceRecordDataFactory.randomBurnRecord(),
+            BalanceRecordDataFactory.randomBurnRecord(),
+            BalanceRecordDataFactory.randomBurnRecord(),
+            BalanceRecordDataFactory.randomIncomeRecord(),
+            BalanceRecordDataFactory.randomIncomeRecord(),
+            BalanceRecordDataFactory.randomIncomeRecord(),
+            BalanceRecordDataFactory.randomOutcomeRecord(),
+            BalanceRecordDataFactory.randomOutcomeRecord(),
+            BalanceRecordDataFactory.randomOutcomeRecord(),
         )
         balances.map { balanceRecordsRepository.save(it) }
 
         val orders = listOf(
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
         )
         orders.map { orderRecordsRepository.save(it) }
 
@@ -105,34 +106,34 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         val mint = randomString()
 
         val balances = listOf(
-            ActivityDataFactory.randomMintToRecord(mint = mint),
-            ActivityDataFactory.randomMintToRecord(),
-            ActivityDataFactory.randomMintToRecord(),
-            ActivityDataFactory.randomBurnRecord(mint = mint),
-            ActivityDataFactory.randomBurnRecord(),
-            ActivityDataFactory.randomBurnRecord(),
-            ActivityDataFactory.randomIncomeRecord(mint = mint),
-            ActivityDataFactory.randomIncomeRecord(),
-            ActivityDataFactory.randomIncomeRecord(),
-            ActivityDataFactory.randomOutcomeRecord(mint = mint),
-            ActivityDataFactory.randomOutcomeRecord(),
-            ActivityDataFactory.randomOutcomeRecord(),
+            BalanceRecordDataFactory.randomMintToRecord(mint = mint),
+            BalanceRecordDataFactory.randomMintToRecord(),
+            BalanceRecordDataFactory.randomMintToRecord(),
+            BalanceRecordDataFactory.randomBurnRecord(mint = mint),
+            BalanceRecordDataFactory.randomBurnRecord(),
+            BalanceRecordDataFactory.randomBurnRecord(),
+            BalanceRecordDataFactory.randomIncomeRecord(mint = mint),
+            BalanceRecordDataFactory.randomIncomeRecord(),
+            BalanceRecordDataFactory.randomIncomeRecord(),
+            BalanceRecordDataFactory.randomOutcomeRecord(mint = mint),
+            BalanceRecordDataFactory.randomOutcomeRecord(),
+            BalanceRecordDataFactory.randomOutcomeRecord(),
         )
         balances.map { balanceRecordsRepository.save(it) }
 
         val orders = listOf(
-            ActivityDataFactory.randomBuyRecord(mint = mint),
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomCancel(mint = mint),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomSellRecord(mint = mint),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(mint = mint),
-            ActivityDataFactory.randomExecuteSaleRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomBuyRecord(mint = mint),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomCancel(mint = mint),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomSellRecord(mint = mint),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
         )
         orders.map { orderRecordsRepository.save(it) }
 
@@ -184,24 +185,26 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         val mint1 = randomString()
         val mint2 = randomString()
 
-        val list = ActivityDataFactory.randomSellRecord()
-        val cancelList = ActivityDataFactory.randomCancel(direction = OrderDirection.SELL)
-        val simpleSell = ActivityDataFactory.randomExecuteSaleRecord(direction = OrderDirection.SELL)
+        val list = OrderRecordDataFactory.randomSellRecord()
+        val cancelList = OrderRecordDataFactory.randomCancel(direction = OrderDirection.SELL)
+        val simpleSell = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.SELL)
+        val saleSolanaLog = randomSolanaLog()
         val fullSell = listOf(
-            ActivityDataFactory.randomBuyRecord(mint = mint1),
-            ActivityDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.BUY),
-            ActivityDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.SELL),
-        ).turnLog(randomSolanaLog())
+            OrderRecordDataFactory.randomBuyRecord(mint = mint1),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.BUY),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.SELL),
+        ).map { it.withUpdatedLog(saleSolanaLog) }
         val fullSellActual = fullSell.last()
 
-        val bid = ActivityDataFactory.randomBuyRecord()
-        val cancelBid = ActivityDataFactory.randomCancel(direction = OrderDirection.BUY)
-        val simpleAcceptBid = ActivityDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
+        val bid = OrderRecordDataFactory.randomBuyRecord()
+        val cancelBid = OrderRecordDataFactory.randomCancel(direction = OrderDirection.BUY)
+        val simpleAcceptBid = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
+        val bidSolanaLog = randomSolanaLog()
         val fullBid = listOf(
-            ActivityDataFactory.randomSellRecord(mint = mint2),
-            ActivityDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
-            ActivityDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
-        ).turnLog(randomSolanaLog())
+            OrderRecordDataFactory.randomSellRecord(mint = mint2),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
+        ).map { it.withUpdatedLog(bidSolanaLog) }
         val fullAcceptBidActual = fullBid.last()
 
         val data = listOf(list, cancelList, simpleSell) + fullSell + listOf(bid, cancelBid, simpleAcceptBid) + fullBid

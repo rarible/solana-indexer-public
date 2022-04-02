@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.repository
 
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
-import com.rarible.protocol.solana.test.ActivityDataFactory
+import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,7 +17,7 @@ internal class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationT
 
     @Test
     fun `save and find record`() = runBlocking<Unit> {
-        val record = ActivityDataFactory.randomBuyRecord()
+        val record = OrderRecordDataFactory.randomBuyRecord()
         orderRecordsRepository.save(record)
 
         val result = orderRecordsRepository.findBy(Criteria()).toList()
@@ -28,10 +28,10 @@ internal class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationT
     @Test
     fun `records order`() = runBlocking<Unit> {
         val records = listOf(
-            ActivityDataFactory.randomBuyRecord(),
-            ActivityDataFactory.randomCancel(),
-            ActivityDataFactory.randomSellRecord(),
-            ActivityDataFactory.randomExecuteSaleRecord(),
+            OrderRecordDataFactory.randomBuyRecord(),
+            OrderRecordDataFactory.randomCancel(),
+            OrderRecordDataFactory.randomSellRecord(),
+            OrderRecordDataFactory.randomExecuteSaleRecord(),
         )
         records.forEach { orderRecordsRepository.save(it) }
 
