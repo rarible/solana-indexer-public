@@ -15,9 +15,9 @@ import com.rarible.protocol.solana.dto.SolanaSolAssetTypeDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-object RecordsAuctionHouseOrderConverter : ActivityConverter<SolanaAuctionHouseOrderRecord> {
+object RecordsAuctionHouseOrderConverter {
 
-    override fun convert(flow: Flow<SolanaAuctionHouseOrderRecord>): Flow<ActivityDto> = flow {
+    fun convert(flow: Flow<SolanaAuctionHouseOrderRecord>): Flow<ActivityDto> = flow {
         val current: MutableList<SolanaAuctionHouseOrderRecord> = mutableListOf()
         var hash: String? = null
 

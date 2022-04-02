@@ -8,8 +8,8 @@ import com.rarible.protocol.solana.dto.TransferActivityDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
-object RecordsBalanceConverter : ActivityConverter<SolanaBalanceRecord> {
-    override fun convert(flow: Flow<SolanaBalanceRecord>): Flow<ActivityDto> =
+object RecordsBalanceConverter {
+    fun convert(flow: Flow<SolanaBalanceRecord>): Flow<ActivityDto> =
         flow.mapNotNull(RecordsBalanceConverter::convert)
 
     private fun convert(record: SolanaBalanceRecord) = when (record) {
