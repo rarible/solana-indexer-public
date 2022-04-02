@@ -1,10 +1,13 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.blockchain.scanner.solana.util.toFixedLengthString
+import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.TokenNftAssetType
+import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
+import com.rarible.protocol.solana.common.service.PriceNormalizer
 import com.rarible.protocol.solana.dto.ActivityDto
-import com.rarible.protocol.solana.dto.AssetDto
 import com.rarible.protocol.solana.dto.OrderBidActivityDto
 import com.rarible.protocol.solana.dto.OrderCancelBidActivityDto
 import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
@@ -14,8 +17,13 @@ import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
 import com.rarible.protocol.solana.dto.SolanaSolAssetTypeDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.springframework.stereotype.Component
 
-object RecordsAuctionHouseOrderConverter {
+@Component
+class SolanaAuctionHouseOrderActivityConverter(
+    private val assetConverter: AssetConverter,
+    private val priceNormalizer: PriceNormalizer
+) {
 
     fun convert(flow: Flow<SolanaAuctionHouseOrderRecord>): Flow<ActivityDto> = flow {
         val current: MutableList<SolanaAuctionHouseOrderRecord> = mutableListOf()
@@ -34,13 +42,11 @@ object RecordsAuctionHouseOrderConverter {
         process(current).forEach { emit(it) }
     }
 
-    private const val DIGITS = 9
-
     private fun SolanaAuctionHouseOrderRecord.hash() =
         log.blockNumber.toFixedLengthString(12) + ":" + log.blockHash + ":" +
                 log.transactionIndex.toLong().toFixedLengthString(8) + ":" + log.transactionIndex
 
-    private fun process(records: List<SolanaAuctionHouseOrderRecord>) = when {
+    private suspend fun process(records: List<SolanaAuctionHouseOrderRecord>) = when {
         records.isEmpty() -> emptyList()
         records.size == 1 -> listOf(convert(records.single()))
         records.any { it is SolanaAuctionHouseOrderRecord.BuyRecord } -> {
@@ -58,7 +64,7 @@ object RecordsAuctionHouseOrderConverter {
         }
     }
 
-    private fun convert(record: SolanaAuctionHouseOrderRecord): ActivityDto {
+    private suspend fun convert(record: SolanaAuctionHouseOrderRecord): ActivityDto {
         return when (record) {
             is SolanaAuctionHouseOrderRecord.SellRecord -> makeListActivity(record)
             is SolanaAuctionHouseOrderRecord.BuyRecord -> makeBidActivity(record)
@@ -67,45 +73,45 @@ object RecordsAuctionHouseOrderConverter {
         }
     }
 
-    private fun makeMatchActivity(record: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord) =
+    private suspend fun makeMatchActivity(record: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord) =
         OrderMatchActivityDto(
             id = record.id,
             date = record.timestamp,
             type = when (record.direction) {
                 OrderDirection.SELL -> OrderMatchActivityDto.Type.SELL
-                else -> OrderMatchActivityDto.Type.ACCEPT_BID
+                OrderDirection.BUY -> OrderMatchActivityDto.Type.ACCEPT_BID
             },
-            nft = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
-            payment = AssetDto(SolanaSolAssetTypeDto(), record.price.toBigDecimal(DIGITS)),
+            nft = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
+            payment = assetConverter.convert(Asset(WrappedSolAssetType(), record.price)),
             buyer = record.buyer,
             seller = record.seller,
-            price = record.price.toBigDecimal(DIGITS),
+            price = priceNormalizer.normalize(Asset(WrappedSolAssetType(), record.price)),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
 
-    private fun makeListActivity(record: SolanaAuctionHouseOrderRecord.SellRecord) =
+    private suspend fun makeListActivity(record: SolanaAuctionHouseOrderRecord.SellRecord) =
         OrderListActivityDto(
             id = record.id,
             date = record.timestamp,
             hash = record.orderId,
             maker = record.maker,
-            make = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
-            take = AssetDto(SolanaSolAssetTypeDto(), record.sellPrice.toBigDecimal(DIGITS)),
-            price = record.sellPrice.toBigDecimal(),
+            make = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
+            take = assetConverter.convert(Asset(WrappedSolAssetType(), record.sellPrice)),
+            price = priceNormalizer.normalize(WrappedSolAssetType(), record.sellPrice),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )
 
-    private fun makeBidActivity(record: SolanaAuctionHouseOrderRecord.BuyRecord) =
+    private suspend fun makeBidActivity(record: SolanaAuctionHouseOrderRecord.BuyRecord) =
         OrderBidActivityDto(
             id = record.id,
             date = record.timestamp,
             hash = record.orderId,
             maker = record.maker,
-            make = AssetDto(SolanaSolAssetTypeDto(), record.buyPrice.toBigDecimal(DIGITS)),
-            take = AssetDto(SolanaNftAssetTypeDto(record.mint), record.amount.toBigDecimal(DIGITS)),
-            price = record.buyPrice.toBigDecimal(DIGITS),
+            make = assetConverter.convert(Asset(WrappedSolAssetType(), record.buyPrice)),
+            take = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
+            price = priceNormalizer.normalize(WrappedSolAssetType(), record.buyPrice),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = false,
         )

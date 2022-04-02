@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
-import com.rarible.protocol.solana.common.converter.RecordsAuctionHouseOrderConverter
+import com.rarible.protocol.solana.common.converter.SolanaAuctionHouseOrderActivityConverter
 import com.rarible.protocol.solana.common.converter.SolanaBalanceActivityConverter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
@@ -28,7 +28,8 @@ import kotlin.reflect.KClass
 class ActivityApiService(
     private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
     private val orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
-    private val balanceActivityConverter: SolanaBalanceActivityConverter
+    private val balanceActivityConverter: SolanaBalanceActivityConverter,
+    private val orderActivityConverter: SolanaAuctionHouseOrderActivityConverter
 ) {
 
     suspend fun getAllActivities(
@@ -51,7 +52,7 @@ class ActivityApiService(
         val orderCriteria = makeOrderCriteria(types = activityTypes, mint = null, continuation = continuation)
         val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sort)
-            RecordsAuctionHouseOrderConverter.convert(records)
+            orderActivityConverter.convert(records)
         } else {
             emptyFlow()
         }
@@ -78,7 +79,7 @@ class ActivityApiService(
         val orderCriteria = makeOrderCriteria(activityTypes, filter.itemId, continuation)
         val orderActivitiesDto = if (orderCriteria !== null) {
             val records = orderRecordsRepository.findBy(orderCriteria, size, sortAscending)
-            RecordsAuctionHouseOrderConverter.convert(records)
+            orderActivityConverter.convert(records)
         } else {
             emptyFlow()
         }
