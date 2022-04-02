@@ -202,18 +202,21 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityFilterByItemTypeDto.CANCEL_BID,
             ActivityFilterByItemTypeDto.SELL,
         )
-        val mint1 = randomString()
 
         val list = OrderRecordDataFactory.randomSellRecord()
         val cancelList = OrderRecordDataFactory.randomCancel(direction = OrderDirection.SELL)
         val simpleSell = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.SELL)
-        val saleSolanaLog = randomSolanaLog()
+
+        val fullSellSolanaLog = randomSolanaLog()
+        val fullSellMint = randomString()
         val fullSell = listOf(
-            OrderRecordDataFactory.randomBuyRecord(mint = mint1),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.BUY),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint1, direction = OrderDirection.SELL),
-        ).map { it.withUpdatedLog(saleSolanaLog) }
-        val fullSellActual = fullSell.last()
+            OrderRecordDataFactory.randomBuyRecord(mint = fullSellMint)
+                .withUpdatedLog(fullSellSolanaLog.copy(instructionIndex = 4)),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = fullSellMint, direction = OrderDirection.BUY)
+                .withUpdatedLog(fullSellSolanaLog.copy(instructionIndex = 5)),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = fullSellMint, direction = OrderDirection.SELL)
+                .withUpdatedLog(fullSellSolanaLog.copy(instructionIndex = 5)),
+        )
 
         val data = listOf(list, cancelList, simpleSell) + fullSell
         data.map { orderRecordsRepository.save(it) }
@@ -245,15 +248,14 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             assertEquals(simpleSell.id, activity.id)
             assertEquals(simpleSell.timestamp, activity.date)
         }
-
-        ActivityFilterByItemDto(fullSellActual.mint, orderTypes).let { filter ->
+        ActivityFilterByItemDto(fullSellMint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
             assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.SELL, (activity as OrderMatchActivityDto).type)
-            assertEquals(fullSellActual.id, activity.id)
-            assertEquals(fullSellActual.timestamp, activity.date)
+            assertEquals(fullSell.last().id, activity.id)
+            assertEquals(fullSell.last().timestamp, activity.date)
         }
     }
 
@@ -266,18 +268,21 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             ActivityFilterByItemTypeDto.CANCEL_BID,
             ActivityFilterByItemTypeDto.SELL,
         )
-        val mint2 = randomString()
 
         val bid = OrderRecordDataFactory.randomBuyRecord()
         val cancelBid = OrderRecordDataFactory.randomCancel(direction = OrderDirection.BUY)
         val simpleAcceptBid = OrderRecordDataFactory.randomExecuteSaleRecord(direction = OrderDirection.BUY)
-        val bidSolanaLog = randomSolanaLog()
+
+        val fullBidMint = randomString()
+        val fullBidSolanaLog = randomSolanaLog()
         val fullBid = listOf(
-            OrderRecordDataFactory.randomSellRecord(mint = mint2),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.SELL),
-            OrderRecordDataFactory.randomExecuteSaleRecord(mint = mint2, direction = OrderDirection.BUY),
-        ).map { it.withUpdatedLog(bidSolanaLog) }
-        val fullAcceptBidActual = fullBid.last()
+            OrderRecordDataFactory.randomSellRecord(mint = fullBidMint)
+                .withUpdatedLog(fullBidSolanaLog.copy(instructionIndex = 4)),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = fullBidMint, direction = OrderDirection.SELL)
+                .withUpdatedLog(fullBidSolanaLog.copy(instructionIndex = 5)),
+            OrderRecordDataFactory.randomExecuteSaleRecord(mint = fullBidMint, direction = OrderDirection.BUY)
+                .withUpdatedLog(fullBidSolanaLog.copy(instructionIndex = 5)),
+        )
 
         val data = listOf(bid, cancelBid, simpleAcceptBid) + fullBid
         data.map { orderRecordsRepository.save(it) }
@@ -310,14 +315,14 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             assertEquals(simpleAcceptBid.timestamp, activity.date)
         }
 
-        ActivityFilterByItemDto(fullAcceptBidActual.mint, orderTypes).let { filter ->
+        ActivityFilterByItemDto(fullBidMint, orderTypes).let { filter ->
             val result = service.getActivitiesByItem(filter, null, 50, true)
             assertThat(result).hasSize(1)
             val activity = result.single()
             assertTrue(activity is OrderMatchActivityDto)
             assertEquals(OrderMatchActivityDto.Type.ACCEPT_BID, (activity as OrderMatchActivityDto).type)
-            assertEquals(fullAcceptBidActual.id, activity.id)
-            assertEquals(fullAcceptBidActual.timestamp, activity.date)
+            assertEquals(fullBid.last().id, activity.id)
+            assertEquals(fullBid.last().timestamp, activity.date)
         }
     }
 }

@@ -202,11 +202,11 @@ class ActivityApiService(
                 ActivityTypeDto.CANCEL_LIST -> jvmClassName(SolanaAuctionHouseOrderRecord.CancelRecord::class)
                 ActivityTypeDto.CANCEL_BID -> jvmClassName(SolanaAuctionHouseOrderRecord.CancelRecord::class)
                 ActivityTypeDto.LIST -> jvmClassName(SolanaAuctionHouseOrderRecord.SellRecord::class)
+                ActivityTypeDto.BID -> jvmClassName(SolanaAuctionHouseOrderRecord.BuyRecord::class)
                 // Ignored. Do not use 'else' here.
                 ActivityTypeDto.TRANSFER -> null
                 ActivityTypeDto.MINT -> null
                 ActivityTypeDto.BURN -> null
-                ActivityTypeDto.BID -> null
                 ActivityTypeDto.AUCTION_BID -> null
                 ActivityTypeDto.AUCTION_CREATED -> null
                 ActivityTypeDto.AUCTION_CANCEL -> null
