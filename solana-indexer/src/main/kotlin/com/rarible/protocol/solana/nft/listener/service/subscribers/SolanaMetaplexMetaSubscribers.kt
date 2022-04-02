@@ -15,6 +15,7 @@ import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import org.springframework.stereotype.Component
 import java.time.Instant
 

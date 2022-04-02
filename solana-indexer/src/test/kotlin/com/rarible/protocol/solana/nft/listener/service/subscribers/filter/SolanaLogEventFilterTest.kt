@@ -8,7 +8,7 @@ import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer

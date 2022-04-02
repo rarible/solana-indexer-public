@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.borsh.Sell
 import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.common.util.toBigInteger
 import org.springframework.stereotype.Component
 import java.math.BigInteger

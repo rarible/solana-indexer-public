@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.service.subscribers
+package com.rarible.protocol.solana.common.records
 
 enum class SubscriberGroup {
     TOKEN,

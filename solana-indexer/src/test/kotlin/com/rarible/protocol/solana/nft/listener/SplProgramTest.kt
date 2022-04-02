@@ -4,7 +4,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList

@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.consumer
 
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 
 interface LogRecordEventListener {
     val id: String

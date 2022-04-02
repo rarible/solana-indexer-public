@@ -15,7 +15,7 @@ import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SubscriberGroup
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTokenReader
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
