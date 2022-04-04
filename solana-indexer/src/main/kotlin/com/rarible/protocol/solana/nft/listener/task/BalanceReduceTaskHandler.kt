@@ -30,8 +30,13 @@ class BalanceReduceTaskHandler(
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override fun runLongTask(from: String?, param: String) = flow {
+        val criteria = if (param.isNotBlank()) {
+            Criteria.where(SolanaBalanceRecord::account.name).`is`(param)
+        } else {
+            Criteria()
+        }
         val balanceFlow = balanceRecordsRepository.findBy(
-            if (from != null) Criteria.where(SolanaBalanceRecord::account.name).gt(from) else Criteria(),
+            if (from != null) criteria.and(SolanaBalanceRecord::account.name).gt(from) else criteria,
             Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::account.name, SolanaBalanceRecord::id.name),
         ).flatMapConcat {
             balanceEventConverter.convert(it, false).asFlow()

@@ -30,6 +30,7 @@ class OrderReduceTaskHandler(
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override fun runLongTask(from: String?, param: String) = flow {
+        require(param.isNotBlank()) { "Auction house must be specified" }
         val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(param)
         val orderFlow = orderRecordsRepository.findBy(
             if (from != null) criteria.and(SolanaAuctionHouseOrderRecord::orderId.name).gt(from) else criteria,

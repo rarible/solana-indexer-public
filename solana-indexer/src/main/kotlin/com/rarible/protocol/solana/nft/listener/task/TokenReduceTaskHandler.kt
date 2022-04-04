@@ -30,8 +30,13 @@ class TokenReduceTaskHandler(
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override fun runLongTask(from: String?, param: String) = flow {
+        val criteria = if (param.isNotBlank()) {
+            Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
+        } else {
+            Criteria()
+        }
         val tokenFlow = tokenRecordsRepository.findBy(
-            if (from != null) Criteria.where(SolanaTokenRecord::mint.name).gt(from) else Criteria(),
+            if (from != null) criteria.and(SolanaTokenRecord::mint.name).gt(from) else criteria,
             Sort.by(Sort.Direction.ASC, SolanaTokenRecord::mint.name, SolanaTokenRecord::id.name),
         ).flatMapConcat {
             tokenEventConverter.convert(it, false).asFlow()
