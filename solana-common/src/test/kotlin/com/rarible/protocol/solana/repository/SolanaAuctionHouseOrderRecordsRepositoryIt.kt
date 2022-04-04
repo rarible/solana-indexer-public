@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.repository
 
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
-import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import com.rarible.protocol.solana.test.OrderRecordDataFactory
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -37,15 +36,11 @@ internal class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationT
         records.forEach { orderRecordsRepository.save(it) }
 
         val ascResult = orderRecordsRepository.findBy(Criteria(), asc = true, size = 50).toList()
-        val ascExpected = records.sortedWith { a, b ->
-            if (a.timestamp == b.timestamp) a.id.compareTo(b.id) else a.timestamp.compareTo(b.timestamp)
-        }
+        val ascExpected = records.sortedWith { a, b -> a.id.compareTo(b.id) }
         assertEquals(ascExpected, ascResult)
 
         val descResult = orderRecordsRepository.findBy(Criteria(), asc = false, size = 50).toList()
-        val descExpected = records.sortedWith { a, b ->
-            if (a.timestamp == b.timestamp) -a.id.compareTo(b.id) else -a.timestamp.compareTo(b.timestamp)
-        }
+        val descExpected = records.sortedWith { a, b -> -a.id.compareTo(b.id) }
         assertEquals(descExpected, descResult)
     }
 }
