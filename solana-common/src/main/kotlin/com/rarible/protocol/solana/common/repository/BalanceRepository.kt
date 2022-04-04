@@ -14,8 +14,10 @@ import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.gt
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
+import java.math.BigInteger
 
 @Component
 class BalanceRepository(
@@ -24,29 +26,27 @@ class BalanceRepository(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun findById(accountAddress: String): Balance? {
-        return mongo.findById<Balance>(accountAddress).awaitFirstOrNull()
-    }
-
     suspend fun save(balance: Balance): Balance =
         mongo.save(balance).awaitFirst()
 
     suspend fun findByAccount(account: BalanceId): Balance? =
-        mongo.findById<Balance>(account).awaitFirstOrNull()
+        mongo.findById<Balance>(account).awaitFirstOrNull()?.takeIf { it.value > BigInteger.ZERO }
 
-    suspend fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
+    fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
         val criteria = Criteria().andOperator(
             Balance::owner isEqualTo owner,
-            Balance::mint isEqualTo mint
+            Balance::mint isEqualTo mint,
+            Balance::value gt BigInteger.ZERO
         )
         val query = Query(criteria)
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
     fun findByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
-        val criteria = Criteria
-            .where(Balance::owner.name).isEqualTo(owner)
-            .addContinuation(continuation)
+        val criteria = Criteria().andOperator(
+            Balance::owner isEqualTo owner,
+            Balance::value gt BigInteger.ZERO
+        ).addContinuation(continuation)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
         query.limit(limit)
@@ -55,9 +55,11 @@ class BalanceRepository(
     }
 
     fun findByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
-        val criteria = Criteria
-            .where(Balance::mint.name).isEqualTo(mint)
-            .addContinuation(continuation)
+        @Suppress("DuplicatedCode")
+        val criteria = Criteria().andOperator(
+            Balance::mint isEqualTo mint,
+            Balance::value gt BigInteger.ZERO
+        ).addContinuation(continuation)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
         query.limit(limit)
@@ -89,15 +91,18 @@ class BalanceRepository(
             .on(Balance::owner.name, Sort.Direction.ASC)
             .on(Balance::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
+            .background()
 
         val MINT_AND_UPDATED_AT_AND_ID: Index = Index()
             .on(Balance::mint.name, Sort.Direction.ASC)
             .on(Balance::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
+            .background()
 
         val OWNER_AND_MINT: Index = Index()
             .on(Balance::owner.name, Sort.Direction.ASC)
             .on(Balance::mint.name, Sort.Direction.ASC)
+            .background()
 
         val ALL_INDEXES = listOf(
             OWNER_AND_UPDATED_AT_AND_ID,

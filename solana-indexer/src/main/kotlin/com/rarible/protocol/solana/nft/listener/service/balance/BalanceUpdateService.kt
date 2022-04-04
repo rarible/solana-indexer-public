@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.update.BalanceUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.math.BigInteger
 import java.time.Instant
 
 @Component
@@ -27,7 +28,11 @@ class BalanceUpdateService(
         }
         val balance = balanceRepository.save(entity)
         balanceUpdateListener.onBalanceChanged(balance)
-        logger.info("Updated balance: $entity")
+        if (balance.value > BigInteger.ZERO) {
+            logger.info("Updated balance: $entity")
+        } else {
+            logger.info("Deleted balance: $entity")
+        }
         return balance
     }
 

@@ -26,6 +26,9 @@ data class Balance(
     override fun withRevertableEvents(events: List<BalanceEvent>): Balance =
         copy(revertableEvents = events)
 
+    override fun toString(): String =
+        "Balance(account='$account', value=$value, mint='$mint', owner='$owner', createdAt=$createdAt, updatedAt=$updatedAt)"
+
     companion object {
         const val COLLECTION = "balance"
 

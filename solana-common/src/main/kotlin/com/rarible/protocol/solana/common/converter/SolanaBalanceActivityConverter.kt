@@ -29,7 +29,7 @@ class SolanaBalanceActivityConverter(
     }
 
     private suspend fun makeMint(record: SolanaBalanceRecord.MintToRecord, reverted: Boolean): ActivityDto? {
-        val owner = balanceRepository.findById(record.account)?.owner
+        val owner = balanceRepository.findByAccount(record.account)?.owner
         if (owner == null) {
             logger.warn("Unable to find balance: {}", record.account)
             return null
@@ -46,7 +46,7 @@ class SolanaBalanceActivityConverter(
     }
 
     private suspend fun makeBurn(record: SolanaBalanceRecord.BurnRecord, reverted: Boolean): ActivityDto? {
-        val owner = balanceRepository.findById(record.account)?.owner
+        val owner = balanceRepository.findByAccount(record.account)?.owner
         if (owner == null) {
             logger.warn("Unable to find balance: {}", record.account)
             return null
