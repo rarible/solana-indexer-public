@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.update.OrderUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class OrderUpdateService(
@@ -18,7 +19,9 @@ class OrderUpdateService(
         repository.findById(id)
 
     override suspend fun update(entity: Order): Order {
-        if (entity == Order.empty()) {
+        if (entity.createdAt == Instant.EPOCH) {
+            // createdAt set only if we got initial order event with all fields,
+            // if this field wasn't set, it means order doesn't contain major fields
             return entity
         }
         val order = repository.save(entity)
