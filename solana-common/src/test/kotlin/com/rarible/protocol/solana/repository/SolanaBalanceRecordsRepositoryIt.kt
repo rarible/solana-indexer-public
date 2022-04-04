@@ -41,7 +41,7 @@ class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
         }
 
         balanceRecordsRepository.findBy(Criteria(), asc = false, size = 50).toList().let { result ->
-            val expected = records.sortedWith { a, b -> a.id.compareTo(b.id) }
+            val expected = records.sortedWith { a, b -> -a.id.compareTo(b.id) }
             assertEquals(expected, result)
         }
     }
