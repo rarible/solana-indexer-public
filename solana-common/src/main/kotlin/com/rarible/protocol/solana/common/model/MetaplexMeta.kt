@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.model
 
-import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -24,6 +23,10 @@ data class MetaplexMeta(
 
     override fun withRevertableEvents(events: List<MetaplexMetaEvent>): MetaplexMeta =
         copy(revertableEvents = events)
+
+    override fun toString(): String =
+        "MetaplexMeta(metaAddress='$metaAddress', tokenAddress='$tokenAddress', metaFields=$metaFields, " +
+                "isMutable=$isMutable, createdAt=$createdAt, updatedAt=$updatedAt)"
 
     companion object {
         const val COLLECTION = "metaplex-meta"

@@ -1,9 +1,7 @@
 package com.rarible.protocol.solana.common.model
 
-import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.hash.Hash
-import com.rarible.protocol.solana.common.model.Order.Companion.COLLECTION
 import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -51,6 +49,11 @@ data class Order(
 ) : SolanaEntity<OrderId, OrderEvent, Order> {
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order = copy(revertableEvents = events)
+
+    override fun toString(): String =
+        "Order(id='$id', auctionHouse='$auctionHouse', direction=$direction, status=$status, fill=$fill, maker='$maker'," +
+                "make=$make, take=$take, makePrice=$makePrice, takePrice=$takePrice, " +
+                "createdAt=$createdAt, updatedAt=$updatedAt)"
 
     companion object {
         const val COLLECTION = "order"
