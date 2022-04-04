@@ -84,7 +84,13 @@ class ForwardOrderReducer(
                 makePrice = null,
                 takePrice = null
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
-            is OrderCancelEvent -> entity.copy(status = OrderStatus.CANCELLED)
+            is OrderCancelEvent -> {
+                if (entity == Order.empty()) {
+                    // Order did not exist.
+                    return entity
+                }
+                entity.copy(status = OrderStatus.CANCELLED)
+            }
         }.copy(updatedAt = event.timestamp)
     }
 }
