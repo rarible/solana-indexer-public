@@ -8,6 +8,7 @@ import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaReposit
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
 import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
+import com.rarible.protocol.solana.common.repository.SolanaTokenRecordsRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import io.changock.migration.api.annotations.NonLockGuarded
 import kotlinx.coroutines.runBlocking
@@ -27,16 +28,16 @@ class ChangeLog00001CreateIndices {
         @NonLockGuarded metaplexMetaRepository: MetaplexMetaRepository,
         @NonLockGuarded metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
         @NonLockGuarded orderRepository: OrderRepository,
-
         @NonLockGuarded balanceRecordsRepository: SolanaBalanceRecordsRepository,
+        @NonLockGuarded tokenRecordsRepository: SolanaTokenRecordsRepository,
         @NonLockGuarded orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository
-        ) = runBlocking {
+    ) = runBlocking {
         balanceRepository.createIndexes()
         tokenRepository.createIndexes()
         metaplexMetaRepository.createIndexes()
         metaplexOffChainMetaRepository.createIndexes()
         orderRepository.createIndexes()
-
+        tokenRecordsRepository.createIndexes()
         balanceRecordsRepository.createIndexes()
         orderRecordsRepository.createIndexes()
     }

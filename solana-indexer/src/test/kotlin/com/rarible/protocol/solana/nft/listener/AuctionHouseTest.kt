@@ -12,8 +12,8 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
-import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -452,8 +452,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
             ).toList()
-            val fromAccount = balanceRecords.single { it.owner == sellerWallet }.balanceAccount
-            val toAccount = balanceRecords.single { it.owner == buyerWallet }.balanceAccount
+            val fromAccount = balanceRecords.single { it.owner == sellerWallet }.account
+            val toAccount = balanceRecords.single { it.owner == buyerWallet }.account
             val buyRecords = findRecordByType(
                 collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
                 type = SolanaAuctionHouseOrderRecord.BuyRecord::class.java
@@ -538,7 +538,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaBalanceRecord.TransferIncomeRecord(
                         from = fromAccount,
-                        owner = toAccount,
+                        account = toAccount,
                         mint = token,
                         incomeAmount = 1.toBigInteger(),
                         log = ANY_SOLANA_LOG,
@@ -558,7 +558,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaBalanceRecord.TransferOutcomeRecord(
                         to = toAccount,
-                        owner = fromAccount,
+                        account = fromAccount,
                         mint = token,
                         outcomeAmount = 1.toBigInteger(),
                         log = ANY_SOLANA_LOG,

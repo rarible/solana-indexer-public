@@ -6,9 +6,9 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
-import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer
@@ -66,7 +66,7 @@ class SolanaLogEventFilterTest {
     fun `transfer and init records`() = runBlocking<Unit> {
         val init = randomBalanceInitRecord()
 
-        val transferWithInitMint = randomBalanceIncomeTransfer().copy(mint = "").copy(owner = init.balanceAccount)
+        val transferWithInitMint = randomBalanceIncomeTransfer().copy(mint = "").copy(account = init.account)
         val transferWithMapping = randomBalanceOutcomeTransfer().copy(mint = "")
         val transferWithoutMapping = randomBalanceIncomeTransfer().copy(mint = "")
 
@@ -78,12 +78,12 @@ class SolanaLogEventFilterTest {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
                     transferWithMapping.to,
-                    transferWithMapping.owner,
-                    transferWithoutMapping.owner,
+                    transferWithMapping.account,
+                    transferWithoutMapping.account,
                     transferWithoutMapping.from
                 )
             )
-        } returns mapOf(transferWithMapping.owner to mappedMint)
+        } returns mapOf(transferWithMapping.account to mappedMint)
 
         // Mapping should be same only for non-existing non-currency associations
         coEvery {
@@ -121,7 +121,7 @@ class SolanaLogEventFilterTest {
             accountToMintAssociationService.getMintsByAccounts(
                 mutableSetOf(
                     outcomeTransfer.to,
-                    outcomeTransfer.owner
+                    outcomeTransfer.account
                 )
             )
         } returns mapOf()
@@ -132,7 +132,7 @@ class SolanaLogEventFilterTest {
                 // Since we have no known mappings, all of them should be saved
                 mapOf(
                     outcomeTransfer.to to outcomeMint,
-                    outcomeTransfer.owner to outcomeMint
+                    outcomeTransfer.account to outcomeMint
                 )
             )
         } returns Unit
