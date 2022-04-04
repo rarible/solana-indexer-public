@@ -457,7 +457,13 @@ abstract class AbstractBlockScannerTest {
         BigInteger.valueOf(this.toLong()) * BigInteger.TEN.pow(decimals)
 
     companion object {
-        val solana: GenericContainer<*> = KGenericContainer("rarible/solana")
+        val solana: GenericContainer<*> = KGenericContainer(
+            if (System.getProperty("os.arch") == "x86_64") {
+                "rarible/solana:1.8.16-dev-0404"
+            } else {
+                "rarible/solana-docker-mac-m1"
+            }
+        )
             .withExposedPorts(8899)
             .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so --bpf-program ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} /home/solana/mpl_auction_house.so")
             .waitingFor(Wait.defaultWaitStrategy())
