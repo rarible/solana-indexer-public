@@ -34,7 +34,7 @@ class BalanceEventConverter {
         is SolanaBalanceRecord.TransferIncomeRecord -> listOf(
             BalanceIncomeEvent(
                 reversed = reversed,
-                account = record.owner,
+                account = record.account,
                 amount = record.incomeAmount,
                 log = record.log,
                 timestamp = record.timestamp
@@ -43,7 +43,7 @@ class BalanceEventConverter {
         is SolanaBalanceRecord.TransferOutcomeRecord -> listOf(
             BalanceOutcomeEvent(
                 reversed = reversed,
-                account = record.owner,
+                account = record.account,
                 amount = record.outcomeAmount,
                 log = record.log,
                 timestamp = record.timestamp

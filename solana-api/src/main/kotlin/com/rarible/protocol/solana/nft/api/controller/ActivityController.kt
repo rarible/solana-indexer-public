@@ -23,7 +23,7 @@ class ActivityController(
 ) : ActivityControllerApi {
 
     override suspend fun searchActivities(
-        filter: ActivityFilterDto,
+        activityFilterDto: ActivityFilterDto,
         continuation: String?,
         size: Int?,
         sort: ActivitySortDto?,
@@ -34,18 +34,18 @@ class ActivityController(
 
         val dateIdContinuation = DateIdContinuation.parse(continuation)
 
-        val result = when (filter) {
+        val result = when (activityFilterDto) {
             is ActivityFilterAllDto -> activityApiService.getAllActivities(
-                filter, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByItemDto -> activityApiService.getActivitiesByItem(
-                filter, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByCollectionDto -> activityApiService.getActivitiesByCollection(
-                filter, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, dateIdContinuation, safeSize, sortAscending
             )
             is ActivityFilterByUserDto -> activityApiService.getActivitiesByUser(
-                filter, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, dateIdContinuation, safeSize, sortAscending
             )
         }
 
