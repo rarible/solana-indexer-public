@@ -8,18 +8,24 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
+import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
+import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
-import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.service.balance.BalanceIdService
+import com.rarible.protocol.solana.nft.listener.service.balance.BalanceReducer
+import com.rarible.protocol.solana.nft.listener.service.balance.BalanceTemplateProvider
+import com.rarible.protocol.solana.nft.listener.service.balance.BalanceUpdateService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTokenReader
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaWhiteListTokenFilter
+import com.rarible.protocol.solana.nft.listener.task.BalanceStreamFullReduceService
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
@@ -102,6 +108,22 @@ class BlockchainScannerConfiguration(
                 SolanaBlackListTokenFilter(tokens)
             }
         }
+    }
+
+    @Bean
+    fun balanceStreamReducer(
+        balanceUpdateService: BalanceUpdateService,
+        balanceIdService: BalanceIdService,
+        balanceTemplateProvider: BalanceTemplateProvider,
+        balanceReducer: BalanceReducer
+    ) : BalanceStreamFullReduceService {
+
+        return StreamFullReduceService(
+            balanceUpdateService,
+            balanceIdService,
+            balanceTemplateProvider,
+            balanceReducer
+        )
     }
 
     private companion object {
