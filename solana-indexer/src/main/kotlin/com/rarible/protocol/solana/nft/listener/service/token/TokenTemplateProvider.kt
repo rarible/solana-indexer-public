@@ -7,7 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class TokenTemplateProvider : EntityTemplateProvider<TokenId, Token> {
-    override fun getEntityTemplate(id: TokenId): Token {
-        return Token.empty(id)
-    }
+    override fun getEntityTemplate(id: TokenId): Token = Token.empty(id)
 }

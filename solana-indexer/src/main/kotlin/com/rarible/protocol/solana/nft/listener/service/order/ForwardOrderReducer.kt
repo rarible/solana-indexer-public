@@ -14,6 +14,7 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.service.PriceNormalizer
 import org.springframework.stereotype.Component
 import java.math.BigInteger
+import java.time.Instant
 
 @Component
 class ForwardOrderReducer(
@@ -22,7 +23,7 @@ class ForwardOrderReducer(
     override suspend fun reduce(entity: Order, event: OrderEvent): Order {
         return when (event) {
             is ExecuteSaleEvent -> {
-                if (entity == Order.empty()) {
+                if (entity.createdAt == Instant.EPOCH) {
                     // Skip reducing virtual part of the order.
                     return entity
                 }
@@ -85,12 +86,12 @@ class ForwardOrderReducer(
                 takePrice = null
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
             is OrderCancelEvent -> {
-                if (entity == Order.empty()) {
+                if (entity.createdAt == Instant.EPOCH) {
                     // Order did not exist.
                     return entity
                 }
                 entity.copy(status = OrderStatus.CANCELLED)
             }
-        }.copy(updatedAt = event.timestamp)
+        }
     }
 }
