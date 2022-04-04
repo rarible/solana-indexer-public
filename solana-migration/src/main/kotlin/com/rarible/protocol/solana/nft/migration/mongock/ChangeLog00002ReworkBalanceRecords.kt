@@ -19,7 +19,7 @@ class ChangeLog00002CreateIndices {
         id = "ChangeLog00002CreateIndices.reworkBalanceRecords",
         order = "00002",
         author = "protocol",
-        runAlways = true
+        runAlways = false
     )
     fun reworkBalanceRecords(
         mongoOperations: ReactiveMongoOperations
