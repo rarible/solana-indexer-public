@@ -9,7 +9,7 @@ import java.time.Instant
 
 typealias TokenId = String
 
-@Document("token")
+@Document(Token.COLLECTION)
 data class Token(
     @Id
     val mint: String,
@@ -27,6 +27,9 @@ data class Token(
 
     override fun withRevertableEvents(events: List<TokenEvent>): Token =
         copy(revertableEvents = events)
+
+    override fun toString(): String =
+        "Token(mint='$mint', supply=$supply, decimals=$decimals, isDeleted=$isDeleted, createdAt=$createdAt, updatedAt=$updatedAt)"
 
     companion object {
 

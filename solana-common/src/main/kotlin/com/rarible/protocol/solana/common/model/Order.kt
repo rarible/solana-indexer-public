@@ -24,7 +24,7 @@ data class Asset(
     val amount: BigInteger
 )
 
-@Document(COLLECTION)
+@Document(Order.COLLECTION)
 data class Order(
     val auctionHouse: String,
     val maker: String,
