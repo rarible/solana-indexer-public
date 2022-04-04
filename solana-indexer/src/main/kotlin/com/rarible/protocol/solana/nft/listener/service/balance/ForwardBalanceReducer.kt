@@ -6,11 +6,15 @@ import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.model.isEmpty
 import org.springframework.stereotype.Component
 
 @Component
 class ForwardBalanceReducer : Reducer<BalanceEvent, Balance> {
     override suspend fun reduce(entity: Balance, event: BalanceEvent): Balance {
+        if (event !is BalanceInitializeAccountEvent && entity.isEmpty) {
+            return entity
+        }
         return when (event) {
             is BalanceInitializeAccountEvent -> entity.copy(
                 createdAt = event.timestamp,

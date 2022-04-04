@@ -34,8 +34,8 @@ data class Order(
     val makePrice: BigDecimal?,
     val takePrice: BigDecimal?,
     val fill: BigInteger,
-    val createdAt: Instant,
-    val updatedAt: Instant,
+    override val createdAt: Instant,
+    override val updatedAt: Instant,
     val direction: OrderDirection,
     override val revertableEvents: List<OrderEvent>,
     @Id
@@ -48,7 +48,7 @@ data class Order(
         direction = direction,
         auctionHouse = auctionHouse
     ),
-) : Entity<OrderId, OrderEvent, Order> {
+) : SolanaEntity<OrderId, OrderEvent, Order> {
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order = copy(revertableEvents = events)
 

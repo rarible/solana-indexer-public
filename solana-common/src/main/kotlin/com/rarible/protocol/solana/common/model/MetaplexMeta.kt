@@ -15,9 +15,10 @@ data class MetaplexMeta(
     val tokenAddress: String,
     val metaFields: MetaplexMetaFields,
     val isMutable: Boolean,
-    val updatedAt: Instant,
+    override val createdAt: Instant?,
+    override val updatedAt: Instant,
     override val revertableEvents: List<MetaplexMetaEvent>
-) : Entity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
+) : SolanaEntity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
 
     override val id: MetaId get() = metaAddress
 
@@ -31,6 +32,7 @@ data class MetaplexMeta(
             metaAddress = metaAddress,
             tokenAddress = "",
             metaFields = emptyMetaFields,
+            createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
             isMutable = false

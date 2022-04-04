@@ -10,23 +10,22 @@ import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.service.PriceNormalizer
 import org.springframework.stereotype.Component
 import java.math.BigInteger
-import java.time.Instant
 
 @Component
 class ForwardOrderReducer(
     private val priceNormalizer: PriceNormalizer
 ) : Reducer<OrderEvent, Order> {
     override suspend fun reduce(entity: Order, event: OrderEvent): Order {
+        if (event !is OrderSellEvent && event !is OrderBuyEvent && entity.isEmpty) {
+            return entity
+        }
         return when (event) {
             is ExecuteSaleEvent -> {
-                if (entity.createdAt == Instant.EPOCH) {
-                    // Skip reducing virtual part of the order.
-                    return entity
-                }
                 val newFill = entity.fill + event.amount
                 val isFilled = when (event.direction) {
                     OrderDirection.BUY -> newFill == entity.take.amount
@@ -85,13 +84,7 @@ class ForwardOrderReducer(
                 makePrice = null,
                 takePrice = null
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
-            is OrderCancelEvent -> {
-                if (entity.createdAt == Instant.EPOCH) {
-                    // Order did not exist.
-                    return entity
-                }
-                entity.copy(status = OrderStatus.CANCELLED)
-            }
-        }
+            is OrderCancelEvent -> entity.copy(status = OrderStatus.CANCELLED)
+        }.copy(updatedAt = event.timestamp)
     }
 }

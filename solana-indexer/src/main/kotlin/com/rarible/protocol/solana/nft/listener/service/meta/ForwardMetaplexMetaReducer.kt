@@ -10,13 +10,18 @@ import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.model.isEmpty
 import org.springframework.stereotype.Component
 
 @Component
 class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
     override suspend fun reduce(entity: MetaplexMeta, event: MetaplexMetaEvent): MetaplexMeta {
+        if (event !is MetaplexCreateMetadataAccountEvent && entity.isEmpty) {
+            return entity
+        }
         return when (event) {
             is MetaplexCreateMetadataAccountEvent -> entity.copy(
+                createdAt = event.timestamp,
                 tokenAddress = event.token,
                 metaFields = event.metadata,
                 isMutable = event.isMutable

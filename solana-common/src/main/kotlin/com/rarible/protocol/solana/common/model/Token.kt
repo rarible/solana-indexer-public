@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.model
 
-import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.common.event.TokenEvent
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -18,10 +17,10 @@ data class Token(
     // TODO: rename to 'closed'?
     val decimals: Int,
     val isDeleted: Boolean,
-    val createdAt: Instant,
-    val updatedAt: Instant,
+    override val createdAt: Instant,
+    override val updatedAt: Instant,
     override val revertableEvents: List<TokenEvent>
-) : Entity<TokenId, TokenEvent, Token> {
+) : SolanaEntity<TokenId, TokenEvent, Token> {
 
     override val id: TokenId get() = mint
 

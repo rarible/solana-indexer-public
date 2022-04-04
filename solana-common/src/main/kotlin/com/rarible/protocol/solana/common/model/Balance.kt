@@ -16,10 +16,10 @@ data class Balance(
     val owner: String,
     val mint: String,
     val value: BigInteger,
-    val createdAt: Instant,
-    val updatedAt: Instant,
+    override val createdAt: Instant,
+    override val updatedAt: Instant,
     override val revertableEvents: List<BalanceEvent>
-) : Entity<BalanceId, BalanceEvent, Balance> {
+) : SolanaEntity<BalanceId, BalanceEvent, Balance> {
 
     override val id: BalanceId get() = account
 
