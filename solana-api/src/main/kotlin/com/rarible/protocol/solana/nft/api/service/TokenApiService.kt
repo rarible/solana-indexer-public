@@ -7,6 +7,8 @@ import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.util.RoyaltyDistributor
+import com.rarible.protocol.solana.dto.RoyaltyDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -48,6 +50,16 @@ class TokenApiService(
         val token = (tokenRepository.findByMint(tokenAddress)
             ?: throw EntityNotFoundApiException("Token", tokenAddress))
         return tokenMetaService.extendWithAvailableMeta(token)
+    }
+
+    suspend fun getTokenRoyalties(tokenAddress: String): List<RoyaltyDto> {
+        val meta = tokenMetaService.getOnChainMeta(tokenAddress) ?: return emptyList()
+        val creators = meta.metaFields.creators?.associateBy({ it.address }, { it.share }) ?: return emptyList()
+
+        return RoyaltyDistributor.distribute(
+            meta.metaFields.sellerFeeBasisPoints,
+            creators
+        ).map { RoyaltyDto(it.key, it.value) }
     }
 
     suspend fun getTokensWithMetaByCollection(

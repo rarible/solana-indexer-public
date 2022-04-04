@@ -66,8 +66,8 @@ class TokenController(
     }
 
     override suspend fun getTokenRoyaltiesByAddress(tokenAddress: String): ResponseEntity<RoyaltiesDto> {
-        // TODO implement
-        return ResponseEntity.ok(RoyaltiesDto(emptyList()))
+        val royalties = tokenApiService.getTokenRoyalties(tokenAddress)
+        return ResponseEntity.ok(RoyaltiesDto(royalties))
     }
 
     override suspend fun getTokensByAddresses(tokenAddresses: List<String>): ResponseEntity<TokensDto> {
