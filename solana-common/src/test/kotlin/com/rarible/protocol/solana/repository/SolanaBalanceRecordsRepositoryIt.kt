@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.query.Criteria
 
-internal class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
+class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
 
     @Autowired
     private lateinit var balanceRecordsRepository: SolanaBalanceRecordsRepository
@@ -36,18 +36,12 @@ internal class SolanaBalanceRecordsRepositoryIt : AbstractIntegrationTest() {
         records.forEach { balanceRecordsRepository.save(it) }
 
         balanceRecordsRepository.findBy(Criteria(), asc = true, size = 50).toList().let { result ->
-            val expected = records.sortedWith { a, b ->
-                if (a.timestamp == b.timestamp) a.id.compareTo(b.id) else a.timestamp.compareTo(b.timestamp)
-            }
-
+            val expected = records.sortedWith { a, b -> a.id.compareTo(b.id) }
             assertEquals(expected, result)
         }
 
         balanceRecordsRepository.findBy(Criteria(), asc = false, size = 50).toList().let { result ->
-            val expected = records.sortedWith { a, b ->
-                if (a.timestamp == b.timestamp) -a.id.compareTo(b.id) else -a.timestamp.compareTo(b.timestamp)
-            }
-
+            val expected = records.sortedWith { a, b -> a.id.compareTo(b.id) }
             assertEquals(expected, result)
         }
     }

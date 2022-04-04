@@ -3,7 +3,7 @@ package com.rarible.protocol.solana.borsh
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-internal class SplTokenProgramTest {
+class SplTokenProgramTest {
     @Test
     fun testInitializeMint() {
         val data = "11Gz3BHfDcfCv418yvTCZKQKkEKDeiUBXvsyeYf2CL7mMiKECSf3jrp6fucwFz9qpMKxTNRVe4p3R21g8mHhMuU5h2R"

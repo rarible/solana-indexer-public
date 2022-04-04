@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.query.Criteria
 
-internal class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationTest() {
+class SolanaAuctionHouseOrderRecordsRepositoryIt : AbstractIntegrationTest() {
 
     @Autowired
     private lateinit var orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository
