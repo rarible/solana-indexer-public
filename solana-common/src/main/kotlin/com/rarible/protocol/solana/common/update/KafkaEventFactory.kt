@@ -40,7 +40,7 @@ object KafkaEventFactory {
     fun balanceEvent(dto: BalanceEventDto): KafkaMessage<BalanceEventDto> {
         return KafkaMessage(
             id = dto.eventId,
-            key = dto.mint!!, // TODO should be required
+            key = dto.mint,
             value = dto,
             headers = BALANCE_EVENT_HEADERS
         )
