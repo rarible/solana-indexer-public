@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.migration.mongock
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.cloudyrock.mongock.ChangeLog
 import com.github.cloudyrock.mongock.ChangeSet
@@ -11,12 +10,14 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
+
 
 @ChangeLog(order = "00002")
-class ChangeLog00002CreateIndices {
+class ChangeLog00002ReworkBalanceRecords {
 
     @ChangeSet(
-        id = "ChangeLog00002CreateIndices.reworkBalanceRecords",
+        id = "ChangeLog00002ReworkBalanceRecords.remapBalanceAccountAndOwner",
         order = "00002",
         author = "protocol",
         runAlways = false
@@ -24,36 +25,25 @@ class ChangeLog00002CreateIndices {
     fun reworkBalanceRecords(
         mongoOperations: ReactiveMongoOperations
     ) = runBlocking {
-        val mapper = ObjectMapper()
-
         mongoOperations.find(Query(), ObjectNode::class.java, SubscriberGroup.BALANCE.collectionName)
             .asFlow()
             .collect {
                 val clazz = it["_class"].asText()
 
-                when {
-                    "InitializeBalanceAccountRecord" in clazz -> it.replaceTextNode("balanceAccount", "account")
-                    "TransferIncomeRecord" in clazz -> it.replaceTextNode("owner", "account")
-                    "TransferOutcomeRecord" in clazz -> it.replaceTextNode("owner", "account")
+                val update = when {
+                    "InitializeBalanceAccountRecord" in clazz -> Update().rename("balanceAccount", "account")
+                    "TransferIncomeRecord" in clazz -> Update().rename("owner", "account")
+                    "TransferOutcomeRecord" in clazz -> Update().rename("owner", "account")
                     else -> return@collect
                 }
 
                 val criteria = Criteria.where("_id").`is`(it["_id"].textValue())
 
-                mongoOperations.remove(
+                mongoOperations.updateFirst(
                     Query(criteria),
+                    update,
                     SubscriberGroup.BALANCE.collectionName
                 ).awaitFirst()
-
-                mongoOperations.insert(mapper.writeValueAsString(it), SubscriberGroup.BALANCE.collectionName).awaitFirst()
             }
-    }
-
-    private fun ObjectNode.replaceTextNode(src: String, dst: String) {
-        val old = remove(src).textValue()
-
-        check(old.isNotBlank())
-
-        put(dst, old)
     }
 }
