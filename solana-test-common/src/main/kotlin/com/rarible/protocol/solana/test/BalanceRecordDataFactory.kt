@@ -41,14 +41,14 @@ object BalanceRecordDataFactory {
 
     fun randomIncomeRecord(
         from: String = randomString(),
-        owner: String = randomString(),
+        account: String = randomString(),
         mint: String = randomString(),
         incomeAmount: BigInteger = randomBigInt(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
     ) = SolanaBalanceRecord.TransferIncomeRecord(
         from = from,
-        owner = owner,
+        account = account,
         mint = mint,
         incomeAmount = incomeAmount,
         log = log,
@@ -57,14 +57,14 @@ object BalanceRecordDataFactory {
 
     fun randomOutcomeRecord(
         to: String = randomString(),
-        owner: String = randomString(),
+        account: String = randomString(),
         mint: String = randomString(),
         outcomeAmount: BigInteger = randomBigInt(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
     ) = SolanaBalanceRecord.TransferOutcomeRecord(
         to = to,
-        owner = owner,
+        account = account,
         mint = mint,
         outcomeAmount = outcomeAmount,
         log = log,

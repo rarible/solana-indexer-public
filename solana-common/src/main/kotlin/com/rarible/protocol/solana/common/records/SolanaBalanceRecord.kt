@@ -11,14 +11,12 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
     override fun getKey(): String = account
 
     data class InitializeBalanceAccountRecord(
-        val balanceAccount: String,
+        override val account: String,
         val owner: String,
         override val mint: String,
         override val log: SolanaLog,
         override val timestamp: Instant
-    ) : SolanaBalanceRecord() {
-        override val account: String get() = balanceAccount
-    }
+    ) : SolanaBalanceRecord()
 
     data class MintToRecord(
         val mintAmount: BigInteger,
@@ -38,14 +36,12 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
 
     data class TransferIncomeRecord(
         val from: String,
-        val owner: String,
+        override val account: String,
         override val mint: String,
         val incomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {
-        override val account: String
-            get() = owner
 
         /**
          * Append ':income' to distinguish this
@@ -56,14 +52,12 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
 
     data class TransferOutcomeRecord(
         val to: String,
-        val owner: String,
+        override val account: String,
         override val mint: String,
         val outcomeAmount: BigInteger,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaBalanceRecord() {
-        override val account: String
-            get() = owner
 
         /**
          * Append ':outcome' to distinguish this

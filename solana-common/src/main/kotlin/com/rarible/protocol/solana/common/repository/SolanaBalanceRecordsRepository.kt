@@ -40,6 +40,16 @@ class SolanaBalanceRecordsRepository(
         return mongo.find(query, SolanaBalanceRecord::class.java, COLLECTION).asFlow()
     }
 
+    fun findBy(
+        criteria: Criteria,
+        sort: Sort,
+        size: Int? = null
+    ): Flow<SolanaBalanceRecord> {
+        val query = Query(criteria).with(sort)
+        if (size != null) query.limit(size)
+        return mongo.find(query, SolanaBalanceRecord::class.java, COLLECTION).asFlow()
+    }
+
     private fun Sort.direction(asc: Boolean) =
         if (asc) ascending() else descending()
 

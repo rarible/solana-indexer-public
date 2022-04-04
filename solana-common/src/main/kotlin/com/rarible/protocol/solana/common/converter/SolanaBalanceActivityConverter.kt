@@ -68,7 +68,7 @@ class SolanaBalanceActivityConverter(
         id = record.id,
         date = record.timestamp,
         from = record.from,
-        owner = record.owner,
+        owner = record.account,
         tokenAddress = record.mint,
         value = record.incomeAmount,
         blockchainInfo = blockchainInfo(record.log),
@@ -89,7 +89,7 @@ class SolanaBalanceActivityConverter(
     ) = TransferActivityDto(
         id = record.id,
         date = record.timestamp,
-        from = record.owner,
+        from = record.account,
         owner = record.to,
         tokenAddress = record.mint,
         value = record.outcomeAmount,

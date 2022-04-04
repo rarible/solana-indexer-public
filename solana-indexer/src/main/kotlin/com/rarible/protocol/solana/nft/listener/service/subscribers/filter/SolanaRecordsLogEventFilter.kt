@@ -122,16 +122,16 @@ class SolanaRecordsLogEventFilter(
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
                     // Artificial reference for init-record
-                    accounts.addRib(record.balanceAccount, record.balanceAccount)
-                    accountToMintMapping[record.balanceAccount] = record.mint
+                    accounts.addRib(record.account, record.account)
+                    accountToMintMapping[record.account] = record.mint
                 }
                 is SolanaBalanceRecord.TransferOutcomeRecord -> {
-                    accounts.addRib(record.owner, record.to)
-                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.owner] = it }
+                    accounts.addRib(record.account, record.to)
+                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.account] = it }
                 }
                 is SolanaBalanceRecord.TransferIncomeRecord -> {
-                    accounts.addRib(record.from, record.owner)
-                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.owner] = it }
+                    accounts.addRib(record.from, record.account)
+                    record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.account] = it }
                 }
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
@@ -162,14 +162,14 @@ class SolanaRecordsLogEventFilter(
         is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.TransferOutcomeRecord -> keepIfNft(
-            account = record.owner,
+            account = record.account,
             knownMint = record.mint.takeIf { it.isNotEmpty() },
             accountToMints = accountToMintMapping,
             record = record,
             updateMint = { record.copy(mint = it) }
         )
         is SolanaBalanceRecord.TransferIncomeRecord -> keepIfNft(
-            account = record.owner,
+            account = record.account,
             knownMint = record.mint.takeIf { it.isNotEmpty() },
             accountToMints = accountToMintMapping,
             record = record,

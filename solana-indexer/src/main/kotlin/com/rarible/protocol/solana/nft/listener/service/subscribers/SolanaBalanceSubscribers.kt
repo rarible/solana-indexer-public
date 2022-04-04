@@ -13,9 +13,9 @@ import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
-import com.rarible.protocol.solana.common.util.toBigInteger
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.common.util.toBigInteger
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -35,14 +35,14 @@ class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
     ): List<SolanaBalanceRecord.InitializeBalanceAccountRecord> {
         val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
             InitializeAccount -> SolanaBalanceRecord.InitializeBalanceAccountRecord(
-                balanceAccount = log.instruction.accounts[0],
+                account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 owner = log.instruction.accounts[2],
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
             is InitializeAccount2and3 -> SolanaBalanceRecord.InitializeBalanceAccountRecord(
-                balanceAccount = log.instruction.accounts[0],
+                account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 owner = instruction.owner,
                 log = log.log,
@@ -145,7 +145,7 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
                 from = log.instruction.accounts[0],
                 // Will be set in SolanaRecordsLogEventFilter
                 mint = "",
-                owner = log.instruction.accounts[1],
+                account = log.instruction.accounts[1],
                 incomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
@@ -153,7 +153,7 @@ class TransferIncomeSubscriber : SolanaLogEventSubscriber {
             is TransferChecked -> SolanaBalanceRecord.TransferIncomeRecord(
                 from = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
-                owner = log.instruction.accounts[2],
+                account = log.instruction.accounts[2],
                 incomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
@@ -182,7 +182,7 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
         val record = when (val instruction = log.instruction.data.parseTokenInstruction()) {
             is Transfer -> SolanaBalanceRecord.TransferOutcomeRecord(
                 to = log.instruction.accounts[1],
-                owner = log.instruction.accounts[0],
+                account = log.instruction.accounts[0],
                 // Will be set in SolanaRecordsLogEventFilter
                 mint = "",
                 outcomeAmount = instruction.amount.toBigInteger(),
@@ -191,7 +191,7 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
             )
             is TransferChecked -> SolanaBalanceRecord.TransferOutcomeRecord(
                 to = log.instruction.accounts[2],
-                owner = log.instruction.accounts[0],
+                account = log.instruction.accounts[0],
                 mint = log.instruction.accounts[1],
                 outcomeAmount = instruction.amount.toBigInteger(),
                 log = log.log,
