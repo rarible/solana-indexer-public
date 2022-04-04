@@ -37,6 +37,17 @@ class SolanaAuctionHouseOrderRecordsRepository(
         return mongo.find(query, SolanaAuctionHouseOrderRecord::class.java, COLLECTION).asFlow()
     }
 
+    fun findBy(
+        criteria: Criteria,
+        sort: Sort,
+        size: Int? = null
+    ): Flow<SolanaAuctionHouseOrderRecord> {
+        val query = Query(criteria).with(sort)
+        if (size != null) query.limit(size)
+
+        return mongo.find(query, SolanaAuctionHouseOrderRecord::class.java, COLLECTION).asFlow()
+    }
+
     suspend fun createIndexes() {
         logger.info("Ensuring indexes on $COLLECTION")
         ALL_INDEXES.forEach { index ->
@@ -55,8 +66,15 @@ class SolanaAuctionHouseOrderRecordsRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        private val ORDER_REDUCE: Index = Index()
+            .on("auctionHouse", Sort.Direction.ASC)
+            .on("orderId", Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         private val ALL_INDEXES = listOf(
             CLASS_ID,
+            ORDER_REDUCE
         )
     }
 
