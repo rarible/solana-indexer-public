@@ -76,7 +76,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                     SolanaBalanceRecord.InitializeBalanceAccountRecord(
                         mint = token,
                         owner = wallet,
-                        balanceAccount = account,
+                        account = account,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
@@ -171,7 +171,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaBalanceRecord.TransferIncomeRecord(
                         from = account,
-                        owner = aliceAccount,
+                        account = aliceAccount,
                         incomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
@@ -194,7 +194,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaBalanceRecord.TransferOutcomeRecord(
                         to = aliceAccount,
-                        owner = account,
+                        account = account,
                         mint = token,
                         outcomeAmount = BigInteger.ONE,
                         log = ANY_SOLANA_LOG,

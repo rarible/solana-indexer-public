@@ -8,7 +8,7 @@ import com.rarible.protocol.solana.test.randomSolanaLog
 
 fun randomBalanceInitRecord(): SolanaBalanceRecord.InitializeBalanceAccountRecord {
     return SolanaBalanceRecord.InitializeBalanceAccountRecord(
-        balanceAccount = randomString(),
+        account = randomString(),
         owner = randomString(),
         mint = randomString(),
         log = randomSolanaLog(),
@@ -42,7 +42,7 @@ fun randomBalanceIncomeTransfer(): SolanaBalanceRecord.TransferIncomeRecord {
         log = randomSolanaLog(),
         timestamp = nowMillis(),
         from = randomString(),
-        owner = randomString(),
+        account = randomString(),
         incomeAmount = randomBigInt()
     )
 }
@@ -50,7 +50,7 @@ fun randomBalanceIncomeTransfer(): SolanaBalanceRecord.TransferIncomeRecord {
 fun randomBalanceOutcomeTransfer(): SolanaBalanceRecord.TransferOutcomeRecord {
     return SolanaBalanceRecord.TransferOutcomeRecord(
         to = randomString(),
-        owner = randomString(),
+        account = randomString(),
         mint = randomString(),
         outcomeAmount = randomBigInt(),
         log = randomSolanaLog(),
