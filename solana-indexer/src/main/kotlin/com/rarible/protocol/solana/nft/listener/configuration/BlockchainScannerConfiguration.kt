@@ -8,6 +8,7 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
+import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
@@ -20,6 +21,10 @@ import com.rarible.protocol.solana.nft.listener.service.balance.BalanceIdService
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceReducer
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceTemplateProvider
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceUpdateService
+import com.rarible.protocol.solana.nft.listener.service.order.OrderIdService
+import com.rarible.protocol.solana.nft.listener.service.order.OrderReducer
+import com.rarible.protocol.solana.nft.listener.service.order.OrderTemplateProvider
+import com.rarible.protocol.solana.nft.listener.service.order.OrderUpdateService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTokenReader
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
@@ -138,6 +143,19 @@ class BlockchainScannerConfiguration(
         tokenIdService,
         tokenTemplateProvider,
         tokenReducer
+    )
+
+    @Bean
+    fun orderStreamReducer(
+        orderUpdateService: OrderUpdateService,
+        orderIdService: OrderIdService,
+        orderTemplateProvider: OrderTemplateProvider,
+        orderReducer: OrderReducer
+    ) = StreamFullReduceService(
+        orderUpdateService,
+        orderIdService,
+        orderTemplateProvider,
+        orderReducer
     )
 
     private companion object {
