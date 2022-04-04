@@ -1,0 +1,14 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${mongodb.hosts}
+      database: ${mongodb.database}
+
+blockchain:
+  scanner:
+    kafka:
+      broker-replica-set: ${kafka.hosts}
+
+common:
+  metricRootPath: solana-nft-metrics
+  kafka-replica-set: ${kafka.hosts}

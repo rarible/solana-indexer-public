@@ -1,0 +1,26 @@
+common:
+  metricRootPath: test
+  kafka-replica-set: ${kafka.hosts}
+
+solana:
+  protocol:
+    subscriber:
+      broker-replica-set: ${kafka.hosts}
+
+blockchain:
+  scanner:
+    kafka:
+      broker-replica-set: ${kafka.hosts}
+    solana:
+      monitoring:
+        enabled: false
+
+rarible:
+  core:
+    apm:
+      agent:
+        enabled: false
+
+testcontainers:
+  reuse:
+    enable: true

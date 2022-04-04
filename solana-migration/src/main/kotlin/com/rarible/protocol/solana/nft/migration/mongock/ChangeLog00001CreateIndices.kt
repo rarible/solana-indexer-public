@@ -1,4 +1,4 @@
-package com.rarible.protocol.solana.nft.listener.migration
+package com.rarible.protocol.solana.nft.migration.mongock
 
 import com.github.cloudyrock.mongock.ChangeLog
 import com.github.cloudyrock.mongock.ChangeSet

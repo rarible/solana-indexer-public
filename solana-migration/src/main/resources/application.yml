@@ -1,0 +1,28 @@
+application:
+  project: protocol
+
+server:
+  shutdown: graceful
+  port: 8080
+
+spring:
+  application:
+    name: protocol-solana-nft-migration
+
+rarible:
+  core:
+    apm:
+      agent:
+        enabled: false
+
+blockchain:
+  scanner:
+    solana:
+      scan:
+        enabled: false
+      monitoring:
+        enabled: false
+
+mongock:
+  change-logs-scan-package:
+    - com.rarible.protocol.solana.nft.migration.mongock

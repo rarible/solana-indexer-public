@@ -10,3 +10,7 @@ dependencies:
   alias: solana-api
   repository: file://../resources/helm/rarible
   version: 0.1.0
+- name: rarible-helm-chart
+  alias: solana-migration
+  repository: file://../resources/helm/rarible
+  version: 0.1.0

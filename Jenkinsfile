@@ -3,6 +3,7 @@
 def pipelineConfig = [
     "stackName": "protocol-solana",
     "services": [
+        [name: 'solana-migration', path: './solana-migration'],
         [name: 'solana-indexer', path: './solana-indexer'],
         [name: 'solana-api', path: './solana-api']
     ],
