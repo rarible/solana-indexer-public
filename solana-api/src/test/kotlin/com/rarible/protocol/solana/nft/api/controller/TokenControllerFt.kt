@@ -7,8 +7,10 @@ import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMetaParser
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
+import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.dto.RoyaltyDto
 import com.rarible.protocol.solana.dto.TokensDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
@@ -69,6 +71,34 @@ class TokenControllerFt : AbstractControllerTest() {
         val expected3 = TokensDto()
         val page3 = getAllTokens(page2.continuation, 1)
         assertThat(page3).isEqualTo(expected3)
+    }
+
+    @Test
+    fun `get token royalties`() = runBlocking<Unit> {
+        val token = tokenRepository.save(createRandomToken())
+        saveRandomMetaplexOnChainAndOffChainMeta(
+            tokenAddress = token.mint,
+            metaplexMetaCustomizer = {
+                this.copy(
+                    metaFields = this.metaFields.copy(
+                        sellerFeeBasisPoints = 1000,
+                        creators = listOf(
+                            MetaplexTokenCreator("a", 40),
+                            MetaplexTokenCreator("b", 60)
+                        )
+                    )
+                )
+            }
+        )
+
+        val result = tokenControllerApi.getTokenRoyaltiesByAddress(token.mint).awaitFirst().royalties
+
+        val expected = listOf(
+            RoyaltyDto("a", 400),
+            RoyaltyDto("b", 600)
+        )
+
+        assertThat(result).isEqualTo(expected)
     }
 
     @Test
