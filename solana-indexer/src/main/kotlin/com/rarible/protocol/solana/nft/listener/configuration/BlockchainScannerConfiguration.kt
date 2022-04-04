@@ -8,7 +8,6 @@ import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
-import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
@@ -25,7 +24,12 @@ import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTo
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaWhiteListTokenFilter
+import com.rarible.protocol.solana.nft.listener.service.token.TokenIdService
+import com.rarible.protocol.solana.nft.listener.service.token.TokenReducer
+import com.rarible.protocol.solana.nft.listener.service.token.TokenTemplateProvider
+import com.rarible.protocol.solana.nft.listener.service.token.TokenUpdateService
 import com.rarible.protocol.solana.nft.listener.task.BalanceStreamFullReduceService
+import com.rarible.protocol.solana.nft.listener.task.TokenStreamFullReduceService
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
@@ -116,15 +120,25 @@ class BlockchainScannerConfiguration(
         balanceIdService: BalanceIdService,
         balanceTemplateProvider: BalanceTemplateProvider,
         balanceReducer: BalanceReducer
-    ) : BalanceStreamFullReduceService {
+    ) = BalanceStreamFullReduceService(
+        balanceUpdateService,
+        balanceIdService,
+        balanceTemplateProvider,
+        balanceReducer
+    )
 
-        return StreamFullReduceService(
-            balanceUpdateService,
-            balanceIdService,
-            balanceTemplateProvider,
-            balanceReducer
-        )
-    }
+    @Bean
+    fun tokenStreamReducer(
+        tokenUpdateService: TokenUpdateService,
+        tokenIdService: TokenIdService,
+        tokenTemplateProvider: TokenTemplateProvider,
+        tokenReducer: TokenReducer
+    ) = TokenStreamFullReduceService(
+        tokenUpdateService,
+        tokenIdService,
+        tokenTemplateProvider,
+        tokenReducer
+    )
 
     private companion object {
         val logger: Logger = LoggerFactory.getLogger(BlockchainScannerConfiguration::class.java)
