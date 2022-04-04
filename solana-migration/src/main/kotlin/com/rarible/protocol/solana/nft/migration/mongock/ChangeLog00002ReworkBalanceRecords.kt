@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.cloudyrock.mongock.ChangeLog
 import com.github.cloudyrock.mongock.ChangeSet
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import io.changock.migration.api.annotations.NonLockGuarded
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -23,12 +25,14 @@ class ChangeLog00002ReworkBalanceRecords {
         runAlways = false
     )
     fun reworkBalanceRecords(
-        mongoOperations: ReactiveMongoOperations
+        @NonLockGuarded mongoOperations: ReactiveMongoOperations
     ) = runBlocking {
         mongoOperations.find(Query(), ObjectNode::class.java, SubscriberGroup.BALANCE.collectionName)
             .asFlow()
+            .withIndex()
             .collect {
-                val clazz = it["_class"].asText()
+                if (it.index % 10000 == 0) println("${it.index * 10000} balance entities processed")
+                val clazz = it.value["_class"].asText()
 
                 val update = when {
                     "InitializeBalanceAccountRecord" in clazz -> Update().rename("balanceAccount", "account")
@@ -37,7 +41,7 @@ class ChangeLog00002ReworkBalanceRecords {
                     else -> return@collect
                 }
 
-                val criteria = Criteria.where("_id").`is`(it["_id"].textValue())
+                val criteria = Criteria.where("_id").`is`(it.value["_id"].textValue())
 
                 mongoOperations.updateFirst(
                     Query(criteria),

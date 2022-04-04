@@ -58,6 +58,8 @@ solana-migration:
   nodeSelector:
     node.labels.rarible.job: true
   endpointMode: dnsrr
+  restartPolicy:
+    condition: on-failure
   resources:
     jvm:
       xmx_megabytes: 512
