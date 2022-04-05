@@ -1,5 +1,7 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.core.apm.CaptureSpan
+import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.model.ActivityRecord
 import com.rarible.protocol.solana.common.model.asRecord
@@ -17,6 +19,7 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Repository
 
 @Repository
+@CaptureSpan(type = SpanType.DB)
 class ActivityRepository(
     private val mongo: ReactiveMongoOperations,
 ) {

@@ -75,24 +75,18 @@ internal class ActivityRepositoryIt : AbstractIntegrationTest() {
 
         val c1asc = activityRepository.findAllActivities(data.keys, null, 3, true)
             .toList().let { result ->
-                println(result.joinToString { "${it.date} ${it.id}" })
-                println()
                 assertEquals(3, result.size)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         val c2asc = activityRepository.findAllActivities(data.keys, c1asc, 3, true)
             .toList().let { result ->
-                println(result.joinToString { "${it.date} ${it.id}" })
-                println()
                 assertEquals(3, result.size)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         activityRepository.findAllActivities(data.keys, c2asc, 3, true)
             .toList().let { result ->
-                println(result.joinToString { "${it.date} ${it.id}" })
-                println()
                 assertEquals(2, result.size)
             }
     }
@@ -105,42 +99,42 @@ internal class ActivityRepositoryIt : AbstractIntegrationTest() {
 
         data.forEach { (type, expected) ->
             val result = activityRepository.findActivitiesByItem(listOf(type), mint, null, 50, false).toList()
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             assertThat(result.single()).isInstanceOf(expected::class.java)
         }
 
         val c1desc = activityRepository.findActivitiesByItem(data.keys, mint, null, 3, false)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         val c2desc = activityRepository.findActivitiesByItem(data.keys, mint, c1desc, 3, false)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         activityRepository.findActivitiesByItem(data.keys, mint, c2desc, 3, false)
             .toList().let { result ->
-                assertEquals(2, result.size)
+                assertThat(result).hasSize(2)
             }
 
         val c1asc = activityRepository.findActivitiesByItem(data.keys, mint, null, 3, true)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         val c2asc = activityRepository.findActivitiesByItem(data.keys, mint, c1asc, 3, true)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
         activityRepository.findActivitiesByItem(data.keys, mint, c2asc, 3, true)
             .toList().let { result ->
-                assertEquals(2, result.size)
+                assertThat(result).hasSize(2)
             }
 
     }

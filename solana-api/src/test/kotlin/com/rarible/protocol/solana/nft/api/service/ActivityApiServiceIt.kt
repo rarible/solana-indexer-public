@@ -20,7 +20,6 @@ import com.rarible.protocol.solana.test.randomSell
 import com.rarible.protocol.solana.test.randomTransfer
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
@@ -51,14 +50,14 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         ActivityFilterAllTypeDto.values().forEach { type ->
             val filter = ActivityFilterAllDto(listOf(type))
             val result = activityApiService.getAllActivities(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             assertThat(result.single()).isInstanceOf(activityClassByType(type))
         }
 
         ActivityFilterByItemTypeDto.values().forEach { type ->
             val filter = ActivityFilterByItemDto(itemId, listOf(type))
             val result = activityApiService.getActivitiesByItem(filter, null, 50, true)
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             assertThat(result.single()).isInstanceOf(activityClassByType(type))
         }
 

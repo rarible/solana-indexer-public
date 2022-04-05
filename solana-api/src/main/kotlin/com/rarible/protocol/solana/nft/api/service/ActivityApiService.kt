@@ -10,7 +10,6 @@ import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
@@ -30,7 +29,7 @@ class ActivityApiService(
         if (types.isEmpty()) return emptyList()
 
         return activityRepository.findAllActivities(types, continuation, size, sortAscending)
-            .map { it.activity }.take(size).toList()
+            .take(size).toList()
     }
 
     suspend fun getActivitiesByItem(
@@ -43,7 +42,7 @@ class ActivityApiService(
         if (types.isEmpty()) return emptyList()
 
         return activityRepository.findActivitiesByItem(types, filter.itemId, continuation, size, sortAscending)
-            .map { it.activity }.take(size).toList()
+            .take(size).toList()
     }
 
     suspend fun getActivitiesByCollection(
@@ -61,13 +60,6 @@ class ActivityApiService(
     ) = emptyList<ActivityDto>() // TODO: not implemented yet.
 
 
-    private fun convert(type: ActivityFilterAllTypeDto): ActivityTypeDto =
-        ActivityTypeDto.valueOf(type.name)
-
-    private fun convert(type: ActivityFilterByItemTypeDto): ActivityTypeDto =
-        ActivityTypeDto.valueOf(type.name)
-
-/*
     private fun convert(type: ActivityFilterAllTypeDto): ActivityTypeDto {
         return when (type) {
             ActivityFilterAllTypeDto.TRANSFER -> ActivityTypeDto.TRANSFER
@@ -93,5 +85,4 @@ class ActivityApiService(
             ActivityFilterByItemTypeDto.CANCEL_LIST -> ActivityTypeDto.CANCEL_LIST
         }
     }
-*/
 }
