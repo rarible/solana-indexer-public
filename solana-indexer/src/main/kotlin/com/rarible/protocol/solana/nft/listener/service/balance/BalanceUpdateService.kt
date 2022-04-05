@@ -52,9 +52,9 @@ class BalanceUpdateService(
 
     private suspend fun updateOrders(balance: Balance) {
         val orders = orderRepository.findSellOrdersByMintAndMaker(
-            balance.mint,
-            balance.owner,
-            listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE)
+            tokenAddress = balance.mint,
+            maker = balance.owner,
+            statuses = listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE)
         ).toList()
         if (orders.isEmpty()) {
             return // Just to avoid unnecessary logging

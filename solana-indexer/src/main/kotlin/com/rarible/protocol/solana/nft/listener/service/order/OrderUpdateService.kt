@@ -4,6 +4,7 @@ import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.model.OrderStatus
+import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.OrderRepository
@@ -24,9 +25,8 @@ class OrderUpdateService(
         orderRepository.findById(id)
 
     override suspend fun update(entity: Order): Order {
-        if (entity.createdAt == Instant.EPOCH) {
-            // createdAt set only if we got initial order event with all fields,
-            // if this field wasn't set, it means order doesn't contain major fields
+        if (entity.isEmpty) {
+            logger.info("Order in empty state: ${entity.id}")
             return entity
         }
 
