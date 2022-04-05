@@ -33,6 +33,10 @@ class ChangeLog00002ReworkBalanceRecords {
             ObjectNode::class.java,
             SubscriberGroup.BALANCE.collectionName
         ).asFlow().withIndex().collect {
+            if (it.value == null) {
+                println("Got null entry")
+                return@collect
+            }
             if (it.index % 10000 == 0) println("${it.index} balance entities processed")
             val clazz: String? = it.value["_class"].textValue()
             require(!clazz.isNullOrBlank()) { "_class can't be empty, entity: ${it.value}" }
