@@ -20,6 +20,8 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -42,6 +44,9 @@ internal class ActivityRepositoryIt : AbstractIntegrationTest() {
             assertEquals(expected.id, found?.id)
             assertEquals(expected.date, found?.date)
             assertEquals(expected.reverted, found?.reverted)
+
+            assertTrue(activityRepository.removeById(dto.id))
+            assertNull(activityRepository.findById(dto.id))
         }
     }
 

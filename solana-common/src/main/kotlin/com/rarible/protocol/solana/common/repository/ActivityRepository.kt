@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
@@ -25,11 +26,15 @@ class ActivityRepository(
 ) {
 
     suspend fun save(activity: ActivityDto): ActivityRecord =
-        mongo.save(activity.asRecord()!!, COLLECTION).awaitFirst()
+        mongo.save(activity.asRecord(), COLLECTION).awaitFirst()
 
-    suspend fun findById(id: String): ActivityDto? {
-        return mongo.findById(id, ActivityRecord::class.java, COLLECTION).awaitFirstOrNull()?.toDto()
+    suspend fun removeById(id: String): Boolean {
+        val record = mongo.findById(id, ActivityRecord::class.java, COLLECTION)
+        return mongo.remove(record, COLLECTION).awaitSingle().deletedCount == 1L
     }
+
+    suspend fun findById(id: String): ActivityDto? =
+        mongo.findById(id, ActivityRecord::class.java, COLLECTION).awaitFirstOrNull()?.toDto()
 
     fun findAllActivities(
         types: Collection<ActivityTypeDto>,
