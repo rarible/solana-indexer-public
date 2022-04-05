@@ -462,10 +462,10 @@ abstract class AbstractBlockScannerTest {
 
     companion object {
         val solana: GenericContainer<*> = KGenericContainer(
-            if (System.getProperty("os.arch") == "x86_64") {
-                "rarible/solana:1.8.16-dev-0404"
-            } else {
+            if (System.getProperty("os.arch") == "aarch64") {
                 "rarible/solana"
+            } else {
+                "rarible/solana:1.8.16-dev-0404"
             }
         )
             .withExposedPorts(8899)
