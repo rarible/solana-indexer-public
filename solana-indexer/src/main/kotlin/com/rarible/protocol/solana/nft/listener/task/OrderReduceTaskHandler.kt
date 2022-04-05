@@ -30,7 +30,8 @@ class OrderReduceTaskHandler(
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override fun runLongTask(from: String?, param: String) : Flow<String> {
-        BalanceReduceTaskHandler.logger.info("Starting $type with from: $from, param: $param")
+        logger.info("Starting $type with from: $from, param: $param")
+
         require(param.isNotBlank()) { "Auction house must be specified" }
         val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(param)
         val orderFlow = orderRecordsRepository.findBy(
