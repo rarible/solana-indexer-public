@@ -34,7 +34,8 @@ class ChangeLog00002ReworkBalanceRecords {
             SubscriberGroup.BALANCE.collectionName
         ).asFlow().withIndex().collect {
             if (it.index % 10000 == 0) println("${it.index} balance entities processed")
-            val clazz = it.value["_class"].asText()
+            val clazz: String? = it.value["_class"].textValue()
+            require(!clazz.isNullOrBlank()) { "_class can't be empty, entity: ${it.value}" }
 
             val update = when {
                 "InitializeBalanceAccountRecord" in clazz -> Update().rename("balanceAccount", "account")
@@ -43,7 +44,9 @@ class ChangeLog00002ReworkBalanceRecords {
                 else -> return@collect
             }
 
-            val criteria = Criteria.where("_id").`is`(it.value["_id"].textValue())
+            val id = it.value["_id"].textValue()
+            require(!id.isNullOrBlank()) { "_id can't be empty, entity: ${it.value}" }
+            val criteria = Criteria.where("_id").`is`(id)
 
             mongoOperations.updateFirst(
                 Query(criteria),

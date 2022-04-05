@@ -30,6 +30,8 @@ class TokenReduceTaskHandler(
 
     @Suppress("EXPERIMENTAL_API_USAGE")
     override fun runLongTask(from: String?, param: String) = flow {
+        logger.info("Starting $type with from: $from, param: $param")
+
         val criteria = if (param.isNotBlank()) {
             Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
         } else {
