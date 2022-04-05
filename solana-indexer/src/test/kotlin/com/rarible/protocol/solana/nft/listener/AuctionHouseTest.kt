@@ -13,7 +13,6 @@ import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -39,9 +38,6 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
-
-    @Autowired
-    private lateinit var orderRepository: OrderRepository
 
     @Test
     fun createAuctionHouseTest() = runBlocking {

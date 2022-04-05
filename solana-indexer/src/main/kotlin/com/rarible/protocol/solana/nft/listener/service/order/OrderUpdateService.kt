@@ -39,8 +39,8 @@ class OrderUpdateService(
             return entity
         }
 
-        val order = orderRepository.save(entity)
-        logger.info("Updated order: $entity")
+        val order = orderRepository.save(updated)
+        logger.info("Updated order: $order")
 
         orderUpdateListener.onOrderChanged(order)
         return order
@@ -73,7 +73,7 @@ class OrderUpdateService(
         if (exist == null) return true
 
         // If nothing changed except updateAt, there is no sense to publish events
-        return exist == updated.copy(updatedAt = exist.updatedAt)
+        return exist != updated.copy(updatedAt = exist.updatedAt)
     }
 
     companion object {
