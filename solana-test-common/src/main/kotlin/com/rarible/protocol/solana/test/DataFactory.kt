@@ -52,6 +52,7 @@ fun createRandomMetaplexMeta(
     metaFields = createRandomMetaplexMetaFields(),
     isMutable = randomBoolean(),
     revertableEvents = emptyList(),
+    createdAt = nowMillis(),
     updatedAt = nowMillis(),
     createdAt = nowMillis()
 )
