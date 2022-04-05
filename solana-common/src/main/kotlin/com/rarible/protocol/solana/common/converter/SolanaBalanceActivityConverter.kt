@@ -30,11 +30,7 @@ class SolanaBalanceActivityConverter(
         record: SolanaBalanceRecord.MintToRecord,
         reverted: Boolean
     ): ActivityDto? {
-        val owner = balanceRepository.findByAccount(record.account)?.owner
-        if (owner == null) {
-            logger.warn("Unable to find balance: {}", record.account)
-            return null
-        }
+        val owner = findOwner(record.account) ?: return null
         return MintActivityDto(
             id = record.id,
             date = record.timestamp,
@@ -50,15 +46,11 @@ class SolanaBalanceActivityConverter(
         record: SolanaBalanceRecord.BurnRecord,
         reverted: Boolean
     ): ActivityDto? {
-        val owner = balanceRepository.findByAccount(record.account)?.owner
-        if (owner == null) {
-            logger.warn("Unable to find balance: {}", record.account)
-            return null
-        }
+        val owner = findOwner(record.account) ?: return null
         return BurnActivityDto(
             id = record.id,
             date = record.timestamp,
-            owner = record.account,
+            owner = owner,
             tokenAddress = record.mint,
             value = record.burnAmount,
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
@@ -66,42 +58,60 @@ class SolanaBalanceActivityConverter(
         )
     }
 
-    private fun makeTransferIn(
+    private suspend fun makeTransferIn(
         record: SolanaBalanceRecord.TransferIncomeRecord,
         reverted: Boolean
-    ) = TransferActivityDto(
-        id = record.id,
-        date = record.timestamp,
-        from = record.from,
-        owner = record.account,
-        tokenAddress = record.mint,
-        value = record.incomeAmount,
-        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-        reverted = reverted,
-        purchase = false // TODO should be evaluated
-        // Purchase = true/false should be evaluated in next way (at least, it is done in such way at ETH):
-        // If item transferred to owner from contract, it means item has been purchased, if "to" is not a
-        // contract but regular balance, this transfer is not a purchase.
+    ): TransferActivityDto? {
+        @Suppress("DuplicatedCode")
+        val fromOwner = findOwner(record.from) ?: return null
+        val toOwner = findOwner(record.account) ?: return null
+        return TransferActivityDto(
+            id = record.id,
+            date = record.timestamp,
+            from = fromOwner,
+            owner = toOwner,
+            tokenAddress = record.mint,
+            value = record.incomeAmount,
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
+            reverted = reverted,
+            purchase = false // TODO should be evaluated
+            // Purchase = true/false should be evaluated in next way (at least, it is done in such way at ETH):
+            // If item transferred to owner from contract, it means item has been purchased, if "to" is not a
+            // contract but regular balance, this transfer is not a purchase.
 
-        // To determine is transfer related to a contract we did next things at ETH:
-        // 1. We started to write field "to" (from - prev owner, owner - end owner, to - exchange contract)
-        // 2. We introduced configuration field "exchage contract addresses" contains most popular exchange contracts
-        // 3. If 'to' contains value from this contract set - it means this transfer is 'purchase'
-    )
+            // To determine is transfer related to a contract we did next things at ETH:
+            // 1. We started to write field "to" (from - prev owner, owner - end owner, to - exchange contract)
+            // 2. We introduced configuration field "exchage contract addresses" contains most popular exchange contracts
+            // 3. If 'to' contains value from this contract set - it means this transfer is 'purchase'
+        )
+    }
 
-    private fun makeTransferOut(
+    private suspend fun makeTransferOut(
         record: SolanaBalanceRecord.TransferOutcomeRecord,
         reverted: Boolean
-    ) = TransferActivityDto(
-        id = record.id,
-        date = record.timestamp,
-        from = record.account,
-        owner = record.to,
-        tokenAddress = record.mint,
-        value = record.outcomeAmount,
-        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-        reverted = reverted,
-        purchase = false // TODO should be evaluated
-    )
+    ): TransferActivityDto? {
+        val toOwner = findOwner(record.to) ?: return null
+        val fromOwner = findOwner(record.account) ?: return null
+        return TransferActivityDto(
+            id = record.id,
+            date = record.timestamp,
+            from = fromOwner,
+            owner = toOwner,
+            tokenAddress = record.mint,
+            value = record.outcomeAmount,
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
+            reverted = reverted,
+            purchase = false // TODO should be evaluated
+        )
+    }
+
+    private suspend fun findOwner(account: String): String? {
+        val owner = balanceRepository.findByAccount(account)?.owner
+        if (owner == null) {
+            logger.warn("Unable to find balance by account: {}", account)
+            return null
+        }
+        return owner
+    }
 
 }
