@@ -51,20 +51,19 @@ class ActivityRepository(
             .map { it.toDto() }.asFlow()
     }
 
-    fun findActivitiesByItem(
+    fun findActivitiesByMint(
         types: Collection<ActivityTypeDto>,
-        itemId: String,
+        mint: String,
         continuation: DateIdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ): Flow<ActivityDto> {
         val criteria = Criteria(ActivityRecord::type.name).`in`(types)
-            .and(ActivityRecord::mint.name).isEqualTo(itemId)
+            .and(ActivityRecord::mint.name).isEqualTo(mint)
             .addContinuation(continuation, sortAscending)
         val query = Query(criteria)
             .with(Sort.by(ActivityRecord::date.name, "_id").direction(sortAscending))
             .limit(size)
-        println(types)
         return mongo.find(query, ActivityRecord::class.java, COLLECTION).map { it.toDto() }.asFlow()
     }
 

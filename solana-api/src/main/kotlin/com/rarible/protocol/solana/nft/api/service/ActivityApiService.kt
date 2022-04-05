@@ -41,7 +41,7 @@ class ActivityApiService(
         val types = filter.types.map { convert(it) }
         if (types.isEmpty()) return emptyList()
 
-        return activityRepository.findActivitiesByItem(types, filter.itemId, continuation, size, sortAscending)
+        return activityRepository.findActivitiesByMint(types, filter.itemId, continuation, size, sortAscending)
             .take(size).toList()
     }
 

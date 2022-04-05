@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class ActivityRepositoryIt : AbstractIntegrationTest() {
+class ActivityRepositoryIt : AbstractIntegrationTest() {
 
     @Autowired
     lateinit var activityRepository: ActivityRepository
@@ -103,41 +103,41 @@ internal class ActivityRepositoryIt : AbstractIntegrationTest() {
         data.values.forEach { activityRepository.save(it) }
 
         data.forEach { (type, expected) ->
-            val result = activityRepository.findActivitiesByItem(listOf(type), mint, null, 50, false).toList()
+            val result = activityRepository.findActivitiesByMint(listOf(type), mint, null, 50, false).toList()
             assertThat(result).hasSize(1)
             assertThat(result.single()).isInstanceOf(expected::class.java)
         }
 
-        val c1desc = activityRepository.findActivitiesByItem(data.keys, mint, null, 3, false)
+        val c1desc = activityRepository.findActivitiesByMint(data.keys, mint, null, 3, false)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
-        val c2desc = activityRepository.findActivitiesByItem(data.keys, mint, c1desc, 3, false)
+        val c2desc = activityRepository.findActivitiesByMint(data.keys, mint, c1desc, 3, false)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
-        activityRepository.findActivitiesByItem(data.keys, mint, c2desc, 3, false)
+        activityRepository.findActivitiesByMint(data.keys, mint, c2desc, 3, false)
             .toList().let { result ->
                 assertThat(result).hasSize(2)
             }
 
-        val c1asc = activityRepository.findActivitiesByItem(data.keys, mint, null, 3, true)
+        val c1asc = activityRepository.findActivitiesByMint(data.keys, mint, null, 3, true)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
-        val c2asc = activityRepository.findActivitiesByItem(data.keys, mint, c1asc, 3, true)
+        val c2asc = activityRepository.findActivitiesByMint(data.keys, mint, c1asc, 3, true)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
                 DateIdContinuation(last.date, last.id)
             }
-        activityRepository.findActivitiesByItem(data.keys, mint, c2asc, 3, true)
+        activityRepository.findActivitiesByMint(data.keys, mint, c2asc, 3, true)
             .toList().let { result ->
                 assertThat(result).hasSize(2)
             }
