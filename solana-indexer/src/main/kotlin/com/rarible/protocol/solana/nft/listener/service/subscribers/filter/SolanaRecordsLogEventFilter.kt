@@ -14,7 +14,6 @@ import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.util.AccountGraph
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
@@ -26,33 +25,31 @@ import org.springframework.stereotype.Component
 @Component
 class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
-    private val tokenFilter: SolanaTokenFilter
+    private val tokenFilter: SolanaTokenFilter,
 ) : SolanaLogEventFilter {
 
-    private val logger = LoggerFactory.getLogger(javaClass)
-
     override suspend fun filter(
-        events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
+        events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
         if (events.isEmpty()) {
             return emptyList()
         }
 
-        val accountGroups = getAccountToMintMapping(events)
+        val knownInMemoryAccountMappings = getKnownInMemoryAccountToMintMapping(events)
 
         // Retrieving mapping for ALL found non-currency accounts to know what we really need to update in DB
         // TODO here we can query only accounts without known mint if we sure all mapping from init records already in DB
         // TODO If we are not starting to index from the 1st block, we MUST query mints for all accounts here
-        val withoutCurrency = filterCurrencyBalances(accountGroups)
-        val existMapping = accountToMintAssociationService.getMintsByAccounts(withoutCurrency)
+        val nonCurrencyAccounts = filterCurrencyBalances(knownInMemoryAccountMappings)
+        val existMapping = accountToMintAssociationService.getMintsByAccounts(nonCurrencyAccounts)
 
         // Set mint for groups - since reference of AccountGroup is the same for all mapped accounts,
         // it will be automatically referenced for each account of the group
-        existMapping.forEach { accountGroups[it.key]!!.mint = it.value }
+        existMapping.forEach { knownInMemoryAccountMappings[it.key]!!.mint = it.value }
 
         // Now we have full mapping account->mint from events and DB
         val accountToMintMapping = HashMap<String, String>()
-        accountGroups.forEach { group ->
+        knownInMemoryAccountMappings.forEach { group ->
             val account = group.key
             group.value.mint?.let { accountToMintMapping[account] = it }
         }
@@ -80,45 +77,31 @@ class SolanaRecordsLogEventFilter(
 
     private fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
-        accountToMints: Map<String, String>
-    ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> {
-
-        var total = 0
-        var filtered = 0
-
-        val result = events.map { event ->
+        accountToMints: Map<String, String>,
+    ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> =
+        events.map { event ->
             if (event.logRecordsToInsert.isEmpty()) {
                 return@map event
             }
             val filteredRecords = event.logRecordsToInsert.mapNotNull {
                 if (it is SolanaBaseLogRecord) {
-                    // Keep only NFT logs
                     keepIfNft(it, accountToMints)
                 } else {
                     // Keep non-target logs
                     it
                 }
             }
-
-            total += event.logRecordsToInsert.size
-            filtered += filteredRecords.size
-
             event.copy(logRecordsToInsert = filteredRecords)
         }
 
-        logger.info("Solana batch event filtered: {} of {} records to insert remain", filtered, total)
-
-        return result
-    }
-
-    private fun getAccountToMintMapping(
-        events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>
+    private fun getKnownInMemoryAccountToMintMapping(
+        events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
     ): Map<String, AccountGraph.AccountGroup> {
         val accountToMintMapping = HashMap<String, String>()
         val accounts = AccountGraph()
 
-        events.asSequence().flatMap { it.logRecordsToInsert }.forEach { record ->
-            when (record) {
+        events.asSequence().flatMap { it.logRecordsToInsert }.map { r ->
+            when (val record = r as? SolanaBaseLogRecord) {
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
                     // Artificial reference for init-record
@@ -133,6 +116,8 @@ class SolanaRecordsLogEventFilter(
                     accounts.addRib(record.from, record.account)
                     record.mint.takeIf { it.isNotEmpty() }?.let { accountToMintMapping[record.account] = it }
                 }
+                is SolanaBalanceRecord.BurnRecord -> Unit
+                is SolanaBalanceRecord.MintToRecord -> Unit
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
@@ -144,7 +129,12 @@ class SolanaRecordsLogEventFilter(
                     }
                     is SolanaAuctionHouseOrderRecord.CancelRecord -> Unit
                     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
+                    is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> Unit
                 }
+                is SolanaAuctionHouseRecord -> Unit
+                is SolanaMetaRecord -> Unit
+                is SolanaTokenRecord -> Unit
+                null -> Unit
             }
         }
 
@@ -160,22 +150,18 @@ class SolanaRecordsLogEventFilter(
 
     private fun keepIfNft(
         record: SolanaBaseLogRecord,
-        accountToMintMapping: Map<String, String>
+        accountToMintMapping: Map<String, String>,
     ): SolanaBaseLogRecord? = when (record) {
         is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
-        is SolanaBalanceRecord.TransferOutcomeRecord -> keepIfNft(
-            account = record.account,
-            knownMint = record.mint.takeIf { it.isNotEmpty() },
-            accountToMints = accountToMintMapping,
+        is SolanaBalanceRecord.TransferOutcomeRecord -> keepBalanceRecordIfNft(
             record = record,
+            accountToMints = accountToMintMapping,
             updateMint = { record.copy(mint = it) }
         )
-        is SolanaBalanceRecord.TransferIncomeRecord -> keepIfNft(
-            account = record.account,
-            knownMint = record.mint.takeIf { it.isNotEmpty() },
-            accountToMints = accountToMintMapping,
+        is SolanaBalanceRecord.TransferIncomeRecord -> keepBalanceRecordIfNft(
             record = record,
+            accountToMints = accountToMintMapping,
             updateMint = { record.copy(mint = it) }
         )
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
@@ -206,14 +192,13 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun <T> keepIfNft(
-        account: String,
-        knownMint: String?,
+    private fun keepBalanceRecordIfNft(
+        record: SolanaBalanceRecord,
         accountToMints: Map<String, String>,
-        record: T,
-        updateMint: (String) -> T
-    ): T? {
-        val mint = knownMint ?: accountToMints[account]
+        updateMint: (String) -> SolanaBalanceRecord,
+    ): SolanaBalanceRecord? {
+        val knownMint = record.mint.takeIf { it.isNotEmpty() }
+        val mint = knownMint ?: accountToMints[record.account]
         // Skip records with unknown mint. We must have seen the account<->mint association before.
         ?: return null
 
