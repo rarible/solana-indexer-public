@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
+import com.rarible.protocol.solana.common.event.FakeBalanceUpdateEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
@@ -69,6 +70,14 @@ class OrderEventConverter {
                 timestamp = record.timestamp,
                 auctionHouse = record.auctionHouse,
                 reversed = reversed
+            )
+        )
+        is SolanaAuctionHouseOrderRecord.FakeBalanceUpdateRecord -> listOf(
+            FakeBalanceUpdateEvent(
+                auctionHouse = record.auctionHouse,
+                timestamp = record.timestamp,
+                reversed = false,
+                log = record.log
             )
         )
     }

@@ -59,3 +59,10 @@ data class ExecuteSaleEvent(
     override val reversed: Boolean,
     override val log: SolanaLog
 ) : OrderEvent()
+
+data class FakeBalanceUpdateEvent(
+    override val auctionHouse: String,
+    override val timestamp: Instant,
+    override val reversed: Boolean,
+    override val log: SolanaLog
+) : OrderEvent()

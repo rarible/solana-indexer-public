@@ -70,6 +70,16 @@ class OrderRepository(
         ).asFlow()
     }
 
+    // TODO: and owner?
+    fun findBySellingNft(tokenAddress: String): Flow<Order> {
+        val criteria = Criteria().andOperator(
+            Order::direction isEqualTo OrderDirection.SELL,
+            Order::take / Asset::type / AssetType::tokenAddress isEqualTo tokenAddress
+        )
+        val query = Query(criteria)
+        return mongo.query<Order>().matching(query).all().asFlow()
+    }
+
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(OrderRepository::class.java)
         logger.info("Ensuring indexes on ${Order.COLLECTION}")

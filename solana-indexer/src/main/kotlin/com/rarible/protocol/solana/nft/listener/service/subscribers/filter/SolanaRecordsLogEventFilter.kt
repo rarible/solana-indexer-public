@@ -194,6 +194,7 @@ class SolanaRecordsLogEventFilter(
             }
         }
         is SolanaAuctionHouseOrderRecord.CancelRecord -> record
+        is SolanaAuctionHouseOrderRecord.FakeBalanceUpdateRecord -> record
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {

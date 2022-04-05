@@ -27,6 +27,8 @@ class OrderUpdateService(
         val order = repository.save(entity)
         logger.info("Updated order: $entity")
 
+        // TODO: request actual balance of this order (balance of the maker) and update Order status if necessary.
+
         // TODO do we need here any conditions?
         orderUpdateListener.onOrderChanged(order)
         return order
