@@ -32,13 +32,13 @@ class TokenReduceTaskHandler(
     override fun runLongTask(from: String?, param: String) : Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
-        val criteria = if (param.isNotBlank()) {
-            Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
-        } else {
-            Criteria()
+        val criteria = when {
+            from != null -> Criteria.where(SolanaTokenRecord::mint.name).gt(from)
+            param.isNotBlank() -> Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
+            else -> Criteria()
         }
         val tokenFlow = tokenRecordsRepository.findBy(
-            if (from != null) criteria.and(SolanaTokenRecord::mint.name).gt(from) else criteria,
+            criteria,
             Sort.by(Sort.Direction.ASC, SolanaTokenRecord::mint.name, SolanaTokenRecord::id.name),
         ).flatMapConcat {
             tokenEventConverter.convert(it, false).asFlow()

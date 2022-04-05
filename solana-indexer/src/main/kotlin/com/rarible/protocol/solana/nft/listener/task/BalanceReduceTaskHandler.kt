@@ -32,13 +32,13 @@ class BalanceReduceTaskHandler(
     override fun runLongTask(from: String?, param: String) : Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
-        val criteria = if (param.isNotBlank()) {
-            Criteria.where(SolanaBalanceRecord::account.name).`is`(param)
-        } else {
-            Criteria()
+        val criteria = when {
+            from != null -> Criteria.where(SolanaBalanceRecord::account.name).gt(from)
+            param.isNotBlank() -> Criteria.where(SolanaBalanceRecord::account.name).`is`(param)
+            else -> Criteria()
         }
         val balanceFlow = balanceRecordsRepository.findBy(
-            if (from != null) criteria.and(SolanaBalanceRecord::account.name).gt(from) else criteria,
+            criteria,
             Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::account.name, SolanaBalanceRecord::id.name),
         ).flatMapConcat {
             balanceEventConverter.convert(it, false).asFlow()

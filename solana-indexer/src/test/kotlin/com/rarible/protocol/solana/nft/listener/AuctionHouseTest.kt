@@ -15,7 +15,6 @@ import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -45,7 +44,6 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
     @Test
     fun createAuctionHouseTest() = runBlocking {
-        delay(100_000_000)
         val keypair = createKeypair(randomString())
         val wallet = getWallet(keypair)
         airdrop(10, wallet)

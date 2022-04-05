@@ -33,9 +33,15 @@ class OrderReduceTaskHandler(
         logger.info("Starting $type with from: $from, param: $param")
 
         require(param.isNotBlank()) { "Auction house must be specified" }
-        val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(param)
+        val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(param).andOperator(
+            when {
+                from != null -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).gt(from)
+                param.isNotBlank() -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).`is`(param)
+                else -> Criteria()
+            }
+        )
         val orderFlow = orderRecordsRepository.findBy(
-            if (from != null) criteria.and(SolanaAuctionHouseOrderRecord::orderId.name).gt(from) else criteria,
+            criteria,
             Sort.by(
                 Sort.Direction.ASC,
                 SolanaAuctionHouseOrderRecord::auctionHouse.name,
