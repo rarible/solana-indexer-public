@@ -136,11 +136,14 @@ class SolanaRecordsLogEventFilter(
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
+                        accountToMintMapping[record.tokenAccount] = record.mint
                     }
                     is SolanaAuctionHouseOrderRecord.SellRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
+                        accountToMintMapping[record.tokenAccount] = record.mint
                     }
-                    else -> Unit
+                    is SolanaAuctionHouseOrderRecord.CancelRecord -> Unit
+                    is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
                 }
             }
         }
