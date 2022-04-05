@@ -71,7 +71,8 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
 
                         metaAddress = "",
                         updatedAt = Instant.EPOCH,
-                        revertableEvents = emptyList()
+                        revertableEvents = emptyList(),
+                        createdAt = Instant.EPOCH
                     )
                 )
         }

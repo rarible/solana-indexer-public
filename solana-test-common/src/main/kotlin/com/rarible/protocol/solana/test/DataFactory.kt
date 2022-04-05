@@ -52,6 +52,7 @@ fun createRandomMetaplexMeta(
     isMutable = randomBoolean(),
     revertableEvents = emptyList(),
     updatedAt = nowMillis(),
+    createdAt = nowMillis()
 )
 
 fun createRandomMetaplexOffChainMeta(): MetaplexOffChainMeta = MetaplexOffChainMeta(
