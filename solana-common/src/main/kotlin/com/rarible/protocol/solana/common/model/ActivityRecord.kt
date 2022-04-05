@@ -24,13 +24,12 @@ interface ActivityRecord {
     val type: ActivityTypeDto
     val mint: String
     val owner: String
-    val reverted: Boolean
     val blockchainInfo: ActivityBlockchainInfoDto
 
     fun toDto(): ActivityDto
 }
 
-fun ActivityDto.asRecord(): ActivityRecord? = when (this) {
+fun ActivityDto.asRecord(): ActivityRecord = when (this) {
     is MintActivityDto -> MintActivityRecord(this)
     is BurnActivityDto -> BurnActivityRecord(this)
     is TransferActivityDto -> TransferActivityRecord(this)
@@ -47,26 +46,24 @@ data class MintActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.MINT,
 ) : ActivityRecord {
 
     constructor(dto: MintActivityDto) : this(
-        dto.id,
-        dto.date,
-        dto.tokenAddress,
-        dto.owner,
-        dto.reverted,
-        dto.blockchainInfo,
-        dto.value,
+        id = dto.id,
+        date = dto.date,
+        mint = dto.tokenAddress,
+        owner = dto.owner,
+        blockchainInfo = dto.blockchainInfo,
+        value = dto.value,
     )
 
     override fun toDto() = MintActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         owner = owner,
         tokenAddress = mint,
         value = value,
@@ -79,7 +76,6 @@ data class BurnActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.BURN,
@@ -90,7 +86,6 @@ data class BurnActivityRecord(
         date = dto.date,
         mint = dto.tokenAddress,
         owner = dto.owner,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         value = dto.value,
     )
@@ -98,7 +93,7 @@ data class BurnActivityRecord(
     override fun toDto() = BurnActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         owner = owner,
         tokenAddress = mint,
         value = value,
@@ -111,7 +106,6 @@ data class TransferActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     val from: String,
@@ -124,7 +118,6 @@ data class TransferActivityRecord(
         date = dto.date,
         mint = dto.tokenAddress,
         owner = dto.owner,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         value = dto.value,
         from = dto.from,
@@ -134,7 +127,7 @@ data class TransferActivityRecord(
     override fun toDto() = TransferActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         from = from,
         owner = owner,
         tokenAddress = mint,
@@ -149,7 +142,6 @@ data class ListActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val hash: String,
     val make: AssetDto,
@@ -163,7 +155,6 @@ data class ListActivityRecord(
         date = dto.date,
         mint = dto.make.type.getNftMint().orEmpty(),
         owner = dto.maker,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         hash = dto.hash,
         make = dto.make,
@@ -174,7 +165,7 @@ data class ListActivityRecord(
     override fun toDto() = OrderListActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         hash = hash,
         maker = owner,
         make = make,
@@ -189,7 +180,6 @@ data class BidActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val hash: String,
     val make: AssetDto,
@@ -203,7 +193,6 @@ data class BidActivityRecord(
         date = dto.date,
         mint = dto.take.type.getNftMint().orEmpty(),
         owner = dto.maker,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         hash = dto.hash,
         make = dto.make,
@@ -214,7 +203,7 @@ data class BidActivityRecord(
     override fun toDto() = OrderBidActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         hash = hash,
         maker = owner,
         make = make,
@@ -229,7 +218,6 @@ data class CancelListActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val hash: String,
     val make: AssetTypeDto,
@@ -242,7 +230,6 @@ data class CancelListActivityRecord(
         date = dto.date,
         mint = dto.make.getNftMint().orEmpty(),
         owner = dto.maker,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         hash = dto.hash,
         make = dto.make,
@@ -252,7 +239,7 @@ data class CancelListActivityRecord(
     override fun toDto() = OrderCancelListActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         hash = hash,
         maker = owner,
         make = make,
@@ -266,7 +253,6 @@ data class CancelBidActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val hash: String,
     val make: AssetTypeDto,
@@ -279,7 +265,6 @@ data class CancelBidActivityRecord(
         date = dto.date,
         mint = dto.take.getNftMint().orEmpty(),
         owner = dto.maker,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         hash = dto.hash,
         make = dto.make,
@@ -289,7 +274,7 @@ data class CancelBidActivityRecord(
     override fun toDto() = OrderCancelBidActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         hash = hash,
         maker = owner,
         make = make,
@@ -303,7 +288,6 @@ data class MatchActivityRecord(
     override val date: Instant,
     override val mint: String,
     override val owner: String,
-    override val reverted: Boolean,
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val nft: AssetDto,
     val payment: AssetDto,
@@ -321,7 +305,6 @@ data class MatchActivityRecord(
         date = dto.date,
         mint = dto.nft.type.getNftMint().orEmpty(),
         owner = dto.seller,
-        reverted = dto.reverted,
         blockchainInfo = dto.blockchainInfo,
         nft = dto.nft,
         payment = dto.payment,
@@ -336,7 +319,7 @@ data class MatchActivityRecord(
     override fun toDto() = OrderMatchActivityDto(
         id = id,
         date = date,
-        reverted = reverted,
+        reverted = false,
         nft = nft,
         payment = payment,
         buyer = buyer,
