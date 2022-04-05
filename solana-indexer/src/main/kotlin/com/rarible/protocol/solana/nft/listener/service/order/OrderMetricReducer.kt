@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
+import com.rarible.protocol.solana.common.event.InternalUpdateEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
@@ -23,6 +24,7 @@ class OrderMetricReducer(
             is OrderBuyEvent -> "auction_house_order_buy"
             is OrderSellEvent -> "auction_house_order_sell"
             is OrderCancelEvent -> "auction_house_order_cancel"
+            is InternalUpdateEvent -> "auction_house_order_balance_update"
         }
     }
 }

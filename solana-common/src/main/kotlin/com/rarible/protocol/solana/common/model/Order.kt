@@ -13,6 +13,7 @@ typealias OrderId = String
 
 enum class OrderStatus {
     ACTIVE,
+    INACTIVE,
     CANCELLED,
     FILLED
 }

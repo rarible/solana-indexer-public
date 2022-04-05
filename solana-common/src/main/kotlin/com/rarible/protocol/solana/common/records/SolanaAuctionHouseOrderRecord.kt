@@ -10,7 +10,7 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
     abstract val mint: String
     abstract val orderId: String
 
-    final override fun getKey(): String = auctionHouse
+    final override fun getKey(): String = orderId
 
     data class BuyRecord(
         val maker: String,
@@ -117,14 +117,17 @@ sealed class SolanaAuctionHouseOrderRecord : SolanaBaseLogRecord() {
      * Fake record used to trigger re-calculation of the order's balance.
      * It is not written to the database but only to the message bus (Kafka) to trigger an update.
      */
-    data class FakeBalanceUpdateRecord(
+    data class InternalOrderUpdateRecord(
         override val mint: String,
         override val timestamp: Instant,
         override val auctionHouse: String,
         override val orderId: String,
-        override val log: SolanaLog = EMPTY_SOLANA_LOG
+        override val log: SolanaLog = EMPTY_SOLANA_LOG,
+        val instruction: SolanaOrderUpdateInstruction
     ) : SolanaAuctionHouseOrderRecord() {
+
         companion object {
+
             val EMPTY_SOLANA_LOG = SolanaLog(
                 blockNumber = 0,
                 blockHash = "",

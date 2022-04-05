@@ -48,26 +48,28 @@ class SolanaAuctionHouseOrderActivityConverter(
 
     private suspend fun process(records: List<SolanaAuctionHouseOrderRecord>, reverted: Boolean) = when {
         records.isEmpty() -> emptyList()
-        records.size == 1 -> listOf(convert(records.single(), reverted))
+        records.size == 1 -> listOfNotNull(convert(records.single(), reverted))
         records.any { it is SolanaAuctionHouseOrderRecord.BuyRecord } -> {
             records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.SELL }
                 ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
-                ?: records.map { convert(it, reverted) }
+                ?: records.mapNotNull { convert(it, reverted) }
         }
         records.any { it is SolanaAuctionHouseOrderRecord.SellRecord } -> {
             records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.BUY }
                 ?.let { listOf(makeMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
-                ?: records.map { convert(it, reverted) }
+                ?: records.mapNotNull { convert(it, reverted) }
         }
-        else -> records.map { convert(it, reverted) }
+        else -> records.mapNotNull { convert(it, reverted) }
     }
 
-    private suspend fun convert(record: SolanaAuctionHouseOrderRecord, reverted: Boolean): ActivityDto {
+    private suspend fun convert(record: SolanaAuctionHouseOrderRecord, reverted: Boolean): ActivityDto? {
         return when (record) {
             is SolanaAuctionHouseOrderRecord.SellRecord -> makeListActivity(record, reverted)
             is SolanaAuctionHouseOrderRecord.BuyRecord -> makeBidActivity(record, reverted)
             is SolanaAuctionHouseOrderRecord.CancelRecord -> makeCancelActivity(record, reverted)
             is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> makeMatchActivity(record, reverted)
+            // Should be never found in DB
+            is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> null
         }
     }
 

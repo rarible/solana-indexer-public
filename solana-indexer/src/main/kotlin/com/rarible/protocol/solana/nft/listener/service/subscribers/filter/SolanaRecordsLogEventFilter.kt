@@ -194,7 +194,8 @@ class SolanaRecordsLogEventFilter(
             }
         }
         is SolanaAuctionHouseOrderRecord.CancelRecord -> record
-        is SolanaAuctionHouseOrderRecord.FakeBalanceUpdateRecord -> record
+        // Internal records, should not be produced by subscribers
+        is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> null
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {

@@ -16,6 +16,7 @@ fun <T : SolanaBaseLogRecord> T.withUpdatedLog(
     is SolanaAuctionHouseOrderRecord.CancelRecord -> r.copy(log = log) as T
     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> r.copy(log = log) as T
     is SolanaAuctionHouseOrderRecord.SellRecord -> r.copy(log = log) as T
+    is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> r.copy(log = log) as T
     is SolanaAuctionHouseRecord.CreateAuctionHouseRecord -> r.copy(log = log) as T
     is SolanaAuctionHouseRecord.UpdateAuctionHouseRecord -> r.copy(log = log) as T
     is SolanaBalanceRecord.BurnRecord -> r.copy(log = log) as T

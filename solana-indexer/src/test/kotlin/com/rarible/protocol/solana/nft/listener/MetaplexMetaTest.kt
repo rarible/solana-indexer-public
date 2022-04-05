@@ -49,6 +49,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                 .ignoringFields(
                     "metaAddress",
                     "updatedAt",
+                    "createdAt",
                     "revertableEvents"
                 ).isEqualTo(
                     MetaplexMeta(
@@ -71,6 +72,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
 
                         metaAddress = "",
                         updatedAt = Instant.EPOCH,
+                        createdAt = Instant.EPOCH,
                         revertableEvents = emptyList()
                     )
                 )
