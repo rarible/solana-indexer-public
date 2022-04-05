@@ -18,15 +18,15 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Instant
 
-interface ActivityRecord {
-    val id: String
-    val date: Instant
-    val type: ActivityTypeDto
-    val mint: String
-    val owner: String
-    val blockchainInfo: ActivityBlockchainInfoDto
+sealed class ActivityRecord {
+    abstract val id: String
+    abstract val date: Instant
+    abstract val type: ActivityTypeDto
+    abstract val mint: String
+    abstract val owner: String
+    abstract val blockchainInfo: ActivityBlockchainInfoDto
 
-    fun toDto(): ActivityDto
+    abstract fun toDto(): ActivityDto
 }
 
 fun ActivityDto.asRecord(): ActivityRecord = when (this) {
@@ -49,7 +49,7 @@ data class MintActivityRecord(
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.MINT,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: MintActivityDto) : this(
         id = dto.id,
@@ -79,7 +79,7 @@ data class BurnActivityRecord(
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.BURN,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: BurnActivityDto) : this(
         id = dto.id,
@@ -111,7 +111,7 @@ data class TransferActivityRecord(
     val from: String,
     val purchase: Boolean,
     override val type: ActivityTypeDto = ActivityTypeDto.TRANSFER,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: TransferActivityDto) : this(
         id = dto.id,
@@ -148,7 +148,7 @@ data class ListActivityRecord(
     val take: AssetDto,
     val price: BigDecimal,
     override val type: ActivityTypeDto = ActivityTypeDto.LIST,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: OrderListActivityDto) : this(
         id = dto.id,
@@ -186,7 +186,7 @@ data class BidActivityRecord(
     val take: AssetDto,
     val price: BigDecimal,
     override val type: ActivityTypeDto = ActivityTypeDto.BID,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: OrderBidActivityDto) : this(
         id = dto.id,
@@ -223,7 +223,7 @@ data class CancelListActivityRecord(
     val make: AssetTypeDto,
     val take: AssetTypeDto,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_LIST,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: OrderCancelListActivityDto) : this(
         id = dto.id,
@@ -258,7 +258,7 @@ data class CancelBidActivityRecord(
     val make: AssetTypeDto,
     val take: AssetTypeDto,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_BID,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: OrderCancelBidActivityDto) : this(
         id = dto.id,
@@ -298,7 +298,7 @@ data class MatchActivityRecord(
     val price: BigDecimal,
     val orderType: OrderMatchActivityDto.Type,
     override val type: ActivityTypeDto = ActivityTypeDto.SELL,
-) : ActivityRecord {
+) : ActivityRecord() {
 
     constructor(dto: OrderMatchActivityDto) : this(
         id = dto.id,
