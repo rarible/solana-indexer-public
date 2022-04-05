@@ -461,7 +461,7 @@ abstract class AbstractBlockScannerTest {
             if (System.getProperty("os.arch") == "x86_64") {
                 "rarible/solana:1.8.16-dev-0404"
             } else {
-                "rarible/solana-docker-mac-m1"
+                "rarible/solana"
             }
         )
             .withExposedPorts(8899)

@@ -8,9 +8,9 @@ import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.repository.SolanaTokenRecordsRepository
 import com.rarible.protocol.solana.nft.listener.service.token.TokenEventConverter
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,7 +29,7 @@ class TokenReduceTaskHandler(
     override val type: String = "TOKEN_REDUCER"
 
     @Suppress("EXPERIMENTAL_API_USAGE")
-    override fun runLongTask(from: String?, param: String) = flow {
+    override fun runLongTask(from: String?, param: String) : Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = if (param.isNotBlank()) {
@@ -44,7 +44,7 @@ class TokenReduceTaskHandler(
             tokenEventConverter.convert(it, false).asFlow()
         }
 
-        tokenStreamFullReduceService.reduce(tokenFlow).map { emit(it.mint) }
+        return tokenStreamFullReduceService.reduce(tokenFlow).map { it.mint }
     }
 
     companion object {
