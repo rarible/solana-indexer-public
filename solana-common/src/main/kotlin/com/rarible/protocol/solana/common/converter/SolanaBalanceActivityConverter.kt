@@ -1,9 +1,7 @@
 package com.rarible.protocol.solana.common.converter
 
-import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.BalanceRepository
-import com.rarible.protocol.solana.dto.ActivityBlockchainInfoDto
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.BurnActivityDto
 import com.rarible.protocol.solana.dto.MintActivityDto
@@ -28,7 +26,10 @@ class SolanaBalanceActivityConverter(
         }
     }
 
-    private suspend fun makeMint(record: SolanaBalanceRecord.MintToRecord, reverted: Boolean): ActivityDto? {
+    private suspend fun makeMint(
+        record: SolanaBalanceRecord.MintToRecord,
+        reverted: Boolean
+    ): ActivityDto? {
         val owner = balanceRepository.findByAccount(record.account)?.owner
         if (owner == null) {
             logger.warn("Unable to find balance: {}", record.account)
@@ -40,12 +41,15 @@ class SolanaBalanceActivityConverter(
             owner = owner,
             tokenAddress = record.mint,
             value = record.mintAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted
         )
     }
 
-    private suspend fun makeBurn(record: SolanaBalanceRecord.BurnRecord, reverted: Boolean): ActivityDto? {
+    private suspend fun makeBurn(
+        record: SolanaBalanceRecord.BurnRecord,
+        reverted: Boolean
+    ): ActivityDto? {
         val owner = balanceRepository.findByAccount(record.account)?.owner
         if (owner == null) {
             logger.warn("Unable to find balance: {}", record.account)
@@ -57,13 +61,14 @@ class SolanaBalanceActivityConverter(
             owner = record.account,
             tokenAddress = record.mint,
             value = record.burnAmount,
-            blockchainInfo = blockchainInfo(record.log),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted
         )
     }
 
     private fun makeTransferIn(
-        record: SolanaBalanceRecord.TransferIncomeRecord, reverted: Boolean
+        record: SolanaBalanceRecord.TransferIncomeRecord,
+        reverted: Boolean
     ) = TransferActivityDto(
         id = record.id,
         date = record.timestamp,
@@ -71,7 +76,7 @@ class SolanaBalanceActivityConverter(
         owner = record.account,
         tokenAddress = record.mint,
         value = record.incomeAmount,
-        blockchainInfo = blockchainInfo(record.log),
+        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
         reverted = reverted,
         purchase = false // TODO should be evaluated
         // Purchase = true/false should be evaluated in next way (at least, it is done in such way at ETH):
@@ -85,7 +90,8 @@ class SolanaBalanceActivityConverter(
     )
 
     private fun makeTransferOut(
-        record: SolanaBalanceRecord.TransferOutcomeRecord, reverted: Boolean
+        record: SolanaBalanceRecord.TransferOutcomeRecord,
+        reverted: Boolean
     ) = TransferActivityDto(
         id = record.id,
         date = record.timestamp,
@@ -93,17 +99,9 @@ class SolanaBalanceActivityConverter(
         owner = record.to,
         tokenAddress = record.mint,
         value = record.outcomeAmount,
-        blockchainInfo = blockchainInfo(record.log),
+        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
         reverted = reverted,
         purchase = false // TODO should be evaluated
     )
 
-    private fun blockchainInfo(log: SolanaLog) = ActivityBlockchainInfoDto(
-        blockNumber = log.blockNumber,
-        blockHash = log.blockHash,
-        transactionIndex = log.transactionIndex,
-        transactionHash = log.transactionHash,
-        instructionIndex = log.instructionIndex,
-        innerInstructionIndex = log.innerInstructionIndex,
-    )
 }
