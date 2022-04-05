@@ -26,6 +26,7 @@ import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.records.OrderDirection
+import java.math.BigInteger
 import java.time.Instant
 
 fun createRandomToken(mint: String = randomString()): Token = Token(
@@ -177,12 +178,13 @@ fun createRandomBalance(
     account: String = randomString(),
     owner: String = randomString(),
     mint: String = randomString(),
-    updatedAt: Instant = nowMillis()
+    updatedAt: Instant = nowMillis(),
+    value: BigInteger = randomBigInt()
 ): Balance = Balance(
     account = account,
     owner = owner,
     mint = mint,
-    value = randomBigInt(),
+    value = value,
     revertableEvents = emptyList(),
     createdAt = nowMillis(),
     updatedAt = updatedAt
@@ -226,10 +228,11 @@ fun randomSolanaLog(): SolanaLog {
 fun randomSellOrder(
     make: Asset = randomAsset(randomAssetTypeNft()),
     take: Asset = randomAsset(randomAssetTypeFt()),
+    maker: String = randomString()
 ): Order {
     return Order(
         auctionHouse = randomString(),
-        maker = randomString(),
+        maker = maker,
         status = OrderStatus.ACTIVE,
         make = make,
         take = take,

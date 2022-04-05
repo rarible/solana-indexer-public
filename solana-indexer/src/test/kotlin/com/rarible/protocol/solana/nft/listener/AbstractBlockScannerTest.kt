@@ -14,6 +14,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import io.mockk.clearMocks
@@ -96,6 +97,9 @@ abstract class AbstractBlockScannerTest {
 
     @Autowired
     protected lateinit var balanceRepository: BalanceRepository
+
+    @Autowired
+    protected lateinit var orderRepository: OrderRepository
 
     @Autowired
     private lateinit var repository: BlockRepository
