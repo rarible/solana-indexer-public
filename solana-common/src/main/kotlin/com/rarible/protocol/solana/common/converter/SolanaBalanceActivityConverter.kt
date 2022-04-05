@@ -18,15 +18,15 @@ class SolanaBalanceActivityConverter(
 
     suspend fun convert(source: SolanaBalanceRecord, reverted: Boolean): ActivityDto? {
         return when (source) {
-            is SolanaBalanceRecord.MintToRecord -> makeMint(source, reverted)
-            is SolanaBalanceRecord.BurnRecord -> makeBurn(source, reverted)
-            is SolanaBalanceRecord.TransferIncomeRecord -> makeTransferIn(source, reverted)
-            is SolanaBalanceRecord.TransferOutcomeRecord -> makeTransferOut(source, reverted)
+            is SolanaBalanceRecord.MintToRecord -> createMintActivity(source, reverted)
+            is SolanaBalanceRecord.BurnRecord -> createBurnActivity(source, reverted)
+            is SolanaBalanceRecord.TransferIncomeRecord -> createTransferIncomeActivity(source, reverted)
+            is SolanaBalanceRecord.TransferOutcomeRecord -> createTransferOutcomeActivity(source, reverted)
             is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null
         }
     }
 
-    private suspend fun makeMint(
+    private suspend fun createMintActivity(
         record: SolanaBalanceRecord.MintToRecord,
         reverted: Boolean
     ): ActivityDto? {
@@ -42,7 +42,7 @@ class SolanaBalanceActivityConverter(
         )
     }
 
-    private suspend fun makeBurn(
+    private suspend fun createBurnActivity(
         record: SolanaBalanceRecord.BurnRecord,
         reverted: Boolean
     ): ActivityDto? {
@@ -58,7 +58,7 @@ class SolanaBalanceActivityConverter(
         )
     }
 
-    private suspend fun makeTransferIn(
+    private suspend fun createTransferIncomeActivity(
         record: SolanaBalanceRecord.TransferIncomeRecord,
         reverted: Boolean
     ): TransferActivityDto? {
@@ -86,7 +86,7 @@ class SolanaBalanceActivityConverter(
         )
     }
 
-    private suspend fun makeTransferOut(
+    private suspend fun createTransferOutcomeActivity(
         record: SolanaBalanceRecord.TransferOutcomeRecord,
         reverted: Boolean
     ): TransferActivityDto? {
