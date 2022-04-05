@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
+import com.rarible.protocol.solana.common.event.InternalUpdateEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
@@ -12,6 +13,7 @@ import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.records.OrderDirection
+import com.rarible.protocol.solana.common.records.SolanaOrderUpdateInstruction
 import com.rarible.protocol.solana.common.service.PriceNormalizer
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -25,6 +27,7 @@ class ForwardOrderReducer(
             return entity
         }
         return when (event) {
+
             is ExecuteSaleEvent -> {
                 val newFill = entity.fill + event.amount
                 val isFilled = when (event.direction) {
@@ -38,6 +41,7 @@ class ForwardOrderReducer(
                     updatedAt = event.timestamp
                 )
             }
+
             is OrderBuyEvent -> Order(
                 auctionHouse = event.auctionHouse,
                 maker = event.maker,
@@ -61,6 +65,7 @@ class ForwardOrderReducer(
                 makePrice = null,
                 takePrice = null
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
+
             is OrderSellEvent -> Order(
                 auctionHouse = event.auctionHouse,
                 maker = event.maker,
@@ -84,7 +89,18 @@ class ForwardOrderReducer(
                 makePrice = null,
                 takePrice = null
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
-            is OrderCancelEvent -> entity.copy(status = OrderStatus.CANCELLED)
-        }.copy(updatedAt = event.timestamp)
+
+            is OrderCancelEvent -> entity.copy(
+                status = OrderStatus.CANCELLED,
+                updatedAt = event.timestamp
+            )
+
+            is InternalUpdateEvent -> {
+                when (event.instruction) {
+                    // We do not need to execute any updates here, balance will be checked in UpdateService
+                    is SolanaOrderUpdateInstruction.BalanceUpdate -> entity.copy(updatedAt = event.timestamp)
+                }
+            }
+        }
     }
 }

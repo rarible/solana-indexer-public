@@ -9,18 +9,30 @@ import java.time.Instant
 @JsonSubTypes(
     JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_BUY", value = SolanaAuctionHouseOrderRecord.BuyRecord::class),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_CANCEL", value = SolanaAuctionHouseOrderRecord.CancelRecord::class),
-    JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_EXECUTE_SALE", value = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::class),
+    JsonSubTypes.Type(
+        name = "AUCTION_HOUSE_ORDER_EXECUTE_SALE", value = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::class
+    ),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_SELL", value = SolanaAuctionHouseOrderRecord.SellRecord::class),
+    JsonSubTypes.Type(
+        name = "AUCTION_HOUSE_ORDER_INTERNAL_UPDATE",
+        value = SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord::class
+    ),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_CREATE", value = SolanaAuctionHouseRecord.CreateAuctionHouseRecord::class),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_UPDATE", value = SolanaAuctionHouseRecord.UpdateAuctionHouseRecord::class),
     JsonSubTypes.Type(name = "BALANCE_BURN", value = SolanaBalanceRecord.BurnRecord::class),
-    JsonSubTypes.Type(name = "BALANCE_INITIALIZE_ACCOUNT", value = SolanaBalanceRecord.InitializeBalanceAccountRecord::class),
+    JsonSubTypes.Type(
+        name = "BALANCE_INITIALIZE_ACCOUNT", value = SolanaBalanceRecord.InitializeBalanceAccountRecord::class
+    ),
     JsonSubTypes.Type(name = "BALANCE_MINT_TO", value = SolanaBalanceRecord.MintToRecord::class),
     JsonSubTypes.Type(name = "BALANCE_TRANSFER_INCOME", value = SolanaBalanceRecord.TransferIncomeRecord::class),
     JsonSubTypes.Type(name = "BALANCE_TRANSFER_OUTCOME", value = SolanaBalanceRecord.TransferOutcomeRecord::class),
-    JsonSubTypes.Type(name = "METAPLEX_META_CREATE_ACCOUNT", value = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class),
+    JsonSubTypes.Type(
+        name = "METAPLEX_META_CREATE_ACCOUNT", value = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class
+    ),
     JsonSubTypes.Type(name = "METAPLEX_META_SIGN_META", value = SolanaMetaRecord.MetaplexSignMetadataRecord::class),
-    JsonSubTypes.Type(name = "METAPLEX_META_UN_VERIFY_COLLECTION", value = SolanaMetaRecord.MetaplexUnVerifyCollectionRecord::class),
+    JsonSubTypes.Type(
+        name = "METAPLEX_META_UN_VERIFY_COLLECTION", value = SolanaMetaRecord.MetaplexUnVerifyCollectionRecord::class
+    ),
     JsonSubTypes.Type(name = "METAPLEX_META_UPDATE", value = SolanaMetaRecord.MetaplexUpdateMetadataRecord::class),
     JsonSubTypes.Type(name = "METAPLEX_META_VERIFY_COLLECTION", value = SolanaMetaRecord.MetaplexVerifyCollectionRecord::class),
     JsonSubTypes.Type(name = "METAPLEX_META_SET_AND_VERIFY", value = SolanaMetaRecord.SetAndVerifyMetadataRecord::class),
@@ -41,6 +53,7 @@ private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record)
     is SolanaAuctionHouseOrderRecord.CancelRecord -> Unit
     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
     is SolanaAuctionHouseOrderRecord.SellRecord -> Unit
+    is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> Unit
     is SolanaAuctionHouseRecord.CreateAuctionHouseRecord -> Unit
     is SolanaAuctionHouseRecord.UpdateAuctionHouseRecord -> Unit
     is SolanaBalanceRecord.BurnRecord -> Unit

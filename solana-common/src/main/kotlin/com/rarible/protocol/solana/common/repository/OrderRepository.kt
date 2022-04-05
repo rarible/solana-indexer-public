@@ -5,6 +5,7 @@ import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
+import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.records.OrderDirection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
@@ -70,6 +71,17 @@ class OrderRepository(
         ).asFlow()
     }
 
+    fun findSellOrdersByMintAndMaker(tokenAddress: String, maker: String, statuses: List<OrderStatus>): Flow<Order> {
+        val criteria = Criteria().andOperator(
+            Order::direction isEqualTo OrderDirection.SELL,
+            Order::maker isEqualTo maker,
+            Order::make / Asset::type / AssetType::tokenAddress isEqualTo tokenAddress,
+            Order::status inValues statuses
+        )
+        val query = Query(criteria)
+        return mongo.query<Order>().matching(query).all().asFlow()
+    }
+
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(OrderRepository::class.java)
         logger.info("Ensuring indexes on ${Order.COLLECTION}")
@@ -104,6 +116,13 @@ class OrderRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        val SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION = Index()
+            .on(Order::maker.name, Sort.Direction.ASC)
+            .on("${Order::make.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
+            .on(Order::direction.name, Sort.Direction.ASC)
+            .on(Order::status.name, Sort.Direction.ASC)
+            .background()
+
         // Best sell order by status
         val SELL_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION = Index()
             .on("${Order::make.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
@@ -127,6 +146,7 @@ class OrderRepository(
             ALL_BY_STATUS_DEFINITION,
             SELL_BUY_ORDERS_DEFINITION,
             SELL_BUY_ORDERS_BY_MAKER_DEFINITION,
+            SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION,
             SELL_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION,
             BUY_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION
         )

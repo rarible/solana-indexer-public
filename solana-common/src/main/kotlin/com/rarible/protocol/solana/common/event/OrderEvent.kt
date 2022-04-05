@@ -2,7 +2,9 @@ package com.rarible.protocol.solana.common.event
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
 import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.records.OrderDirection
+import com.rarible.protocol.solana.common.records.SolanaOrderUpdateInstruction
 import java.math.BigInteger
 import java.time.Instant
 
@@ -58,4 +60,13 @@ data class ExecuteSaleEvent(
     override val timestamp: Instant,
     override val reversed: Boolean,
     override val log: SolanaLog
+) : OrderEvent()
+
+data class InternalUpdateEvent(
+    override val auctionHouse: String,
+    override val timestamp: Instant,
+    override val reversed: Boolean,
+    override val log: SolanaLog,
+    val orderId: OrderId,
+    val instruction: SolanaOrderUpdateInstruction
 ) : OrderEvent()

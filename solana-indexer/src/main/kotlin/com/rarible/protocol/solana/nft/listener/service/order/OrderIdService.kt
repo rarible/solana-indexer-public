@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.core.entity.reducer.service.EntityIdService
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
+import com.rarible.protocol.solana.common.event.InternalUpdateEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
@@ -42,5 +43,6 @@ class OrderIdService : EntityIdService<OrderEvent, OrderId> {
                 direction = event.direction,
                 auctionHouse = event.auctionHouse
             )
+            is InternalUpdateEvent -> event.orderId
         }
 }

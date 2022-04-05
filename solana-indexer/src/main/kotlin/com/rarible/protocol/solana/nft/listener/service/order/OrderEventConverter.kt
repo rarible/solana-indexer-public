@@ -1,13 +1,14 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
+import com.rarible.protocol.solana.common.event.InternalUpdateEvent
 import com.rarible.protocol.solana.common.event.OrderBuyEvent
 import com.rarible.protocol.solana.common.event.OrderCancelEvent
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.event.OrderSellEvent
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
-import com.rarible.protocol.solana.common.records.*
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import org.springframework.stereotype.Component
 
 @Component
@@ -69,6 +70,16 @@ class OrderEventConverter {
                 timestamp = record.timestamp,
                 auctionHouse = record.auctionHouse,
                 reversed = reversed
+            )
+        )
+        is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> listOf(
+            InternalUpdateEvent(
+                auctionHouse = record.auctionHouse,
+                timestamp = record.timestamp,
+                reversed = false,
+                log = record.log,
+                orderId = record.orderId,
+                instruction = record.instruction
             )
         )
     }

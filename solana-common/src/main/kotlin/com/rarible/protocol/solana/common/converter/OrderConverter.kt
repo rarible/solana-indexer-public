@@ -48,5 +48,6 @@ class OrderConverter(
         OrderStatus.ACTIVE -> OrderStatusDto.ACTIVE
         OrderStatus.CANCELLED -> OrderStatusDto.CANCELLED
         OrderStatus.FILLED -> OrderStatusDto.FILLED
+        OrderStatus.INACTIVE -> OrderStatusDto.INACTIVE
     }
 }

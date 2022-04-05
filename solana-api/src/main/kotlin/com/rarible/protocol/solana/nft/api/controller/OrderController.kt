@@ -225,6 +225,7 @@ class OrderController(
         OrderStatusDto.ACTIVE -> OrderStatus.ACTIVE
         OrderStatusDto.FILLED -> OrderStatus.FILLED
         OrderStatusDto.CANCELLED -> OrderStatus.CANCELLED
+        OrderStatusDto.INACTIVE -> OrderStatus.INACTIVE
     }
 
     private fun OrderSortDto.fromDto(): OrderFilterSort = when (this) {
