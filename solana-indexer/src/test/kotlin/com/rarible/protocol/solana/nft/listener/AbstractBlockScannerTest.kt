@@ -23,7 +23,6 @@ import io.mockk.coJustRun
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -471,9 +470,9 @@ abstract class AbstractBlockScannerTest {
             .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so --bpf-program ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} /home/solana/mpl_auction_house.so")
             .waitingFor(Wait.defaultWaitStrategy())
 
-        @BeforeAll
         @JvmStatic
-        fun setUp() {
+        @DynamicPropertySource
+        fun properties(registry: DynamicPropertyRegistry) {
             solana.start()
             val exec = solana.execInContainer(
                 "bash",
@@ -481,12 +480,6 @@ abstract class AbstractBlockScannerTest {
                 "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
             )
             assertEquals(0, exec.exitCode, exec.stderr)
-            Thread.sleep(3000) // this is for tests
-        }
-
-        @JvmStatic
-        @DynamicPropertySource
-        fun properties(registry: DynamicPropertyRegistry) {
             val port = solana.getMappedPort(8899)
 
             registry.add("blockchain.scanner.solana.rpcApiUrls") { "http://127.0.0.1:$port" }

@@ -68,8 +68,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order)
-        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
+        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.ACTIVE))
+        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
     }
 
     @Test

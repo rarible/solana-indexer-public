@@ -516,11 +516,9 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(saleRecords).usingElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::timestamp.name
-            ).isEqualTo(
-                listOf(
+            ).containsExactlyInAnyOrder(
                     sellRecord,
                     sellRecord.copy(direction = OrderDirection.BUY)
-                )
             )
 
             val incomeTransfersRecords = findRecordByType(
