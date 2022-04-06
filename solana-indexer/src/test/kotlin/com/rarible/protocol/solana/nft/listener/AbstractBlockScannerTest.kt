@@ -22,7 +22,6 @@ import io.mockk.coEvery
 import io.mockk.coJustRun
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -481,7 +480,7 @@ abstract class AbstractBlockScannerTest {
                 "-c",
                 "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
             )
-            assertThat(exec.exitCode).isEqualTo(0).withFailMessage { exec.stderr }
+            assertEquals(0, exec.exitCode, exec.stderr)
             Thread.sleep(3000) // this is for tests
         }
 

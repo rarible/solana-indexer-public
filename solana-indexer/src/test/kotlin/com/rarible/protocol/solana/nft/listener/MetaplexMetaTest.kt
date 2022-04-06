@@ -68,8 +68,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                             ),
                             collection = null
                         ),
-                        isMutable = false,
-
+                        isMutable = true,
                         metaAddress = "",
                         updatedAt = Instant.EPOCH,
                         createdAt = Instant.EPOCH,
@@ -102,7 +101,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
 
         val wallet = getWallet()
         val collection = mintNft(baseKeypair)
-        val tokenAddress = mintNft(collection)
+        val tokenAddress = mintNft(baseKeypair, collection)
 
         Wait.waitAssert {
             val meta = metaplexMetaRepository.findByTokenAddress(tokenAddress)
