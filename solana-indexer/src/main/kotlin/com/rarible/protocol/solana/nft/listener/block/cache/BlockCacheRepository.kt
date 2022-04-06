@@ -1,9 +1,12 @@
 package com.rarible.protocol.solana.nft.listener.block.cache
 
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.Binary
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.count
 import org.springframework.data.mongodb.core.findById
@@ -31,6 +34,18 @@ class BlockCacheRepository(
         val gzip = gzip(content)
         mongo.save(BlockCache(id, Binary(gzip))).awaitFirst()
         logger.info("Saved block #$id to the cache: original size {}, gzip size: {}", content.size, gzip.size)
+    }
+
+    suspend fun findAll(ids: List<Long>): Map<Long, ByteArray> {
+        val criteria = Criteria.where(BlockCache::id.name).`in`(ids)
+        val sort = Sort.by(Sort.Direction.ASC, "_id")
+
+        return mongo.find(Query(criteria).with(sort), BlockCache::class.java)
+            .asFlow()
+            .toList()
+            .associate {
+                it.id to ungzip(it.data.data)
+            }
     }
 
     suspend fun find(id: Long): ByteArray? {

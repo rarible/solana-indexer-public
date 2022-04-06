@@ -28,6 +28,10 @@ class SolanaCacheApi(
         .builder(BLOCK_CACHE_TIMER)
         .register(meterRegistry)
 
+    private val blockCacheBatchFetchTimer = Timer
+        .builder(BLOCK_CACHE_BATCH_TIMER)
+        .register(meterRegistry)
+
     private val blockCacheLoadedSize = Counter
         .builder(BLOCK_CACHE_LOADED_SIZE)
         .register(meterRegistry)
@@ -76,6 +80,37 @@ class SolanaCacheApi(
         }
     }
 
+    override suspend fun getBlocks(
+        slots: List<Long>,
+        details: GetBlockRequest.TransactionDetails
+    ): Map<Long, ApiResponse<SolanaBlockDto>> {
+        return if (details == GetBlockRequest.TransactionDetails.None) {
+            slots.associateWith { httpApi.getBlock(it, details) }
+        } else {
+            val fetchStart = Timer.start()
+            val slotToBlock = getFromCache(slots)
+            fetchStart.stop(blockCacheBatchFetchTimer)
+
+            slots.associateWith { slot ->
+                val block = slotToBlock[slot]
+
+                if (block != null) {
+                    blockCacheHits.increment()
+                    blockCacheLoadedSize.increment(block.size.toDouble())
+                    mapper.readValue(block)
+                } else {
+                    blockCacheMisses.increment()
+                    val result = httpApi.getBlock(slot, details)
+                    if (shouldSaveBlockToCache(slot)) {
+                        val bytes = mapper.writeValueAsBytes(result)
+                        repository.save(slot, bytes)
+                    }
+                    result
+                }
+            }
+        }
+    }
+
     /**
      * Save the block to the cache only if it is stable enough (approximately >6 hours).
      */
@@ -89,9 +124,13 @@ class SolanaCacheApi(
         return shouldSave
     }
 
+    private suspend fun getFromCache(slots: List<Long>): Map<Long, ByteArray?> {
+        return repository.findAll(slots).mapValues { it.value.takeIf(ByteArray::isCorrect) }
+    }
+
     private suspend fun getFromCache(slot: Long): ByteArray? {
         val fromCache = repository.find(slot) ?: return null
-        if (fromCache.size <= 2) {
+        if (!fromCache.isCorrect()) {
             logger.info("block cache {} was incorrect. reloading", slot)
             return null
         }
@@ -106,9 +145,12 @@ class SolanaCacheApi(
 
     private companion object {
         val logger: Logger = LoggerFactory.getLogger(SolanaCacheApi::class.java)
+        const val BLOCK_CACHE_BATCH_TIMER = "block_cache_batch_fetch_timer"
         const val BLOCK_CACHE_TIMER = "block_cache_fetch_timer"
         const val BLOCK_CACHE_LOADED_SIZE = "block_cache_loaded_size"
         const val BLOCK_CACHE_HITS = "block_cache_hits"
         const val BLOCK_CACHE_MISSES = "block_cache_misses"
     }
 }
+
+private fun ByteArray.isCorrect() = size > 2
