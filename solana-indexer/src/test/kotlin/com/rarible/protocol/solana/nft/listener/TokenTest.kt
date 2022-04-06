@@ -7,10 +7,13 @@ import com.rarible.protocol.solana.common.model.Token
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
+import java.time.Duration
 import java.time.Instant
 import java.util.*
 
 class TokenTest : EventAwareBlockScannerTest() {
+
+    private val timeout = Duration.ofSeconds(15)
 
     // In this test, the token meta is empty.
     private val emptyTokenMeta: TokenMeta? = null
@@ -52,7 +55,7 @@ class TokenTest : EventAwareBlockScannerTest() {
             updatedAt = Instant.EPOCH,
         )
 
-        Wait.waitAssert {
+        Wait.waitAssert(timeout = timeout) {
             assertToken(token)
             assertUpdateTokenEvent(token, emptyTokenMeta)
             assertUpdateBalanceEvent(fromBalance, emptyTokenMeta)
@@ -60,7 +63,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         }
 
         burnToken(account, amount = 4UL)
-        Wait.waitAssert {
+        Wait.waitAssert(timeout = timeout) {
             val partlyBurnedToken = token.copy(supply = 1.scaleSupply(decimals))
             assertToken(partlyBurnedToken)
             assertUpdateTokenEvent(partlyBurnedToken, emptyTokenMeta)
@@ -71,7 +74,7 @@ class TokenTest : EventAwareBlockScannerTest() {
         }
 
         transferToken(tokenAddress, amount = 1UL, aliceAccount)
-        Wait.waitAssert {
+        Wait.waitAssert(timeout = timeout) {
             val finalToken = token.copy(supply = 1.scaleSupply(decimals))
             assertToken(finalToken)
             assertUpdateTokenEvent(finalToken, emptyTokenMeta)

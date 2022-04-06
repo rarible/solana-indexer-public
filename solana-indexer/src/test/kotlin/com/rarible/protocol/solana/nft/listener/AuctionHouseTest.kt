@@ -32,7 +32,7 @@ import java.time.Instant
 
 class AuctionHouseTest : AbstractBlockScannerTest() {
 
-    private val timeout = Duration.ofSeconds(5)
+    private val timeout = Duration.ofSeconds(120)
     private val wrappedSol = WrappedSolAssetType.SOL
 
     @Autowired
