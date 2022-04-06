@@ -30,7 +30,7 @@ class BalanceRepository(
         mongo.save(balance).awaitFirst()
 
     suspend fun findByAccount(account: BalanceId): Balance? =
-        mongo.findById<Balance>(account).awaitFirstOrNull()?.takeIf { it.value > BigInteger.ZERO }
+        mongo.findById<Balance>(account).awaitFirstOrNull()
 
     fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
         val criteria = Criteria().andOperator(

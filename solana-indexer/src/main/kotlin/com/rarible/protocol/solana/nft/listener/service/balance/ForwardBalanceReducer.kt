@@ -7,17 +7,13 @@ import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
 import com.rarible.protocol.solana.common.event.BalanceOutcomeEvent
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.isEmpty
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class ForwardBalanceReducer : Reducer<BalanceEvent, Balance> {
 
-    private val logger = LoggerFactory.getLogger(ForwardBalanceReducer::class.java)
-
     override suspend fun reduce(entity: Balance, event: BalanceEvent): Balance {
         if (event !is BalanceInitializeAccountEvent && entity.isEmpty) {
-            logger.info("Attempt to reduce a balance without initialize mint ${entity.account}")
             return entity
         }
         return when (event) {
