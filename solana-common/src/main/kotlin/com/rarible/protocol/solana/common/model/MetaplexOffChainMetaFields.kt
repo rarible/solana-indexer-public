@@ -22,7 +22,7 @@ data class MetaplexOffChainMetaFields(
 ) {
     data class Collection(
         val name: String,
-        val family: String,
+        val family: String?,
         val hash: String
     )
 

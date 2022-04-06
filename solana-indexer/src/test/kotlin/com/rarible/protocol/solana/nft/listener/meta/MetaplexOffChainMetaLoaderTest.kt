@@ -113,4 +113,42 @@ class MetaplexOffChainMetaLoaderTest {
 
         assertThat(metaplexOffChainMeta).isEqualTo(expected)
     }
+
+    @Test
+    fun `load meta with non standard properties-collection`() = runBlocking<Unit> {
+        val url = URL(
+            "https://arweave.net/EHWKTkuer3stMM57HQqW8jzYpdn549M4cAvQ4KsTwPA"
+        )
+
+        val metaplexMeta = createRandomMetaplexMeta().let {
+            it.copy(
+                metaFields = it.metaFields.copy(
+                    uri = url.toExternalForm(),
+                    creators = listOf(
+                        MetaplexTokenCreator(
+                            address = "6G7AqEUxwbyHJtKA3aHL7SbiijGqznuvNRDb2hG7uwA4",
+                            share = 100,
+                            verified = true
+                        )
+                    )
+                )
+            )
+        }
+        val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+            tokenAddress = randomString(),
+            metaplexMetaFields = metaplexMeta.metaFields
+        )
+        val collection = metaplexOffChainMeta?.metaFields?.collection
+        assertThat(collection).isEqualTo(
+            MetaplexOffChainMetaFields.Collection(
+                name = "Degeniverse Eggs",
+                family = null,
+                hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                    name = "Degeniverse Eggs",
+                    family = null,
+                    creators = listOf("6G7AqEUxwbyHJtKA3aHL7SbiijGqznuvNRDb2hG7uwA4")
+                )
+            )
+        )
+    }
 }

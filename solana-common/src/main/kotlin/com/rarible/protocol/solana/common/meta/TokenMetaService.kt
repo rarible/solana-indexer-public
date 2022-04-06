@@ -61,7 +61,6 @@ class TokenMetaService(
     suspend fun loadTokenMeta(tokenAddress: TokenId): TokenMeta? {
         val onChainMeta = getOnChainMeta(tokenAddress) ?: return null
         val metaFields = onChainMeta.metaFields
-        val metadataUrl = url(metaFields.uri)
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
             tokenAddress = tokenAddress,
             metaplexMetaFields = metaFields

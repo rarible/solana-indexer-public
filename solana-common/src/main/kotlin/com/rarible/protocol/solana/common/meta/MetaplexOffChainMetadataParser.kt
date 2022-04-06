@@ -33,6 +33,16 @@ object MetaplexOffChainMetadataParser {
                         creators = metaplexMetaFields.creators.map { it.address }
                     )
                 )
+            } ?: properties?.collection?.let { collectionName ->
+                MetaplexOffChainMetaFields.Collection(
+                    name = collectionName,
+                    family = null,
+                    hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                        name = collectionName,
+                        family = null,
+                        creators = metaplexMetaFields.creators.map { it.address }
+                    )
+                )
             },
             sellerFeeBasisPoints = seller_fee_basis_points,
             externalUrl = external_url,

@@ -47,7 +47,7 @@ data class TokenMeta(
 
         data class OffChain(
             val name: String,
-            val family: String,
+            val family: String?,
             val hash: String
         ) : Collection()
     }

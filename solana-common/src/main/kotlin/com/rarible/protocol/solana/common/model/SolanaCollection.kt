@@ -11,7 +11,7 @@ data class SolanaCollectionV1(
     @Id
     override val id: String,
     val name: String,
-    val family: String
+    val family: String?
 ) : SolanaCollection()
 
 data class SolanaCollectionV2(

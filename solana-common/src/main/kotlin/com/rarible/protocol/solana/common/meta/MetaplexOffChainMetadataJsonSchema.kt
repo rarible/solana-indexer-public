@@ -34,6 +34,8 @@ data class MetaplexOffChainMetadataJsonSchema(
     data class Properties(
         val category: String?,
         val creators: List<Creator>?,
+        // Non-standard, used in some collections.
+        val collection: String?,
         val files: List<File>?
     ) {
         @JsonIgnoreProperties(ignoreUnknown = true)
