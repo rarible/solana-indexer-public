@@ -41,10 +41,10 @@ class BalanceUpdateService(
         if (exist != null) {
             balanceUpdateListener.onBalanceChanged(balance)
         }
-        if (balance.value > BigInteger.ZERO) {
-            logger.info("Updated balance: $entity")
-        } else {
+        if (exist != null && entity.value == BigInteger.ZERO) {
             logger.info("Deleted balance: $entity")
+        } else {
+            logger.info("Updated balance: $entity")
         }
         if (exist?.value != balance.value) {
             updateOrders(balance)
