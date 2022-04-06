@@ -12,6 +12,9 @@ import com.rarible.core.common.nowMillis
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -21,6 +24,7 @@ class SolanaCacheApi(
     private val repository: BlockCacheRepository,
     private val httpApi: SolanaHttpRpcApi,
     private val mapper: ObjectMapper,
+    private val properties: BlockCacheProperties,
     meterRegistry: MeterRegistry
 ) : SolanaApi {
 
@@ -56,20 +60,29 @@ class SolanaCacheApi(
         } else {
             val fetchStart = Timer.start()
             val fromCache = getFromCache(slot)
+
             fetchStart.stop(blockCacheFetchTimer)
-            if (fromCache != null) {
-                blockCacheHits.increment()
-                blockCacheLoadedSize.increment(fromCache.size.toDouble())
-                mapper.readValue(fromCache)
-            } else {
-                blockCacheMisses.increment()
-                val result = httpApi.getBlock(slot, details)
-                if (shouldSaveBlockToCache(slot)) {
-                    val bytes = mapper.writeValueAsBytes(result)
-                    repository.save(slot, bytes)
-                }
-                result
+            parseBlock(slot, fromCache, details)
+        }
+    }
+
+    private suspend fun parseBlock(
+        slot: Long,
+        block: ByteArray?,
+        details: GetBlockRequest.TransactionDetails
+    ): ApiResponse<SolanaBlockDto> {
+        return if (block != null) {
+            blockCacheHits.increment()
+            blockCacheLoadedSize.increment(block.size.toDouble())
+            mapper.readValue(block)
+        } else {
+            blockCacheMisses.increment()
+            val result = httpApi.getBlock(slot, details)
+            if (shouldSaveBlockToCache(slot)) {
+                val bytes = mapper.writeValueAsBytes(result)
+                repository.save(slot, bytes)
             }
+            result
         }
     }
 
@@ -84,29 +97,29 @@ class SolanaCacheApi(
         slots: List<Long>,
         details: GetBlockRequest.TransactionDetails
     ): Map<Long, ApiResponse<SolanaBlockDto>> {
-        return if (details == GetBlockRequest.TransactionDetails.None) {
-            slots.associateWith { httpApi.getBlock(it, details) }
-        } else {
-            val fetchStart = Timer.start()
-            val slotToBlock = getFromCache(slots)
-            fetchStart.stop(blockCacheBatchFetchTimer)
+        return if (properties.enableBatch) {
+            return if (details == GetBlockRequest.TransactionDetails.None) {
+                slots.associateWith { httpApi.getBlock(it, details) }
+            } else {
+                val fetchStart = Timer.start()
+                val slotToBlock = getFromCache(slots)
+                fetchStart.stop(blockCacheBatchFetchTimer)
 
-            slots.associateWith { slot ->
-                val block = slotToBlock[slot]
+                coroutineScope {
+                    slots.map { slot ->
+                        async {
+                            val block = slotToBlock[slot]
 
-                if (block != null) {
-                    blockCacheHits.increment()
-                    blockCacheLoadedSize.increment(block.size.toDouble())
-                    mapper.readValue(block)
-                } else {
-                    blockCacheMisses.increment()
-                    val result = httpApi.getBlock(slot, details)
-                    if (shouldSaveBlockToCache(slot)) {
-                        val bytes = mapper.writeValueAsBytes(result)
-                        repository.save(slot, bytes)
-                    }
-                    result
+                            slot to parseBlock(slot, block, details)
+                        }
+                    }.awaitAll().toMap()
                 }
+            }
+        } else {
+            coroutineScope {
+                slots.map {
+                    async { it to getBlock(it, details) }
+                }.awaitAll().toMap()
             }
         }
     }
@@ -118,8 +131,10 @@ class SolanaCacheApi(
         updateLastKnownBlockIfNecessary()
         val shouldSave = lastKnownBlock != 0L && slot < lastKnownBlock - 50000
         if (!shouldSave) {
-            logger.info("Do not save the block #$slot to the cache because it may be unstable, " +
-                    "last known block #$lastKnownBlock is away ${slot - lastKnownBlock} blocks only")
+            logger.info(
+                "Do not save the block #$slot to the cache because it may be unstable, " +
+                        "last known block #$lastKnownBlock is away ${slot - lastKnownBlock} blocks only"
+            )
         }
         return shouldSave
     }
@@ -141,7 +156,8 @@ class SolanaCacheApi(
 
     override suspend fun getLatestSlot(): ApiResponse<Long> = httpApi.getLatestSlot()
 
-    override suspend fun getTransaction(signature: String): ApiResponse<SolanaTransactionDto> = httpApi.getTransaction(signature)
+    override suspend fun getTransaction(signature: String): ApiResponse<SolanaTransactionDto> =
+        httpApi.getTransaction(signature)
 
     private companion object {
         val logger: Logger = LoggerFactory.getLogger(SolanaCacheApi::class.java)

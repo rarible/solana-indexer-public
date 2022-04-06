@@ -11,4 +11,5 @@ data class BlockCacheProperties(
     val timeout: Long = 30000,
     val batchSize: Int = 200,
     val mongo: MongoProperties?,
+    val enableBatch: Boolean = true
 )

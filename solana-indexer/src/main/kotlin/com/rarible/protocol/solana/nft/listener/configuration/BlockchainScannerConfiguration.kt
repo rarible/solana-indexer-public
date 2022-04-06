@@ -13,6 +13,7 @@ import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.configuration.TokenFilterType
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheProperties
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
@@ -48,7 +49,8 @@ import org.springframework.context.annotation.Configuration
 class BlockchainScannerConfiguration(
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val meterRegistry: MeterRegistry,
-    private val applicationEnvironmentInfo: ApplicationEnvironmentInfo
+    private val applicationEnvironmentInfo: ApplicationEnvironmentInfo,
+    private val blockCacheProperties: BlockCacheProperties
 ) {
 
     private val WHITELIST_FILES = listOf(
@@ -71,6 +73,7 @@ class BlockchainScannerConfiguration(
             repository,
             SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
             mapper,
+            blockCacheProperties,
             meterRegistry
         )
     } else {

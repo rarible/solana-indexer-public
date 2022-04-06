@@ -480,6 +480,7 @@ abstract class AbstractBlockScannerTest {
                 "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
             )
             assertEquals(0, exec.exitCode, exec.stderr)
+            Thread.sleep(3_000) // for tests
             val port = solana.getMappedPort(8899)
 
             registry.add("blockchain.scanner.solana.rpcApiUrls") { "http://127.0.0.1:$port" }
