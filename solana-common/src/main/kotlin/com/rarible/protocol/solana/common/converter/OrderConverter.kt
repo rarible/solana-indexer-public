@@ -29,6 +29,7 @@ class OrderConverter(
             },
             makePrice = order.makePrice,
             takePrice = order.takePrice,
+            makeStock = order.makeStock.toBigDecimal(),
             start = null,
             end = null,
             createdAt = order.createdAt,

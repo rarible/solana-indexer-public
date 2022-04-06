@@ -30,6 +30,7 @@ data class Order(
     val status: OrderStatus,
     val make: Asset,
     val take: Asset,
+    val makeStock: BigInteger = BigInteger.ZERO,
     val makePrice: BigDecimal?,
     val takePrice: BigDecimal?,
     val fill: BigInteger,

@@ -6,12 +6,10 @@ import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.math.BigInteger
 
 @Component
 class BalanceApiService(
@@ -22,7 +20,7 @@ class BalanceApiService(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun getBalanceWithMetaByMintAndOwner(mint: String, owner: String): BalanceWithMeta {
-        val balances = balanceRepository.findByMintAndOwner(mint, owner).filter { it.value > BigInteger.ZERO }.toList()
+        val balances = balanceRepository.findByMintAndOwner(mint, owner, false).toList()
         if (balances.isEmpty()) throw EntityNotFoundApiException("Balance", "$mint:$owner")
         if (balances.size > 1) {
             logger.warn("Several balances ({}) found for pair mint {} and owner {}", balances.size, mint, owner)
@@ -34,15 +32,15 @@ class BalanceApiService(
         balanceRepository.findByOwner(
             owner,
             continuation,
-            limit
-        ).filter { it.value > BigInteger.ZERO }
-            .map { tokenMetaService.extendWithAvailableMeta(it) }
+            limit,
+            false
+        ).map { tokenMetaService.extendWithAvailableMeta(it) }
 
     fun getBalanceWithMetaByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
         balanceRepository.findByMint(
             mint,
             continuation,
-            limit
-        ).filter { it.value > BigInteger.ZERO }
-            .map { tokenMetaService.extendWithAvailableMeta(it) }
+            limit,
+            false
+        ).map { tokenMetaService.extendWithAvailableMeta(it) }
 }

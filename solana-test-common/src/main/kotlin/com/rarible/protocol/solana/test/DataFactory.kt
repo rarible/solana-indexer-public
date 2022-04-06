@@ -228,7 +228,8 @@ fun randomSolanaLog(): SolanaLog {
 fun randomSellOrder(
     make: Asset = randomAsset(randomAssetTypeNft()),
     take: Asset = randomAsset(randomAssetTypeFt()),
-    maker: String = randomString()
+    maker: String = randomString(),
+    fill: BigInteger = randomBigInt(2)
 ): Order {
     return Order(
         auctionHouse = randomString(),
@@ -237,8 +238,9 @@ fun randomSellOrder(
         make = make,
         take = take,
         takePrice = null,
+        makeStock = make.amount,
         makePrice = randomBigDecimal(4, 2),
-        fill = randomBigInt(2),
+        fill = fill,
         createdAt = nowMillis(),
         updatedAt = nowMillis(),
         direction = OrderDirection.SELL,

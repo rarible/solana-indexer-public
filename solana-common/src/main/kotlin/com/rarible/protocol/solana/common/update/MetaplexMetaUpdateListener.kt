@@ -16,6 +16,7 @@ class MetaplexMetaUpdateListener(
     private val tokenUpdateListener: TokenUpdateListener,
     private val balanceUpdateListener: BalanceUpdateListener
 ) {
+
     private val logger = LoggerFactory.getLogger(MetaplexMetaUpdateListener::class.java)
 
     suspend fun onTokenMetaChanged(tokenAddress: TokenId, tokenMeta: TokenMeta) {
@@ -25,8 +26,10 @@ class MetaplexMetaUpdateListener(
             tokenUpdateListener.onTokenChanged(TokenWithMeta(token, tokenMeta))
         }
 
-        balanceRepository.findByMint(tokenAddress, null, Int.MAX_VALUE).collect { balance ->
-            balanceUpdateListener.onBalanceChanged(BalanceWithMeta(balance, tokenMeta))
-        }
+        // TODO not sure we need to send updates for deleted balances
+        balanceRepository.findByMint(tokenAddress, null, Int.MAX_VALUE, true)
+            .collect { balance ->
+                balanceUpdateListener.onBalanceChanged(BalanceWithMeta(balance, tokenMeta))
+            }
     }
 }

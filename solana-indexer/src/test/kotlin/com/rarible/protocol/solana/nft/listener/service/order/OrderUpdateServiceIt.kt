@@ -61,15 +61,15 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order not updated`() = runBlocking<Unit> {
-        // There is no balance in DB, so we consider this order as INACTIVE
-        val order = orderRepository.save(randomSellOrder().copy(status = OrderStatus.INACTIVE))
+        // There is no balance in DB, so we consider this order as ACTIVE
+        val order = orderRepository.save(randomSellOrder())
 
         orderUpdateService.update(order)
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.ACTIVE))
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertThat(saved).isEqualTo(order)
+        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
     }
 
     @Test
@@ -106,7 +106,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         val balance = balanceRepository.save(createRandomBalance(owner = owner, mint = mint))
 
         val order = orderRepository.save(
-            randomSellOrder(make = Asset(TokenNftAssetType(mint), balance.value), maker = owner)
+            randomSellOrder(make = Asset(TokenNftAssetType(mint), balance.value), maker = owner, fill = BigInteger.ZERO)
         )
 
         orderUpdateService.update(order)
@@ -115,25 +115,6 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         val saved = orderRepository.findById(order.id)!!
         assertThat(saved).isEqualTo(order)
         coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
-    }
-
-    @Test
-    fun `existing order updated - balance less than make stock`() = runBlocking<Unit> {
-        val mint = randomString()
-        val owner = randomString()
-
-        balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.ONE))
-
-        val order = orderRepository.save(
-            randomSellOrder(make = Asset(TokenNftAssetType(mint), BigInteger.TEN), maker = owner)
-        )
-
-        orderUpdateService.update(order)
-
-        // Order status should be changed from ACTIVE to INACTIVE
-        val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.INACTIVE))
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
     }
 
     @Test
@@ -150,6 +131,52 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
     }
 
     @Test
+    fun `existing order updated - balance is zero`() = runBlocking<Unit> {
+        val mint = randomString()
+        val owner = randomString()
+
+        balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.ZERO))
+
+        val order = orderRepository.save(
+            randomSellOrder(
+                make = Asset(TokenNftAssetType(mint), BigInteger.TEN),
+                maker = owner,
+                fill = BigInteger.ZERO
+            )
+        )
+
+        orderUpdateService.update(order)
+
+        // Order status should be changed from ACTIVE to INACTIVE
+        val saved = orderRepository.findById(order.id)!!
+        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.INACTIVE, makeStock = BigInteger.ZERO))
+        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+    }
+
+    @Test
+    fun `existing order updated - balance is less than make stock`() = runBlocking<Unit> {
+        val mint = randomString()
+        val owner = randomString()
+
+        balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.ONE))
+
+        val order = orderRepository.save(
+            randomSellOrder(
+                make = Asset(TokenNftAssetType(mint), BigInteger.TEN),
+                maker = owner,
+                fill = BigInteger.ZERO
+            )
+        )
+
+        orderUpdateService.update(order)
+
+        // Order should stay active, but make stock should be changed to 1
+        val saved = orderRepository.findById(order.id)!!
+        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.ACTIVE, makeStock = BigInteger.ONE))
+        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+    }
+
+    @Test
     fun `existing order updated - balance greater than make stock`() = runBlocking<Unit> {
         val mint = randomString()
         val owner = randomString()
@@ -157,8 +184,11 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.TEN))
 
         val order = orderRepository.save(
-            randomSellOrder(make = Asset(TokenNftAssetType(mint), BigInteger.ONE), maker = owner)
-                .copy(status = OrderStatus.INACTIVE)
+            randomSellOrder(
+                make = Asset(TokenNftAssetType(mint), BigInteger.ONE),
+                maker = owner,
+                fill = BigInteger.ZERO
+            ).copy(status = OrderStatus.INACTIVE)
         )
 
         orderUpdateService.update(order)

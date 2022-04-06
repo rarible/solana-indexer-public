@@ -12,7 +12,7 @@ import com.rarible.protocol.solana.common.update.OrderUpdateListener
 import kotlinx.coroutines.flow.firstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.time.Instant
+import java.math.BigInteger
 
 @Component
 class OrderUpdateService(
@@ -47,28 +47,36 @@ class OrderUpdateService(
     }
 
     private suspend fun Order.checkForUpdates(): Order {
-        return checkBalance() // continue update chain if needed
+        return updateMakeStock() // continue update chain if needed
     }
 
-    private suspend fun Order.checkBalance(): Order {
+    private suspend fun Order.updateMakeStock(): Order {
         if (direction != OrderDirection.SELL) {
             return this // Do not check bid orders, only sell
         }
+        // TODO not sure, do we need to update make stock for CANCELLED/FILLED orders?
         if (status != OrderStatus.INACTIVE && status != OrderStatus.ACTIVE) {
             // Balance change can affect only ACTIVE/INACTIVE orders
             return this
         }
 
-        val balance = balanceRepository.findByMintAndOwner(make.type.tokenAddress, maker)
-            .firstOrNull()
-
-        return when {
+        val balance = balanceRepository.findByMintAndOwner(make.type.tokenAddress, maker, true)
             // Workaround for a race: balance has not been reduced yet.
             // Considering the order is active. When the balance changes, the status will become INACTIVE.
-            balance == null -> this.copy(status = OrderStatus.ACTIVE)
-            balance.value < make.amount -> this.copy(status = OrderStatus.INACTIVE)
-            else -> this.copy(status = OrderStatus.ACTIVE)
+            .firstOrNull() ?: return this.copy(status = OrderStatus.ACTIVE)
+
+        val notFilledValue = maxOf(make.amount - fill, BigInteger.ZERO)
+        val makeStock = minOf(notFilledValue, balance.value)
+
+        val status = when {
+            makeStock > BigInteger.ZERO -> OrderStatus.ACTIVE
+            else -> OrderStatus.INACTIVE
         }
+
+        return this.copy(
+            status = status,
+            makeStock = makeStock
+        )
     }
 
     private fun requireUpdate(updated: Order, exist: Order?): Boolean {

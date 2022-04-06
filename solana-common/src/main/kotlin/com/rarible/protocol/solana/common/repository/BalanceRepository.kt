@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.mongodb.core.query.gt
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -32,34 +31,44 @@ class BalanceRepository(
     suspend fun findByAccount(account: BalanceId): Balance? =
         mongo.findById<Balance>(account).awaitFirstOrNull()
 
-    fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
-        val criteria = Criteria().andOperator(
-            Balance::owner isEqualTo owner,
-            Balance::mint isEqualTo mint
-        )
+    fun findByMintAndOwner(mint: String, owner: String, includeDeleted: Boolean): Flow<Balance> {
+        val criteria = Criteria()
+            .addMint(mint)
+            .addOwner(owner)
+            .includeDeleted(includeDeleted)
+
         val query = Query(criteria)
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
-    fun findByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
-        val criteria = Criteria().andOperator(
-            Balance::owner isEqualTo owner
-        ).addContinuation(continuation)
+    fun findByOwner(
+        owner: String,
+        continuation: DateIdContinuation?,
+        limit: Int,
+        includeDeleted: Boolean
+    ): Flow<Balance> {
+        val criteria = Criteria()
+            .addOwner(owner)
+            .includeDeleted(includeDeleted)
+            .addContinuation(continuation)
 
-        val query = Query(criteria).withSortByLastUpdateAndId()
-        query.limit(limit)
+        val query = Query(criteria).limit(limit).withSortByLastUpdateAndId()
 
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
-    fun findByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
-        @Suppress("DuplicatedCode")
-        val criteria = Criteria().andOperator(
-            Balance::mint isEqualTo mint
-        ).addContinuation(continuation)
+    fun findByMint(
+        mint: String,
+        continuation: DateIdContinuation?,
+        limit: Int,
+        includeDeleted: Boolean
+    ): Flow<Balance> {
+        val criteria = Criteria()
+            .addMint(mint)
+            .includeDeleted(includeDeleted)
+            .addContinuation(continuation)
 
-        val query = Query(criteria).withSortByLastUpdateAndId()
-        query.limit(limit)
+        val query = Query(criteria).limit(limit).withSortByLastUpdateAndId()
 
         return mongo.find(query, Balance::class.java).asFlow()
     }
@@ -74,6 +83,18 @@ class BalanceRepository(
                 Criteria(Balance::updatedAt.name).lt(continuation.date)
             )
         } ?: this
+
+    private fun Criteria.includeDeleted(includeDeleted: Boolean): Criteria {
+        return if (includeDeleted) this else and(Balance::value.name).gt(BigInteger.ZERO)
+    }
+
+    private fun Criteria.addOwner(owner: String): Criteria {
+        return and(Balance::owner.name).isEqualTo(owner)
+    }
+
+    private fun Criteria.addMint(owner: String): Criteria {
+        return and(Balance::mint.name).isEqualTo(owner)
+    }
 
     suspend fun createIndexes() {
         logger.info("Ensuring indexes on ${Balance.COLLECTION}")
