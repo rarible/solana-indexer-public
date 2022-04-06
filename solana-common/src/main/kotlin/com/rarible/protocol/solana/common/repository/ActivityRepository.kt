@@ -12,8 +12,10 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.index.Index
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.isEqualTo
@@ -86,7 +88,26 @@ class ActivityRepository(
     private fun Sort.direction(asc: Boolean) =
         if (asc) ascending() else descending()
 
+    suspend fun createIndexes() {
+        logger.info("Ensuring indexes on $COLLECTION")
+        ALL_INDEXES.forEach { index ->
+            mongo.indexOps(COLLECTION).ensureIndex(index).awaitFirst()
+        }
+    }
+
     companion object {
+        private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
         private const val COLLECTION = "activity"
+
+        private val TYPE_AND_MINT_AND_DATE_AND_ID = Index()
+            .on(ActivityRecord::type.name, Sort.Direction.ASC)
+            .on(ActivityRecord::mint.name, Sort.Direction.ASC)
+            .on(ActivityRecord::date.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
+        val ALL_INDEXES = listOf(
+            TYPE_AND_MINT_AND_DATE_AND_ID,
+        )
     }
 }
