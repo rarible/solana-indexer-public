@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenWithMeta
+import com.rarible.protocol.solana.dto.BalanceDeleteEventDto
 import com.rarible.protocol.solana.dto.BalanceDto
 import com.rarible.protocol.solana.dto.BalanceEventDto
 import com.rarible.protocol.solana.dto.BalanceUpdateEventDto
@@ -26,6 +27,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
+import java.math.BigInteger
 import java.time.Instant
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
@@ -71,10 +73,19 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
 
     protected fun assertUpdateBalanceEvent(balance: Balance, tokenMeta: TokenMeta?) {
         Assertions.assertThat(balanceEvents).anySatisfy { event ->
-            Assertions.assertThat(event).isInstanceOfSatisfying(BalanceUpdateEventDto::class.java) {
+            val expectedClass = if (balance.value > BigInteger.ZERO) {
+                BalanceUpdateEventDto::class.java
+            } else {
+                BalanceDeleteEventDto::class.java
+            }
+            Assertions.assertThat(event).isInstanceOfSatisfying(expectedClass) {
                 Assertions.assertThat(it.account).isEqualTo(balance.account)
+                val balanceDto = when (it) {
+                    is BalanceUpdateEventDto -> it.balance
+                    is BalanceDeleteEventDto -> it.balance
+                }
                 assertBalanceDtoEqual(
-                    it.balance,
+                    balanceDto,
                     BalanceWithMetaConverter.convert(BalanceWithMeta(balance, tokenMeta))
                 )
             }
