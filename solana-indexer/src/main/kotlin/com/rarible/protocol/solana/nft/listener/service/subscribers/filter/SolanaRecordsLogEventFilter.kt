@@ -100,8 +100,9 @@ class SolanaRecordsLogEventFilter(
         val accountToMintMapping = HashMap<String, String>()
         val accounts = AccountGraph()
 
-        events.asSequence().flatMap { it.logRecordsToInsert }.map { r ->
-            when (val record = r as? SolanaBaseLogRecord) {
+        events.asSequence().flatMap { it.logRecordsToInsert }.forEach { r ->
+            @Suppress("UNUSED_VARIABLE")
+            val exhaustiveWhen = when (val record = r as? SolanaBaseLogRecord) {
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
                     // Artificial reference for init-record
