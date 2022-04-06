@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.meta
 
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
-import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import org.slf4j.LoggerFactory
 
 object TokenMetaParser {
@@ -16,7 +15,7 @@ object TokenMetaParser {
         name = onChainMeta.name,
         symbol = onChainMeta.symbol,
         url = onChainMeta.uri,
-        creators = getCreators(onChainMeta, offChainMeta),
+        creators = onChainMeta.creators,
         collection = getCollection(onChainMeta, offChainMeta),
         description = offChainMeta?.description,
         attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() },
@@ -90,20 +89,9 @@ object TokenMetaParser {
         return TokenMeta.Collection.OffChain(
             name = offChainCollection.name,
             family = offChainCollection.family,
-            hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-                name = offChainCollection.name,
-                family = offChainCollection.family,
-                creators = metaplexMeta.creators.orEmpty().map { it.address }
-            )
+            hash = offChainCollection.hash
         )
     }
-
-    private fun getCreators(
-        metaplexMeta: MetaplexMetaFields,
-        metaplexOffChainMetaFields: MetaplexOffChainMetaFields?
-    ): List<MetaplexTokenCreator> =
-        metaplexMeta.creators?.takeIf { it.isNotEmpty() }
-            ?: metaplexOffChainMetaFields?.properties?.creators.orEmpty()
 
     private fun <T> parseField(fieldName: String, block: () -> T): T {
         val field = block()

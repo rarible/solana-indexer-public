@@ -29,8 +29,10 @@ class CollectionService(
         return collectionRepository.findAll(fromId, limit).toList()
     }
 
-    suspend fun updateCollectionV1(meta: MetaplexOffChainMeta): SolanaCollectionV1? {
-        val collection = meta.metaFields.collection ?: return null
+    suspend fun updateCollectionV1(
+        offChainMeta: MetaplexOffChainMeta
+    ): SolanaCollectionV1? {
+        val collection = offChainMeta.metaFields.collection ?: return null
         val exist = findById(collection.hash)
         if (exist != null) {
             return null

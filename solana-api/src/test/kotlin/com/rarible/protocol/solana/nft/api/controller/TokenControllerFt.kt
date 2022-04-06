@@ -152,7 +152,10 @@ class TokenControllerFt : AbstractControllerTest() {
         val expected = TokenMetaParser.mergeOnChainAndOffChainMeta(tokenMeta.metaFields, offChainMeta.metaFields)
 
         coEvery {
-            testMetaplexOffChainMetaLoader.loadMetaplexOffChainMeta(eq(token.id), any())
+            testMetaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+                tokenAddress = eq(token.id),
+                metaplexMetaFields = tokenMeta.metaFields
+            )
         } returns offChainMeta
 
         assertThat(tokenControllerApi.getTokenMetaByAddress(token.mint).awaitFirst())

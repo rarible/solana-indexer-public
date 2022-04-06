@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.meta
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 
@@ -9,12 +10,15 @@ object MetaplexOffChainMetadataParser {
 
     private val jacksonMapper = jacksonObjectMapper()
 
-    fun parseMetaplexOffChainMetaFields(offChainMetadataJsonContent: String): MetaplexOffChainMetaFields =
+    fun parseMetaplexOffChainMetaFields(
+        offChainMetadataJsonContent: String,
+        metaplexMetaFields: MetaplexMetaFields,
+    ): MetaplexOffChainMetaFields =
         jacksonMapper
             .readValue<MetaplexOffChainMetadataJsonSchema>(offChainMetadataJsonContent)
-            .toMetaplexOffChainMetaFields()
+            .toMetaplexOffChainMetaFields(metaplexMetaFields)
 
-    private fun MetaplexOffChainMetadataJsonSchema.toMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields =
+    private fun MetaplexOffChainMetadataJsonSchema.toMetaplexOffChainMetaFields(metaplexMetaFields: MetaplexMetaFields): MetaplexOffChainMetaFields =
         MetaplexOffChainMetaFields(
             name = name,
             symbol = symbol,
@@ -26,7 +30,7 @@ object MetaplexOffChainMetadataParser {
                     hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
                         name = collection.name,
                         family = collection.family,
-                        creators = properties?.creators.orEmpty().map { it.address }
+                        creators = metaplexMetaFields.creators.map { it.address }
                     )
                 )
             },

@@ -3,7 +3,6 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
-import com.rarible.protocol.solana.common.meta.url
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
@@ -162,7 +161,10 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
             tokenAddress = token.mint
         )
         coEvery {
-            testMetaplexOffChainMetaLoader.loadMetaplexOffChainMeta(token.mint, url(metaplexMeta.metaFields.uri))
+            testMetaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+                tokenAddress = token.mint,
+                metaplexMetaFields = metaplexMeta.metaFields
+            )
         } returns metaplexOffChainMeta
 
         tokenMetaService.loadTokenMeta(token.mint)

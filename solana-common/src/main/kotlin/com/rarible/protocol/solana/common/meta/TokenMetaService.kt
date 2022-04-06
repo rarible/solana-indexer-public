@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.meta
 
+import com.rarible.protocol.solana.common.converter.CollectionConverter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -9,6 +10,8 @@ import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.update.MetaplexMetaUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +22,9 @@ import org.springframework.stereotype.Component
 class TokenMetaService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
-    private val metaplexOffChainMetaLoader: MetaplexOffChainMetaLoader
+    private val metaplexOffChainMetaLoader: MetaplexOffChainMetaLoader,
+    private val collectionService: CollectionService,
+    private val collectionEventListener: CollectionEventListener,
 ) {
 
     private val logger = LoggerFactory.getLogger(TokenMetaService::class.java)
@@ -59,8 +64,9 @@ class TokenMetaService(
         val metadataUrl = url(metaFields.uri)
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
             tokenAddress = tokenAddress,
-            metadataUrl = metadataUrl
+            metaplexMetaFields = metaFields
         ) ?: return null
+        updateCollection(metaplexOffChainMeta)
 
         val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(metaFields, metaplexOffChainMeta.metaFields)
         metaplexMetaUpdateListener.onTokenMetaChanged(tokenAddress, tokenMeta)
@@ -81,5 +87,11 @@ class TokenMetaService(
             offChainMeta = offChainMeta.metaFields
         )
         metaplexMetaUpdateListener.onTokenMetaChanged(metaplexMeta.tokenAddress, tokenMeta)
+    }
+
+    private suspend fun updateCollection(metaplexOffChainMeta: MetaplexOffChainMeta) {
+        val collection = collectionService.updateCollectionV1(metaplexOffChainMeta) ?: return
+        val dto = CollectionConverter.convertV1(collection)
+        collectionEventListener.onCollectionChanged(dto)
     }
 }

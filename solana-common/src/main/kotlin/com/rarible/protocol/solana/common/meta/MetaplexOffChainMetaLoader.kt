@@ -1,12 +1,10 @@
 package com.rarible.protocol.solana.common.meta
 
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
-import com.rarible.protocol.solana.common.converter.CollectionConverter
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
-import com.rarible.protocol.solana.common.service.CollectionService
-import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.util.nowMillis
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
@@ -19,12 +17,10 @@ import java.time.Duration
 @Component
 class MetaplexOffChainMetaLoader(
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
-    private val collectionService: CollectionService,
-    private val collectionEventListener: CollectionEventListener,
     private val externalHttpClient: ExternalHttpClient,
     private val metaMetrics: MetaMetrics,
     private val solanaIndexerProperties: SolanaIndexerProperties,
-    private val clock: Clock
+    private val clock: Clock,
 ) {
 
     private companion object {
@@ -40,7 +36,11 @@ class MetaplexOffChainMetaLoader(
             .timeout(Duration.ofMillis(solanaIndexerProperties.metaplexOffChainMetaLoadingTimeout))
             .awaitFirst()
 
-    suspend fun loadMetaplexOffChainMeta(tokenAddress: TokenId, metadataUrl: URL): MetaplexOffChainMeta? {
+    suspend fun loadMetaplexOffChainMeta(
+        tokenAddress: TokenId,
+        metaplexMetaFields: MetaplexMetaFields
+    ): MetaplexOffChainMeta? {
+        val metadataUrl = url(metaplexMetaFields.uri)
         // TODO: when meta gets changed, we have to send a token update event.
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
         val offChainMetadataJsonContent = try {
@@ -51,7 +51,10 @@ class MetaplexOffChainMetaLoader(
             return null
         }
         val metaplexOffChainMetaFields = try {
-            MetaplexOffChainMetadataParser.parseMetaplexOffChainMetaFields(offChainMetadataJsonContent)
+            MetaplexOffChainMetadataParser.parseMetaplexOffChainMetaFields(
+                offChainMetadataJsonContent = offChainMetadataJsonContent,
+                metaplexMetaFields = metaplexMetaFields
+            )
         } catch (e: Exception) {
             logger.error("Failed to parse metadata for token $tokenAddress by URL $metadataUrl", e)
             metaMetrics.onMetaParsingError()
@@ -62,14 +65,7 @@ class MetaplexOffChainMetaLoader(
             metaFields = metaplexOffChainMetaFields,
             loadedAt = clock.nowMillis()
         )
-        updateCollection(metaplexOffChainMeta)
         return metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
-    }
-
-    private suspend fun updateCollection(metaplexOffChainMeta: MetaplexOffChainMeta) {
-        val collection = collectionService.updateCollectionV1(metaplexOffChainMeta) ?: return
-        val dto = CollectionConverter.convertV1(collection)
-        collectionEventListener.onCollectionChanged(dto)
     }
 
 }

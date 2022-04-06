@@ -9,9 +9,8 @@ import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.service.CollectionService
-import com.rarible.protocol.solana.common.update.CollectionEventListener
+import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -24,13 +23,10 @@ class MetaplexOffChainMetaLoaderTest {
 
     private val externalHttpClient = ExternalHttpClient()
     private val collectionService: CollectionService = mockk()
-    private val collectionEventListener: CollectionEventListener = mockk()
     private val metaplexOffChainMetaLoader = MetaplexOffChainMetaLoader(
         metaplexOffChainMetaRepository = mockk {
             coEvery { save(any()) } answers { firstArg() }
         },
-        collectionService,
-        collectionEventListener,
         externalHttpClient = externalHttpClient,
         solanaIndexerProperties = mockk<SolanaIndexerProperties>().apply { every { this@apply.metaplexOffChainMetaLoadingTimeout } returns 20000 },
         metaMetrics = mockk(),
@@ -44,6 +40,21 @@ class MetaplexOffChainMetaLoaderTest {
         val url = URL(
             "https://gist.githubusercontent.com/serejke/6e5c9e1cad75956f17d6059e3b1eaf98/raw/c85ac6ab1431e2fde06bc25954c79cc91445a3f8/meta-with-collection.json"
         )
+
+        val metaplexMeta = createRandomMetaplexMeta().let {
+            it.copy(
+                metaFields = it.metaFields.copy(
+                    uri = url.toExternalForm(),
+                    creators = listOf(
+                        MetaplexTokenCreator(
+                            address = "6G7AqEUxwbyHJtKA3aHL7SbiijGqznuvNRDb2hG7uwA4",
+                            share = 100,
+                            verified = true
+                        )
+                    )
+                )
+            )
+        }
 
         val tokenAddress = randomString()
         val expected = MetaplexOffChainMeta(
@@ -95,9 +106,11 @@ class MetaplexOffChainMetaLoaderTest {
 
         coEvery { collectionService.updateCollectionV1(expected) } returns null
 
-        val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(tokenAddress, url)
+        val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+            tokenAddress = tokenAddress,
+            metaplexMetaFields = metaplexMeta.metaFields
+        )
 
-        coVerify { collectionService.updateCollectionV1(expected) }
         assertThat(metaplexOffChainMeta).isEqualTo(expected)
     }
 }
