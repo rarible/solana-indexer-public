@@ -122,7 +122,7 @@ class SolanaBalanceActivityConverter(
             val criteria = Criteria.where(SolanaBalanceRecord::account.name).`is`(account)
             val initializeBalanceAccountRecord = balanceRecordsRepository.findBy(
                 criteria = criteria,
-                sort = Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::id.name)
+                sort = Sort.by(Sort.Direction.ASC, "_id")
             ).filterIsInstance<SolanaBalanceRecord.InitializeBalanceAccountRecord>().firstOrNull()
             if (initializeBalanceAccountRecord == null) {
                 logger.error("Cannot determine 'owner' by account $account")

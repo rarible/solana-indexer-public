@@ -39,7 +39,7 @@ class BalanceReduceTaskHandler(
         }
         val balanceFlow = balanceRecordsRepository.findBy(
             criteria,
-            Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::account.name, SolanaBalanceRecord::id.name),
+            Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::account.name, "_id"),
         ).flatMapConcat {
             balanceEventConverter.convert(it, false).asFlow()
         }
