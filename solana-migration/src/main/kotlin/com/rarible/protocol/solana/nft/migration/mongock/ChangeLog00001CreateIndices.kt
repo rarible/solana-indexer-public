@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.migration.mongock
 
 import com.github.cloudyrock.mongock.ChangeLog
 import com.github.cloudyrock.mongock.ChangeSet
+import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
@@ -28,15 +29,17 @@ class ChangeLog00001CreateIndices {
         @NonLockGuarded metaplexMetaRepository: MetaplexMetaRepository,
         @NonLockGuarded metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
         @NonLockGuarded orderRepository: OrderRepository,
+        @NonLockGuarded activityRepository: ActivityRepository,
         @NonLockGuarded balanceRecordsRepository: SolanaBalanceRecordsRepository,
         @NonLockGuarded tokenRecordsRepository: SolanaTokenRecordsRepository,
-        @NonLockGuarded orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository
+        @NonLockGuarded orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
     ) = runBlocking {
         balanceRepository.createIndexes()
         tokenRepository.createIndexes()
         metaplexMetaRepository.createIndexes()
         metaplexOffChainMetaRepository.createIndexes()
         orderRepository.createIndexes()
+        activityRepository.createIndexes()
         tokenRecordsRepository.createIndexes()
         balanceRecordsRepository.createIndexes()
         orderRecordsRepository.createIndexes()
