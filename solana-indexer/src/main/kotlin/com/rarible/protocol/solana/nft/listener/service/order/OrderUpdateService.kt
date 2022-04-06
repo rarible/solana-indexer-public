@@ -62,10 +62,7 @@ class OrderUpdateService(
             }
             return this.copy(makeStock = makeStock)
         }
-        if (status == OrderStatus.FILLED) {
-            return this
-        }
-        if (status == OrderStatus.CANCELLED) {
+        if (status == OrderStatus.CANCELLED || status == OrderStatus.FILLED) {
             return this.copy(makeStock = BigInteger.ZERO)
         }
 

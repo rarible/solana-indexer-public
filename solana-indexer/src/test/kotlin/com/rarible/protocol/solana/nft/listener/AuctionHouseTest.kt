@@ -307,7 +307,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.CANCELLED,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
-                        makeStock = 5.scaleSupply(9),
+                        makeStock = BigInteger.ZERO,
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
