@@ -115,6 +115,7 @@ class SolanaBalanceActivityConverter(
         val owner = balanceRepository.findByAccount(account)?.owner
         if (owner == null) {
             logger.info("Cannot determine 'owner' of balance by account $account")
+            return null
             /**
              * This workaround is necessary until we properly fix https://rarible.atlassian.net/browse/CHARLIE-221.
              * It may happen that during processing of transfer event either "from" or "to" balance is not reduced yet.
