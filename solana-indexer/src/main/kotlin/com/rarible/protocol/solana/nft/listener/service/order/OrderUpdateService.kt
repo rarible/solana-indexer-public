@@ -18,7 +18,7 @@ import java.math.BigInteger
 class OrderUpdateService(
     private val balanceRepository: BalanceRepository,
     private val orderRepository: OrderRepository,
-    private val orderUpdateListener: OrderUpdateListener
+    private val orderUpdateListener: OrderUpdateListener,
 ) : EntityService<OrderId, Order> {
 
     override suspend fun get(id: OrderId): Order? =
@@ -51,19 +51,30 @@ class OrderUpdateService(
     }
 
     private suspend fun Order.updateMakeStock(): Order {
-        if (direction != OrderDirection.SELL) {
-            return this // Do not check bid orders, only sell
+        if (direction == OrderDirection.BUY) {
+            // TODO[bids]: we don't fully support the bids yet (we don't have a currency reducer),
+            //  so we consider the makeStock is always enough (equal to make.amount) if the order is active.
+            val makeStock = when (status) {
+                OrderStatus.ACTIVE -> make.amount
+                OrderStatus.INACTIVE -> BigInteger.ZERO
+                OrderStatus.CANCELLED -> BigInteger.ZERO
+                OrderStatus.FILLED -> BigInteger.ZERO
+            }
+            return this.copy(makeStock = makeStock)
         }
-        // TODO not sure, do we need to update make stock for CANCELLED/FILLED orders?
         if (status != OrderStatus.INACTIVE && status != OrderStatus.ACTIVE) {
             // Balance change can affect only ACTIVE/INACTIVE orders
             return this
         }
 
-        val balance = balanceRepository.findByMintAndOwner(make.type.tokenAddress, maker, true)
-            // Workaround for a race: balance has not been reduced yet.
-            // Considering the order is active. When the balance changes, the status will become INACTIVE.
-            .firstOrNull() ?: return this.copy(status = OrderStatus.ACTIVE)
+        val balance = balanceRepository.findByMintAndOwner(
+            mint = make.type.tokenAddress,
+            owner = maker,
+            includeDeleted = true
+        ).firstOrNull()
+        // Workaround for a race: balance has not been reduced yet.
+        // Considering the order is active. When the balance changes, the status will become INACTIVE.
+            ?: return this.copy(status = OrderStatus.ACTIVE)
 
         val notFilledValue = maxOf(make.amount - fill, BigInteger.ZERO)
         val makeStock = minOf(notFilledValue, balance.value)

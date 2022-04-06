@@ -33,7 +33,6 @@ import java.time.Instant
 class AuctionHouseTest : AbstractBlockScannerTest() {
 
     private val timeout = Duration.ofSeconds(120)
-    private val wrappedSol = WrappedSolAssetType.SOL
 
     @Autowired
     private lateinit var mongo: ReactiveMongoOperations
@@ -57,7 +56,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseRecord.CreateAuctionHouseRecord(
-                        treasuryMint = wrappedSol,
+                        treasuryMint = WrappedSolAssetType.SOL,
                         feeWithdrawalDestination = wallet,
                         treasuryWithdrawalDestination = wallet,
                         auctionHouse = house.id,
@@ -143,6 +142,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         fill = BigInteger.ZERO,
+                        makeStock = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
@@ -201,6 +201,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.CANCELLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
+                        makeStock = BigInteger.ZERO,
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -247,6 +248,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ZERO,
+                        makeStock = 5.scaleSupply(9),
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
@@ -305,6 +307,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.CANCELLED,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        makeStock = 5.scaleSupply(9),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -341,7 +344,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = getWallet(keypair),
-                        treasuryMint = wrappedSol,
+                        treasuryMint = WrappedSolAssetType.SOL,
                         tokenAccount = "",
                         mint = token,
                         amount = 1L.toBigInteger(),
@@ -395,6 +398,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
+                        makeStock = 1.toBigInteger(),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -431,6 +435,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.ACTIVE,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
+                        makeStock = 5.scaleSupply(9),
                         fill = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
@@ -461,7 +466,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 listOf(
                     SolanaAuctionHouseOrderRecord.BuyRecord(
                         maker = buyerWallet,
-                        treasuryMint = wrappedSol,
+                        treasuryMint = WrappedSolAssetType.SOL,
                         buyPrice = 5.scaleSupply(9),
                         tokenAccount = fromAccount,
                         mint = token,
@@ -511,7 +516,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 log = ANY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
                 direction = OrderDirection.SELL,
-                treasuryMint = wrappedSol
+                treasuryMint = WrappedSolAssetType.SOL
             )
             assertThat(saleRecords).usingElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
@@ -584,6 +589,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         fill = BigInteger.ONE,
+                        makeStock = BigInteger.ZERO,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
                         revertableEvents = emptyList(),
@@ -615,6 +621,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         status = OrderStatus.FILLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
+                        makeStock = BigInteger.ZERO,
                         fill = BigInteger.ONE,
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH,
