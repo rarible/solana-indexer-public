@@ -54,7 +54,7 @@ data class Order(
 
     override fun toString(): String =
         "Order(id='$id', auctionHouse='$auctionHouse', direction=$direction, status=$status, fill=$fill, maker='$maker'," +
-                "make=$make, take=$take, makePrice=$makePrice, takePrice=$takePrice, " +
+                "make=$make, take=$take, makeStock=$makeStock, makePrice=$makePrice, takePrice=$takePrice, " +
                 "createdAt=$createdAt, updatedAt=$updatedAt)"
 
     companion object {
