@@ -33,12 +33,14 @@ class BalanceUpdateService(
 
     override suspend fun update(entity: Balance): Balance {
         if (entity.isEmpty) {
-            logger.info("Balance without Initialize record, skipping it: {}", entity.account)
+            logger.info("Balance without Initialize record, skipping it: {}", entity)
             return entity
         }
         val exist = balanceRepository.findByAccount(entity.account)
         val balance = balanceRepository.save(entity)
-        balanceUpdateListener.onBalanceChanged(balance)
+        if (exist != null) {
+            balanceUpdateListener.onBalanceChanged(balance)
+        }
         if (balance.value > BigInteger.ZERO) {
             logger.info("Updated balance: $entity")
         } else {
