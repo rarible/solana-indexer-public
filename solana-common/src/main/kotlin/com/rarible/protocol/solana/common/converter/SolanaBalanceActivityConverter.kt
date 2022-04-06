@@ -2,16 +2,22 @@ package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.BurnActivityDto
 import com.rarible.protocol.solana.dto.MintActivityDto
 import com.rarible.protocol.solana.dto.TransferActivityDto
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.firstOrNull
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.stereotype.Component
 
 @Component
 class SolanaBalanceActivityConverter(
-    private val balanceRepository: BalanceRepository
+    private val balanceRepository: BalanceRepository,
+    private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -28,7 +34,7 @@ class SolanaBalanceActivityConverter(
 
     private suspend fun createMintActivity(
         record: SolanaBalanceRecord.MintToRecord,
-        reverted: Boolean
+        reverted: Boolean,
     ): ActivityDto? {
         val owner = findOwner(record.account) ?: return null
         return MintActivityDto(
@@ -44,7 +50,7 @@ class SolanaBalanceActivityConverter(
 
     private suspend fun createBurnActivity(
         record: SolanaBalanceRecord.BurnRecord,
-        reverted: Boolean
+        reverted: Boolean,
     ): ActivityDto? {
         val owner = findOwner(record.account) ?: return null
         return BurnActivityDto(
@@ -60,7 +66,7 @@ class SolanaBalanceActivityConverter(
 
     private suspend fun createTransferIncomeActivity(
         record: SolanaBalanceRecord.TransferIncomeRecord,
-        reverted: Boolean
+        reverted: Boolean,
     ): TransferActivityDto? {
         @Suppress("DuplicatedCode")
         val fromOwner = findOwner(record.from) ?: return null
@@ -88,7 +94,7 @@ class SolanaBalanceActivityConverter(
 
     private suspend fun createTransferOutcomeActivity(
         record: SolanaBalanceRecord.TransferOutcomeRecord,
-        reverted: Boolean
+        reverted: Boolean,
     ): TransferActivityDto? {
         val toOwner = findOwner(record.to) ?: return null
         val fromOwner = findOwner(record.account) ?: return null
@@ -108,8 +114,22 @@ class SolanaBalanceActivityConverter(
     private suspend fun findOwner(account: String): String? {
         val owner = balanceRepository.findByAccount(account)?.owner
         if (owner == null) {
-            logger.warn("Unable to find balance by account: {}", account)
-            return null
+            logger.info("Cannot determine 'owner' of balance by account $account")
+            /**
+             * This workaround is necessary until we properly fix https://rarible.atlassian.net/browse/CHARLIE-221.
+             * It may happen that during processing of transfer event either "from" or "to" balance is not reduced yet.
+             */
+            val criteria = Criteria.where(SolanaBalanceRecord::account.name).`is`(account)
+            val initializeBalanceAccountRecord = balanceRecordsRepository.findBy(
+                criteria = criteria,
+                sort = Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::id.name)
+            ).filterIsInstance<SolanaBalanceRecord.InitializeBalanceAccountRecord>().firstOrNull()
+            if (initializeBalanceAccountRecord == null) {
+                logger.error("Cannot determine 'owner' by account $account")
+            } else {
+                logger.info("Successfully determined owner of account $account to be ${initializeBalanceAccountRecord.owner}")
+            }
+            return initializeBalanceAccountRecord?.owner
         }
         return owner
     }
