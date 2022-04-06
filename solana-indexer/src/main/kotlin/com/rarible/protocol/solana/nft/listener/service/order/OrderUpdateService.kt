@@ -62,9 +62,11 @@ class OrderUpdateService(
             }
             return this.copy(makeStock = makeStock)
         }
-        if (status != OrderStatus.INACTIVE && status != OrderStatus.ACTIVE) {
-            // Balance change can affect only ACTIVE/INACTIVE orders
+        if (status == OrderStatus.FILLED) {
             return this
+        }
+        if (status == OrderStatus.CANCELLED) {
+            return this.copy(makeStock = BigInteger.ZERO)
         }
 
         val balance = balanceRepository.findByMintAndOwner(
