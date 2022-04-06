@@ -43,7 +43,7 @@ object TokenMetaConverter {
     fun convert(creator: MetaplexTokenCreator): TokenCreatorPartDto =
         TokenCreatorPartDto(
             address = creator.address,
-            share = creator.share
+            share = creator.share * 100 // Count of total 10000
         )
 
     private fun TokenMeta.Attribute.convert(): TokenMetaAttributeDto =
