@@ -62,10 +62,12 @@ class OrderUpdateService(
         val balance = balanceRepository.findByMintAndOwner(make.type.tokenAddress, maker)
             .firstOrNull()
 
-        return if (balance == null || balance.value < make.amount) {
-            this.copy(status = OrderStatus.INACTIVE)
-        } else {
-            this.copy(status = OrderStatus.ACTIVE)
+        return when {
+            // Workaround for a race: balance has not been reduced yet.
+            // Considering the order is active. When the balance changes, the status will become INACTIVE.
+            balance == null -> this.copy(status = OrderStatus.ACTIVE)
+            balance.value < make.amount -> this.copy(status = OrderStatus.INACTIVE)
+            else -> this.copy(status = OrderStatus.ACTIVE)
         }
     }
 
