@@ -8,11 +8,14 @@ import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaTransactionDto
+import com.rarible.core.common.nowMillis
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
 
 class SolanaCacheApi(
     private val repository: BlockCacheRepository,
@@ -38,6 +41,7 @@ class SolanaCacheApi(
         .register(meterRegistry)
 
     private var lastKnownBlock: Long = 0
+    private var lastKnownBlockUpdated: Instant = Instant.EPOCH
 
     override suspend fun getBlock(
         slot: Long,
@@ -65,16 +69,22 @@ class SolanaCacheApi(
         }
     }
 
+    private suspend fun updateLastKnownBlockIfNecessary() {
+        if (lastKnownBlock == 0L || Duration.between(lastKnownBlockUpdated, nowMillis()) > Duration.ofHours(1)) {
+            lastKnownBlock = getLatestSlot().result ?: lastKnownBlock
+            lastKnownBlockUpdated = nowMillis()
+        }
+    }
+
     /**
      * Save the block to the cache only if it is stable enough (approximately >6 hours).
      */
     private suspend fun shouldSaveBlockToCache(slot: Long): Boolean {
-        if (lastKnownBlock == 0L) {
-            lastKnownBlock = getLatestSlot().result ?: lastKnownBlock
-        }
+        updateLastKnownBlockIfNecessary()
         val shouldSave = lastKnownBlock != 0L && slot < lastKnownBlock - 50000
         if (!shouldSave) {
-            logger.info("Do not save the block #$slot to the cache because it may be unstable")
+            logger.info("Do not save the block #$slot to the cache because it may be unstable, " +
+                    "last known block #$lastKnownBlock is away ${slot - lastKnownBlock} blocks only")
         }
         return shouldSave
     }
