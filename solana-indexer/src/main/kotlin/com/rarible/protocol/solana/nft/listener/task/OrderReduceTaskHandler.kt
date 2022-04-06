@@ -46,7 +46,7 @@ class OrderReduceTaskHandler(
                 Sort.Direction.ASC,
                 SolanaAuctionHouseOrderRecord::auctionHouse.name,
                 SolanaAuctionHouseOrderRecord::orderId.name,
-                SolanaAuctionHouseOrderRecord::id.name,
+                "_id",
             )
         ).flatMapConcat {
             orderEventConverter.convert(it, false).asFlow()

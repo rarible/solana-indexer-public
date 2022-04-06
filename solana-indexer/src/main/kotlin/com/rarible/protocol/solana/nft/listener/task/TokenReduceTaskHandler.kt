@@ -38,8 +38,8 @@ class TokenReduceTaskHandler(
             else -> Criteria()
         }
         val tokenFlow = tokenRecordsRepository.findBy(
-            criteria,
-            Sort.by(Sort.Direction.ASC, SolanaTokenRecord::mint.name, SolanaTokenRecord::id.name),
+            criteria = criteria,
+            sort = Sort.by(Sort.Direction.ASC, SolanaTokenRecord::mint.name, "_id"),
         ).flatMapConcat {
             tokenEventConverter.convert(it, false).asFlow()
         }
