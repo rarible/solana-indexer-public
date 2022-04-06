@@ -35,8 +35,7 @@ class BalanceRepository(
     fun findByMintAndOwner(mint: String, owner: String): Flow<Balance> {
         val criteria = Criteria().andOperator(
             Balance::owner isEqualTo owner,
-            Balance::mint isEqualTo mint,
-            Balance::value gt BigInteger.ZERO
+            Balance::mint isEqualTo mint
         )
         val query = Query(criteria)
         return mongo.find(query, Balance::class.java).asFlow()
@@ -44,8 +43,7 @@ class BalanceRepository(
 
     fun findByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
         val criteria = Criteria().andOperator(
-            Balance::owner isEqualTo owner,
-            Balance::value gt BigInteger.ZERO
+            Balance::owner isEqualTo owner
         ).addContinuation(continuation)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
@@ -57,8 +55,7 @@ class BalanceRepository(
     fun findByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<Balance> {
         @Suppress("DuplicatedCode")
         val criteria = Criteria().andOperator(
-            Balance::mint isEqualTo mint,
-            Balance::value gt BigInteger.ZERO
+            Balance::mint isEqualTo mint
         ).addContinuation(continuation)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
