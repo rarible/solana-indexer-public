@@ -19,7 +19,14 @@ data class SolanaIndexerProperties(
 data class FeatureFlags(
     val enableCacheApi: Boolean = false,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
-    val blacklistTokens: Set<String> = emptySet()
+    val blacklistTokens: Set<String> = emptySet(),
+    /**
+     * Flag indicating that we are indexing from the blockchain beginning.
+     * Currently, we index only the 'mainnet-beta' from block #80KK (consider it is old enough),
+     * but 'dev' and 'staging' (devnet) we're indexing from a random instant (like 3 months ago),
+     * so we could have not seen balance/token initialization records.
+     */
+    val isIndexingFromBeginning: Boolean = true
 )
 
 enum class TokenFilterType {

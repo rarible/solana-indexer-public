@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.converter
 
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component
 class SolanaBalanceActivityConverter(
     private val balanceRepository: BalanceRepository,
     private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
+    private val solanaIndexerProperties: SolanaIndexerProperties
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -126,7 +128,12 @@ class SolanaBalanceActivityConverter(
                 size = 1
             ).filterIsInstance<SolanaBalanceRecord.InitializeBalanceAccountRecord>().firstOrNull()
             if (initializeBalanceAccountRecord == null) {
-                logger.error("Cannot determine 'owner' by account $account")
+                val message = "Cannot determine 'owner' by account $account"
+                if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                    logger.error(message)
+                } else {
+                    logger.info(message)
+                }
             } else {
                 logger.info("Successfully determined owner of account $account to be ${initializeBalanceAccountRecord.owner}")
             }
