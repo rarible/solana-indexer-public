@@ -43,7 +43,7 @@ class TokenController(
             lastUpdatedTo?.let { Instant.ofEpochMilli(it) },
             DateIdContinuation.parse(continuation),
             safeSize
-        )
+        ).toList()
 
         val dto = toSlice(tokensWithMeta, TokenContinuation.ByLastUpdatedAndId, safeSize)
         return ResponseEntity.ok(dto)

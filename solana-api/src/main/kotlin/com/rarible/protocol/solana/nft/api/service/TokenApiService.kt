@@ -11,10 +11,10 @@ import com.rarible.protocol.solana.common.util.RoyaltyDistributor
 import com.rarible.protocol.solana.dto.RoyaltyDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -30,26 +30,27 @@ class TokenApiService(
         lastUpdatedFrom: Instant?,
         lastUpdatedTo: Instant?,
         continuation: DateIdContinuation?, limit: Int
-    ): List<TokenWithMeta> {
+    ): Flow<TokenWithMeta> {
         val tokens = tokenRepository.findAll(
             lastUpdatedFrom,
             lastUpdatedTo,
             continuation,
             limit
-        ).toList()
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }
+        )
+        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
     }
 
     suspend fun getTokensWithMeta(tokenAddresses: List<String>): Flow<TokenWithMeta> {
         val tokens = tokenRepository.findByMints(tokenAddresses)
 
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }
+        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
     }
 
     suspend fun getTokenWithMeta(tokenAddress: String): TokenWithMeta {
-        val token = (tokenRepository.findByMint(tokenAddress)
-            ?: throw EntityNotFoundApiException("Token", tokenAddress))
-        return tokenMetaService.extendWithAvailableMeta(token)
+        val token = tokenRepository.findByMint(tokenAddress)
+            ?: throw EntityNotFoundApiException("Token", tokenAddress)
+        val tokenWithMeta = tokenMetaService.extendWithAvailableMeta(token).takeIf { it.hasMeta }
+        return tokenWithMeta ?: throw EntityNotFoundApiException("Meta", tokenAddress)
     }
 
     suspend fun getTokenRoyalties(tokenAddress: String): List<RoyaltyDto> {
@@ -72,7 +73,7 @@ class TokenApiService(
         val tokensByOffChainCollection = getTokensByOffChainCollectionHash(collection, continuation)
         val tokens = merge(tokensByOnChainCollection, tokensByOffChainCollection)
 
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }
+        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
     }
 
     private fun getTokensByMetaplexCollectionAddress(
