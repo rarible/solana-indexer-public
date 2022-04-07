@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.converter
 
-import com.rarible.blockchain.scanner.solana.util.toFixedLengthString
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
@@ -15,8 +14,6 @@ import com.rarible.protocol.solana.dto.OrderListActivityDto
 import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
 import com.rarible.protocol.solana.dto.SolanaSolAssetTypeDto
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import org.springframework.stereotype.Component
 
 @Component
@@ -25,47 +22,7 @@ class SolanaAuctionHouseOrderActivityConverter(
     private val priceNormalizer: PriceNormalizer,
 ) {
 
-    fun convert(
-        flow: Flow<SolanaAuctionHouseOrderRecord>,
-        reverted: Boolean,
-    ): Flow<ActivityDto> = flow {
-        val current: MutableList<SolanaAuctionHouseOrderRecord> = mutableListOf()
-        var hash: String? = null
-
-        flow.collect { record ->
-            if (hash == record.hash()) {
-                current.add(record)
-            } else {
-                process(current, reverted).forEach { emit(it) }
-                current.clear()
-                current.add(record)
-                hash = record.hash()
-            }
-        }
-        process(current, reverted).forEach { emit(it) }
-    }
-
-    private fun SolanaAuctionHouseOrderRecord.hash() =
-        log.blockNumber.toFixedLengthString(12) + ":" + log.blockHash + ":" +
-                log.transactionIndex.toLong().toFixedLengthString(8) + ":" + log.transactionIndex
-
-    private suspend fun process(records: List<SolanaAuctionHouseOrderRecord>, reverted: Boolean) = when {
-        records.isEmpty() -> emptyList()
-        records.size == 1 -> listOfNotNull(convert(records.single(), reverted))
-        records.any { it is SolanaAuctionHouseOrderRecord.BuyRecord } -> {
-            records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.SELL }
-                ?.let { listOf(createMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
-                ?: records.mapNotNull { convert(it, reverted) }
-        }
-        records.any { it is SolanaAuctionHouseOrderRecord.SellRecord } -> {
-            records.find { it is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord && it.direction == OrderDirection.BUY }
-                ?.let { listOf(createMatchActivity(it as SolanaAuctionHouseOrderRecord.ExecuteSaleRecord, reverted)) }
-                ?: records.mapNotNull { convert(it, reverted) }
-        }
-        else -> records.mapNotNull { convert(it, reverted) }
-    }
-
-    private suspend fun convert(
+    suspend fun convert(
         record: SolanaAuctionHouseOrderRecord,
         reverted: Boolean,
     ): ActivityDto? = when (record) {
