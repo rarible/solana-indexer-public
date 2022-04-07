@@ -4,14 +4,11 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
 import com.rarible.protocol.solana.common.converter.SolanaAuctionHouseOrderActivityConverter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
+import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.common.update.ActivityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListenerId
 import com.rarible.protocol.solana.nft.listener.consumer.SolanaLogRecordEvent
-import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.common.update.ActivityEventListener
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Component
 
 @Component
@@ -59,10 +56,12 @@ class OrderEventReduceService(
         if (events.isEmpty()) {
             return
         }
-        val activitiesDto = orderActivityConverter.convert(
-            flow = events.asFlow().map { it.record as SolanaAuctionHouseOrderRecord },
-            reverted = events.first().reversed
-        ).toList()
+        val activitiesDto = events.mapNotNull {
+            orderActivityConverter.convert(
+                it.record as SolanaAuctionHouseOrderRecord,
+                it.reversed
+            )
+        }
         activityEventListener.onActivities(activitiesDto)
     }
 

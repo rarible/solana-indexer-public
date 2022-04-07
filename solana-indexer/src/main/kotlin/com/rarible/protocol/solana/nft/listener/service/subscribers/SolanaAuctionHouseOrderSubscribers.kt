@@ -12,13 +12,12 @@ import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.common.util.toBigInteger
 import org.springframework.stereotype.Component
 import java.math.BigInteger
-import java.time.Instant
 
 @Component
 class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
+
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.AUCTION_HOUSE_PROGRAM,
         id = "auction_house_order_sell",
@@ -31,37 +30,24 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.SellRecord> {
-        val record = when (
-            val instruction = log.instruction.data.parseAuctionHouseInstruction()
-        ) {
+        when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Sell -> {
-                val amount = instruction.size.toBigInteger()
-                if (amount == BigInteger.ZERO) {
-                    return emptyList()
-                }
-                SolanaAuctionHouseOrderRecord.SellRecord(
-                    maker = log.instruction.accounts[0],
-                    sellPrice = instruction.price.toBigInteger(),
-                    // Only the token account is available in the record.
-                    // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
-                    tokenAccount = log.instruction.accounts[1],
-                    mint = "",
-                    amount = amount,
-                    auctionHouse = log.instruction.accounts[4],
-                    log = log.log,
-                    timestamp = Instant.ofEpochSecond(block.timestamp),
-                    orderId = ""
-                )
+                val sellRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+
+                if (sellRecord.amount == BigInteger.ZERO) return emptyList()
+                // It means this is ad-hoc sell order, we don't need to save such record
+                if (block.hasExecuteSell(log.log.transactionHash) { it.seller == sellRecord.maker }) return emptyList()
+
+                return listOf(sellRecord)
             }
             else -> return emptyList()
         }
-
-        return listOf(record)
     }
 }
 
 @Component
 class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
+
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.AUCTION_HOUSE_PROGRAM,
         id = "auction_house_buy",
@@ -74,38 +60,24 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseOrderRecord.BuyRecord> {
-        val record = when (
-            val instruction = log.instruction.data.parseAuctionHouseInstruction()
-        ) {
+        return when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Buy -> {
-                val amount = instruction.size.toBigInteger()
-                if (amount == BigInteger.ZERO) {
-                    return emptyList()
-                }
-                SolanaAuctionHouseOrderRecord.BuyRecord(
-                    maker = log.instruction.accounts[0],
-                    treasuryMint = log.instruction.accounts[3],
-                    buyPrice = instruction.price.toBigInteger(),
-                    // Only the token account is available in the record.
-                    // Mint will be set in the SolanaRecordsLogEventFilter by account <-> mint association.
-                    tokenAccount = log.instruction.accounts[4],
-                    mint = "",
-                    amount = amount,
-                    auctionHouse = log.instruction.accounts[8],
-                    log = log.log,
-                    timestamp = Instant.ofEpochSecond(block.timestamp),
-                    orderId = ""
-                )
-            }
-            else -> return emptyList()
-        }
+                val buyRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
 
-        return listOf(record)
+                if (buyRecord.amount == BigInteger.ZERO) return emptyList()
+                // It means this is ad-hoc buy order, we don't need to save such record
+                if (block.hasExecuteSell(log.log.transactionHash) { it.buyer == buyRecord.maker }) return emptyList()
+
+                return listOf(buyRecord)
+            }
+            else -> emptyList()
+        }
     }
 }
 
 @Component
 class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
+
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.AUCTION_HOUSE_PROGRAM,
         id = "auction_house_execute_sale",
@@ -120,26 +92,24 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
     ): List<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord> {
         return when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is ExecuteSale -> {
-                val amount = instruction.size.toBigInteger()
-                if (amount == BigInteger.ZERO) {
-                    return emptyList()
+                val executeSaleRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+
+                if (executeSaleRecord.amount == BigInteger.ZERO) return emptyList()
+
+                val result = ArrayList<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord>(2)
+
+                // Don't want to filter logs twice, so moved out this action here
+                val filteredLogs = block.transactionLogs(log.log.transactionHash)
+
+                // There is no add-hoc SELL order, it means previously created SELL order matched
+                if (!block.hasSell(filteredLogs, executeSaleRecord.seller)) {
+                    result.add(executeSaleRecord.copy(direction = OrderDirection.SELL))
                 }
-                val sellRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
-                    buyer = log.instruction.accounts[0],
-                    seller = log.instruction.accounts[1],
-                    price = instruction.buyerPrice.toBigInteger(),
-                    mint = log.instruction.accounts[3],
-                    treasuryMint = log.instruction.accounts[5],
-                    amount = amount,
-                    auctionHouse = log.instruction.accounts[10],
-                    log = log.log,
-                    timestamp = Instant.ofEpochSecond(block.timestamp),
-                    direction = OrderDirection.SELL
-                )
-                listOf(
-                    sellRecord,
-                    sellRecord.copy(direction = OrderDirection.BUY)
-                )
+                // There is no add-hoc BUY order, it means previously created BUY order matched
+                if (!block.hasBuy(filteredLogs, executeSaleRecord.buyer)) {
+                    result.add(executeSaleRecord.copy(direction = OrderDirection.BUY))
+                }
+                result
             }
             else -> emptyList()
         }
@@ -148,6 +118,7 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
 
 @Component
 class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
+
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.AUCTION_HOUSE_PROGRAM,
         id = "auction_house_cancel",
@@ -164,17 +135,7 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
             val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
             is Cancel -> {
-                val cancelRecord = SolanaAuctionHouseOrderRecord.CancelRecord(
-                    maker = log.instruction.accounts[0],
-                    mint = log.instruction.accounts[2],
-                    price = instruction.price.toBigInteger(),
-                    amount = instruction.size.toBigInteger(),
-                    log = log.log,
-                    timestamp = Instant.ofEpochSecond(block.timestamp),
-                    auctionHouse = log.instruction.accounts[4],
-                    direction = OrderDirection.BUY,
-                    orderId = ""
-                )
+                val cancelRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
                 listOf(
                     cancelRecord.withUpdatedOrderId(),
                     cancelRecord.copy(direction = OrderDirection.SELL).withUpdatedOrderId()
@@ -183,4 +144,50 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
             else -> return emptyList()
         }
     }
+}
+
+private fun SolanaBlockchainBlock.transactionLogs(transactionHash: String) =
+    logs.filter { it.log.transactionHash == transactionHash }
+
+private fun SolanaBlockchainBlock.hasExecuteSell(
+    transactionHash: String,
+    matcher: (r: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord) -> Boolean
+): Boolean {
+    return transactionLogs(transactionHash).any {
+        val instruction = it.instruction.data.parseAuctionHouseInstruction()
+        if (instruction is ExecuteSale) {
+            val executeSale = SolanaAuctionHouseLogConverter.convert(it, instruction, timestamp)
+            matcher(executeSale)
+        } else {
+            false
+        }
+    }
+}
+
+private fun SolanaBlockchainBlock.hasSell(
+    filteredLogs: List<SolanaBlockchainLog>,
+    seller: String
+): Boolean {
+    for (log in filteredLogs) {
+        val instruction = log.instruction.data.parseAuctionHouseInstruction()
+        if (instruction !is Sell) continue
+
+        val sell = SolanaAuctionHouseLogConverter.convert(log, instruction, timestamp)
+        if (sell.maker == seller) return true
+    }
+    return false
+}
+
+private fun SolanaBlockchainBlock.hasBuy(
+    filteredLogs: List<SolanaBlockchainLog>,
+    buyer: String
+): Boolean {
+    for (log in filteredLogs) {
+        val instruction = log.instruction.data.parseAuctionHouseInstruction()
+        if (instruction !is Buy) continue
+
+        val buy = SolanaAuctionHouseLogConverter.convert(log, instruction, timestamp)
+        if (buy.maker == buyer) return true
+    }
+    return false
 }
