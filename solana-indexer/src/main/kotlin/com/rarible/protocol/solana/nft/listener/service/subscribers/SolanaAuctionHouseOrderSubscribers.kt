@@ -147,7 +147,7 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
 }
 
 private fun SolanaBlockchainBlock.transactionLogs(transactionHash: String) =
-    logs.filter { it.log.transactionHash == transactionHash }
+    logs.filter { it.log.transactionHash == transactionHash && it.instruction.programId == SolanaProgramId.AUCTION_HOUSE_PROGRAM }
 
 private fun SolanaBlockchainBlock.hasExecuteSell(
     transactionHash: String,
