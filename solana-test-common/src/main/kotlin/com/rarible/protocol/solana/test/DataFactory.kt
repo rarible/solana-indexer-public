@@ -34,7 +34,6 @@ fun createRandomToken(mint: String = randomString()): Token = Token(
     supply = randomBigInt(),
     revertableEvents = emptyList(),
     decimals = randomInt(6),
-    isDeleted = false,
     createdAt = nowMillis(),
     updatedAt = nowMillis(),
 )

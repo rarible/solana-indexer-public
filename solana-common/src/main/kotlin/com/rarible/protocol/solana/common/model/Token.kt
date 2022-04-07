@@ -13,10 +13,7 @@ data class Token(
     @Id
     val mint: String,
     val supply: BigInteger,
-    // TODO: probably, can be calculated based on supply = 0
-    // TODO: rename to 'closed'?
     val decimals: Int,
-    val isDeleted: Boolean,
     override val createdAt: Instant,
     override val updatedAt: Instant,
     override val revertableEvents: List<TokenEvent>
@@ -28,7 +25,7 @@ data class Token(
         copy(revertableEvents = events)
 
     override fun toString(): String =
-        "Token(mint='$mint', supply=$supply, decimals=$decimals, isDeleted=$isDeleted, createdAt=$createdAt, updatedAt=$updatedAt)"
+        "Token(mint='$mint', supply=$supply, decimals=$decimals, createdAt=$createdAt, updatedAt=$updatedAt)"
 
     companion object {
 
@@ -38,7 +35,6 @@ data class Token(
             mint = mint,
             supply = BigInteger.ZERO,
             revertableEvents = emptyList(),
-            isDeleted = false,
             decimals = 0,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH

@@ -30,7 +30,6 @@ class TokenTest : EventAwareBlockScannerTest() {
         val token = Token(
             mint = tokenAddress,
             supply = 5.scaleSupply(decimals),
-            isDeleted = false,
             decimals = decimals,
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH, // TODO[tests]: consider fetching from the blockchain.
