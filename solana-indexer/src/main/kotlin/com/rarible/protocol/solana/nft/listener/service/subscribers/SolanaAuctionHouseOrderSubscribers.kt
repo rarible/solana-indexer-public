@@ -32,7 +32,7 @@ class AuctionHouseOrderSellSubscriber : SolanaLogEventSubscriber {
     ): List<SolanaAuctionHouseOrderRecord.SellRecord> {
         when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Sell -> {
-                val sellRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+                val sellRecord = SolanaAuctionHouseLogConverter.convertSell(log, instruction, block.timestamp)
 
                 if (sellRecord.amount == BigInteger.ZERO) return emptyList()
                 // It means this is ad-hoc sell order, we don't need to save such record
@@ -62,7 +62,7 @@ class AuctionHouseOrderBuySubscriber : SolanaLogEventSubscriber {
     ): List<SolanaAuctionHouseOrderRecord.BuyRecord> {
         return when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is Buy -> {
-                val buyRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+                val buyRecord = SolanaAuctionHouseLogConverter.convertBuy(log, instruction, block.timestamp)
 
                 if (buyRecord.amount == BigInteger.ZERO) return emptyList()
                 // It means this is ad-hoc buy order, we don't need to save such record
@@ -92,7 +92,7 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
     ): List<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord> {
         return when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is ExecuteSale -> {
-                val executeSaleRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+                val executeSaleRecord = SolanaAuctionHouseLogConverter.convertExecuteSale(log, instruction, block.timestamp)
 
                 if (executeSaleRecord.amount == BigInteger.ZERO) return emptyList()
 
@@ -135,7 +135,7 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
             val instruction = log.instruction.data.parseAuctionHouseInstruction()
         ) {
             is Cancel -> {
-                val cancelRecord = SolanaAuctionHouseLogConverter.convert(log, instruction, block.timestamp)
+                val cancelRecord = SolanaAuctionHouseLogConverter.convertCancel(log, instruction, block.timestamp)
                 listOf(
                     cancelRecord.withUpdatedOrderId(),
                     cancelRecord.copy(direction = OrderDirection.SELL).withUpdatedOrderId()
@@ -156,7 +156,7 @@ private fun SolanaBlockchainBlock.hasExecuteSell(
     return transactionLogs(transactionHash).any {
         val instruction = it.instruction.data.parseAuctionHouseInstruction()
         if (instruction is ExecuteSale) {
-            val executeSale = SolanaAuctionHouseLogConverter.convert(it, instruction, timestamp)
+            val executeSale = SolanaAuctionHouseLogConverter.convertExecuteSale(it, instruction, timestamp)
             matcher(executeSale)
         } else {
             false
@@ -172,7 +172,7 @@ private fun SolanaBlockchainBlock.hasSell(
         val instruction = log.instruction.data.parseAuctionHouseInstruction()
         if (instruction !is Sell) continue
 
-        val sell = SolanaAuctionHouseLogConverter.convert(log, instruction, timestamp)
+        val sell = SolanaAuctionHouseLogConverter.convertSell(log, instruction, timestamp)
         if (sell.maker == seller) return true
     }
     return false
@@ -186,7 +186,7 @@ private fun SolanaBlockchainBlock.hasBuy(
         val instruction = log.instruction.data.parseAuctionHouseInstruction()
         if (instruction !is Buy) continue
 
-        val buy = SolanaAuctionHouseLogConverter.convert(log, instruction, timestamp)
+        val buy = SolanaAuctionHouseLogConverter.convertBuy(log, instruction, timestamp)
         if (buy.maker == buyer) return true
     }
     return false

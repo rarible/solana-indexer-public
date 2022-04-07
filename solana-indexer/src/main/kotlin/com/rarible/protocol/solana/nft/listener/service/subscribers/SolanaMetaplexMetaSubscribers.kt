@@ -40,7 +40,7 @@ class CreateMetaplexMetadataSubscriber : SolanaLogEventSubscriber {
         val record = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            meta = createArgs.metadata.convert(),
+            meta = createArgs.metadata.convertExecuteSale(),
             mutable = createArgs.mutable,
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
@@ -71,7 +71,7 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
         val record = SolanaMetaRecord.MetaplexUpdateMetadataRecord(
             metaAccount = log.instruction.accounts[0],
             mint = log.instruction.accounts[1],
-            updatedMeta = updateArgs.metadata?.convert(),
+            updatedMeta = updateArgs.metadata?.convertExecuteSale(),
             updatedMutable = updateArgs.mutable,
             updateAuthority = updateArgs.updateAuthority,
             primarySaleHappened = updateArgs.primarySaleHappened,
@@ -197,7 +197,7 @@ class SetAndVerifyMetadataSubscriber : SolanaLogEventSubscriber {
     }
 }
 
-private fun MetaplexMetadata.Data.convert() = MetaplexMetaFields(
+private fun MetaplexMetadata.Data.convertExecuteSale() = MetaplexMetaFields(
     name = name,
     symbol = symbol,
     uri = uri,
