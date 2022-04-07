@@ -81,14 +81,15 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(makeStock = order.make.amount))
-        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
+        val orderWithMakeStock = order.copy(makeStock = order.make.amount)
+        assertThat(saved).isEqualTo(orderWithMakeStock)
+        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(order) }
     }
 
     @Test
     fun `existing order not updated - without balance, not a target status`() = runBlocking<Unit> {
         // ACTIVE order, but without balance - it should stay ACTIVE since it has FILLED status
-        val order = orderRepository.save(randomBuyOrder().copy(status = OrderStatus.FILLED))
+        val order = orderRepository.save(randomBuyOrder().copy(makeStock = BigInteger.ZERO, status = OrderStatus.FILLED))
 
         orderUpdateService.update(order)
 

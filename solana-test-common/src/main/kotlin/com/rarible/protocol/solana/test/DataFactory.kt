@@ -260,6 +260,7 @@ fun randomBuyOrder(
         take = take,
         takePrice = randomBigDecimal(4, 2),
         makePrice = null,
+        makeStock = make.amount,
         fill = randomBigInt(2),
         createdAt = nowMillis(),
         updatedAt = nowMillis(),
