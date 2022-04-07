@@ -35,7 +35,17 @@ object BlockConverter {
                     innerInstructions = newInnerInstructions ?: emptyList()
                 ),
                 transaction = if (newInstructions.all { it == null }) {
-                    null
+                    if (newInnerInstructions.isNullOrEmpty()) {
+                        null
+                    } else {
+                        transactionDto.transaction!!.copy(
+                            message = transactionDto.transaction!!.message.copy(
+                                instructions = emptyList(),
+                                accountKeys = transactionDto.transaction!!.message.accountKeys,
+                                recentBlockhash = transactionDto.transaction!!.message.recentBlockhash
+                            )
+                        )
+                    }
                 } else
                     transactionDto.transaction!!.copy(
                         message = transactionDto.transaction!!.message.copy(
