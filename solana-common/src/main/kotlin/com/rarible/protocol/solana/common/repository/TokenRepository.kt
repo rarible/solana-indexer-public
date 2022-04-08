@@ -32,7 +32,7 @@ class TokenRepository(
     suspend fun findByMint(mint: TokenId): Token? =
         mongo.findById<Token>(mint).awaitFirstOrNull()
 
-    suspend fun findByMints(mints: List<TokenId>): Flow<Token> =
+    suspend fun findByMints(mints: Collection<TokenId>): Flow<Token> =
         mongo.find(
             Query(Criteria.where("_id").`in`(mints))
                 .with(Sort.by("_id")), Token::class.java

@@ -10,10 +10,14 @@ import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.update.MetaplexMetaUpdateListener
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.slf4j.LoggerFactory
@@ -25,6 +29,7 @@ import org.springframework.stereotype.Component
 class TokenMetaService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
+    private val tokenRepository: TokenRepository,
     private val metaplexOffChainMetaLoader: MetaplexOffChainMetaLoader,
     private val collectionService: CollectionService,
     private val collectionEventListener: CollectionEventListener,
@@ -43,10 +48,18 @@ class TokenMetaService(
         metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress)
 
     suspend fun getOnChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexMeta> =
-        metaplexMetaRepository.findByTokenAddresses(tokenAddresses)
+        if (tokenAddresses.isNotEmpty()) metaplexMetaRepository.findByTokenAddresses(tokenAddresses)
+        else emptyFlow()
 
     suspend fun getOffChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> =
-        metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
+        if (tokenAddresses.isNotEmpty()) metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
+        else emptyFlow()
+
+    private suspend fun getOnChainMetaByCollection(collection: String, fromTokenAddress: String?) =
+        metaplexMetaRepository.findByCollectionAddress(collection, fromTokenAddress)
+
+    private suspend fun getOffChainMetaByCollection(collection: String, fromTokenAddress: String?) =
+        metaplexOffChainMetaRepository.findByOffChainCollectionHash(collection, fromTokenAddress)
 
     suspend fun extendWithAvailableMeta(tokens: Flow<Token>): Flow<TokenWithMeta> {
         val tokenMap = tokens.toList().associateBy { it.mint }
@@ -65,6 +78,36 @@ class TokenMetaService(
                 TokenWithMeta(tokenMap[tokenAddress]!!, tokenMeta)
             }
         return result
+    }
+
+    suspend fun getTokensMetaByCollection(collection: String, fromTokenAddress: String?): Map<String, TokenMeta> {
+        val (onChainMap, offChainMap) = coroutineScope {
+            val onChainMap = async {
+                getOnChainMetaByCollection(collection, fromTokenAddress)
+                    .toTokenAddressMetaMap()
+            }
+            val offChainMap = async {
+                getOffChainMetaByCollection(collection, fromTokenAddress)
+                    .toTokenAddressOffChainMetaMap()
+            }
+            onChainMap.await() to offChainMap.await()
+        }
+
+        val restOnChainMap = getOnChainMeta(offChainMap.keys - onChainMap.keys)
+            .toTokenAddressMetaMap()
+
+        val restOffChainMap = getOffChainMeta(onChainMap.keys - offChainMap.keys)
+            .toTokenAddressOffChainMetaMap()
+
+        val onChainMetaMapFull = onChainMap + restOnChainMap
+        val offChainMetaMapFull = offChainMap + restOffChainMap
+
+        return onChainMetaMapFull.map { (tokenAddress, onChainMeta) ->
+            tokenAddress to TokenMetaParser.mergeOnChainAndOffChainMeta(
+                onChainMeta = onChainMeta,
+                offChainMeta = offChainMetaMapFull[tokenAddress]
+            )
+        }.toMap()
     }
 
     suspend fun extendWithAvailableMeta(token: Token): TokenWithMeta {
@@ -115,6 +158,12 @@ class TokenMetaService(
         )
         metaplexMetaUpdateListener.onTokenMetaChanged(metaplexMeta.tokenAddress, tokenMeta)
     }
+
+    private suspend fun Flow<MetaplexOffChainMeta>.toTokenAddressOffChainMetaMap() =
+        map { it.tokenAddress to it.metaFields }.toList().toMap()
+
+    private suspend fun Flow<MetaplexMeta>.toTokenAddressMetaMap() =
+        map { it.tokenAddress to it.metaFields }.toList().toMap()
 
     private suspend fun updateCollection(metaplexOffChainMeta: MetaplexOffChainMeta) {
         val collection = collectionService.updateCollectionV1(metaplexOffChainMeta) ?: return
