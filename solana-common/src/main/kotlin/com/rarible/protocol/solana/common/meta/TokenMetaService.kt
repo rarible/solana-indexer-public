@@ -13,6 +13,9 @@ import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaReposit
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.update.MetaplexMetaUpdateListener
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -38,6 +41,31 @@ class TokenMetaService(
 
     suspend fun getOffChainMeta(tokenAddress: TokenId): MetaplexOffChainMeta? =
         metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress)
+
+    suspend fun getOnChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexMeta> =
+        metaplexMetaRepository.findByTokenAddresses(tokenAddresses)
+
+    suspend fun getOffChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> =
+        metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
+
+    suspend fun extendWithAvailableMeta(tokens: Flow<Token>): Flow<TokenWithMeta> {
+        val tokenMap = tokens.toList().associateBy { it.mint }
+        val offChainMetaMap = getOffChainMeta(tokenMap.keys)
+            .map { it.tokenAddress to it.metaFields }
+            .toList().toMap()
+
+        val result = getOnChainMeta(tokenMap.keys)
+            .map { metaplexMeta ->
+                metaplexMeta.tokenAddress to TokenMetaParser.mergeOnChainAndOffChainMeta(
+                    onChainMeta = metaplexMeta.metaFields,
+                    offChainMeta = offChainMetaMap[metaplexMeta.tokenAddress],
+                )
+            }
+            .map { (tokenAddress, tokenMeta) ->
+                TokenWithMeta(tokenMap[tokenAddress]!!, tokenMeta)
+            }
+        return result
+    }
 
     suspend fun extendWithAvailableMeta(token: Token): TokenWithMeta {
         val tokenMeta = getAvailableTokenMeta(token.mint)

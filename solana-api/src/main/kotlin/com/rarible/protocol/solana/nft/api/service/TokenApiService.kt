@@ -37,7 +37,7 @@ class TokenApiService(
             continuation,
             limit
         )
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
+        return tokenMetaService.extendWithAvailableMeta(tokens)
     }
 
     suspend fun getTokensWithMeta(tokenAddresses: List<String>): Flow<TokenWithMeta> {
