@@ -3,7 +3,9 @@ package com.rarible.protocol.solana.repository
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -40,5 +42,16 @@ class MetaplexMetaRepositoryIt : AbstractIntegrationTest() {
         val metaplexMeta = createRandomMetaplexMeta()
         metaplexMetaRepository.save(metaplexMeta)
         assertThat(metaplexMetaRepository.findByTokenAddress(metaplexMeta.tokenAddress)).isEqualTo(metaplexMeta)
+    }
+
+    @Test
+    fun `save and find multiple metas by token address`() = runBlocking<Unit> {
+        val metaplexMetas = (0..10).map {
+            createRandomMetaplexMeta().also { metaplexMetaRepository.save(it) }
+        }
+        val expectedAddresses = metaplexMetas.map { it.tokenAddress }.toSet()
+        val resultAddresses = metaplexMetaRepository
+            .findByTokenAddresses(expectedAddresses).map { it.tokenAddress }.toSet()
+        assertThat(resultAddresses).isEqualTo(expectedAddresses)
     }
 }

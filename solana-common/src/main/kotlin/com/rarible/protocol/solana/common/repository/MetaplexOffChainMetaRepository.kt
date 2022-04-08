@@ -29,6 +29,11 @@ class MetaplexOffChainMetaRepository(
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexOffChainMeta? =
         mongo.findById<MetaplexOffChainMeta>(tokenAddress).awaitFirstOrNull()
 
+    fun findByTokenAddresses(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> {
+        val criteria = Criteria.where(MetaplexOffChainMeta::tokenAddress.name).`in`(tokenAddresses)
+        return mongo.find(Query(criteria), MetaplexOffChainMeta::class.java).asFlow()
+    }
+
     fun findByOffChainCollectionHash(
         offChainCollectionHash: String, fromTokenAddress: String? = null
     ): Flow<MetaplexOffChainMeta> {

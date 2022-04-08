@@ -34,6 +34,11 @@ class MetaplexMetaRepository(
         return mongo.find(Query(criteria), MetaplexMeta::class.java).awaitFirstOrNull()
     }
 
+    fun findByTokenAddresses(tokenAddresses: Collection<TokenId>): Flow<MetaplexMeta> {
+        val criteria = Criteria.where(MetaplexMeta::tokenAddress.name).`in`(tokenAddresses)
+        return mongo.find(Query(criteria), MetaplexMeta::class.java).asFlow()
+    }
+
     fun findByCollectionAddress(collectionAddress: String, fromTokenAddress: String? = null): Flow<MetaplexMeta> {
         val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
             .fromTokenAddress(fromTokenAddress)
