@@ -63,19 +63,6 @@ class TokenApiService(
         ).map { RoyaltyDto(it.key, it.value) }
     }
 
-    suspend fun getTokensWithMetaByCollection0(
-        collection: String,
-        continuation: String?,
-        limit: Int,
-    ): Flow<TokenWithMeta> {
-        // TODO it won't work with continuation
-        val tokensByOnChainCollection = getTokensByMetaplexCollectionAddress(collection, continuation)
-        val tokensByOffChainCollection = getTokensByOffChainCollectionHash(collection, continuation)
-        val tokens = merge(tokensByOnChainCollection, tokensByOffChainCollection)
-
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
-    }
-
     private fun getTokensByMetaplexCollectionAddress(
         collectionAddress: String,
         fromTokenAddress: String?
