@@ -467,7 +467,7 @@ abstract class AbstractBlockScannerTest {
             }
         )
             .withExposedPorts(8899)
-            .withCommand("solana-test-validator --no-bpf-jit --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so --bpf-program ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} /home/solana/mpl_auction_house.so")
+            .withCommand("solana-test-validator --limit-ledger-size=50_000_000 --bpf-program ${SolanaProgramId.TOKEN_METADATA_PROGRAM} /home/solana/mpl_token_metadata.so --bpf-program ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} /home/solana/mpl_auction_house.so")
             .waitingFor(Wait.defaultWaitStrategy())
 
         @JvmStatic
@@ -480,7 +480,7 @@ abstract class AbstractBlockScannerTest {
                 "cd tmp && anchor idl init ${SolanaProgramId.AUCTION_HOUSE_PROGRAM} -f /home/solana/auction_house.json"
             )
             assertEquals(0, exec.exitCode, exec.stderr)
-            Thread.sleep(3_000) // for tests
+            Thread.sleep(5_000) // for tests
             val port = solana.getMappedPort(8899)
 
             registry.add("blockchain.scanner.solana.rpcApiUrls") { "http://127.0.0.1:$port" }

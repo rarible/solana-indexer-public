@@ -16,7 +16,7 @@ RUN set -eux; \
 USER solana
 WORKDIR /home/solana
 
-ENV SOLANA_VERSION=1.8.16
+ENV SOLANA_VERSION=1.9.14
 RUN wget -O solana-$SOLANA_VERSION.tar.gz https://github.com/solana-labs/solana/archive/refs/tags/v$SOLANA_VERSION.tar.gz
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 
