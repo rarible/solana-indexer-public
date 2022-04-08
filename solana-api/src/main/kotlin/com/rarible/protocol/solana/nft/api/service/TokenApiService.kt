@@ -43,7 +43,7 @@ class TokenApiService(
     suspend fun getTokensWithMeta(tokenAddresses: List<String>): Flow<TokenWithMeta> {
         val tokens = tokenRepository.findByMints(tokenAddresses)
 
-        return tokens.map { tokenMetaService.extendWithAvailableMeta(it) }.filter { it.hasMeta }
+        return tokenMetaService.extendWithAvailableMeta(tokens)
     }
 
     suspend fun getTokenWithMeta(tokenAddress: String): TokenWithMeta {
@@ -63,10 +63,10 @@ class TokenApiService(
         ).map { RoyaltyDto(it.key, it.value) }
     }
 
-    suspend fun getTokensWithMetaByCollection(
+    suspend fun getTokensWithMetaByCollection0(
         collection: String,
         continuation: String?,
-        limit: Int
+        limit: Int,
     ): Flow<TokenWithMeta> {
         // TODO it won't work with continuation
         val tokensByOnChainCollection = getTokensByMetaplexCollectionAddress(collection, continuation)
@@ -89,11 +89,22 @@ class TokenApiService(
 
     private fun getTokensByOffChainCollectionHash(
         offChainCollectionHash: String,
-        fromTokenAddress: String?
+        fromTokenAddress: String?,
     ): Flow<Token> {
         return metaplexOffChainMetaRepository.findByOffChainCollectionHash(offChainCollectionHash, fromTokenAddress)
             .mapNotNull { tokenOffChainCollection ->
                 tokenRepository.findByMint(tokenOffChainCollection.tokenAddress)
             }
+    }
+
+    suspend fun getTokensWithMetaByCollection(
+        collection: String,
+        continuation: String?,
+        limit: Int,
+    ): Flow<TokenWithMeta> {
+        val metas = tokenMetaService.getTokensMetaByCollection(collection, continuation)
+        val tokens = tokenRepository.findByMints(metas.keys)
+
+        return tokens.map { TokenWithMeta(it, metas[it.mint]) }
     }
 }
