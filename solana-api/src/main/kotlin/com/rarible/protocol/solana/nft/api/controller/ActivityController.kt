@@ -13,15 +13,13 @@ import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityFilterDto
 import com.rarible.protocol.solana.dto.ActivitySortDto
 import com.rarible.protocol.solana.nft.api.service.ActivityApiService
-import com.rarible.protocol.solana.nft.api.service.ActivityApiServiceLegacy
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ActivityController(
-    // TODO: temporarily use legacy service on dev/staging, which takes activities from the records directly.
-    private val activityApiService: ActivityApiServiceLegacy,
+    private val activityApiService: ActivityApiService
 ) : ActivityControllerApi {
 
     override suspend fun searchActivities(
