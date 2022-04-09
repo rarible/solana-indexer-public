@@ -6,6 +6,7 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.bson.types.Binary
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.count
@@ -34,6 +35,23 @@ class BlockCacheRepository(
         val gzip = gzip(content)
         mongo.save(BlockCache(id, Binary(gzip))).awaitFirst()
         logger.info("Saved block #$id to the cache: original size {}, gzip size: {}", content.size, gzip.size)
+    }
+
+    suspend fun save(blocks: Map<Long, ByteArray>) {
+        val blockCaches = blocks.map { (id, content) ->
+            val gzip = gzip(content)
+            logger.info("Saving batched block #$id to the cache: original size {}, gzip size: {}", content.size, gzip.size)
+            BlockCache(id, Binary(gzip))
+        }
+        try {
+            mongo.insertAll(blockCaches).asFlow().toList()
+            logger.info("Saved batch of ${blockCaches.size} blocks: [${blockCaches.joinToString { it.id.toString() }}]")
+        } catch (e: DuplicateKeyException) {
+            logger.warn("Failed to save batch of blocks, falling back to single save", e)
+            for (blockCache in blockCaches) {
+                mongo.save(blockCache).awaitFirst()
+            }
+        }
     }
 
     suspend fun findAll(ids: List<Long>): Map<Long, ByteArray> {

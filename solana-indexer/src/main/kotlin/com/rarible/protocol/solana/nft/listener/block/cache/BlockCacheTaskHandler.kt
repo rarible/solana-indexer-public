@@ -34,17 +34,25 @@ class BlockCacheTaskHandler(
 
     private suspend fun loadRange(blocks: LongRange) {
         coroutineScope {
-            blocks.map {
+            val loadedBlocks = blocks.map {
                 async {
                     if (!repository.isPresent(it)) {
                         logger.info("loading block $it")
                         val result = client.getBlock(it, GetBlockRequest.TransactionDetails.Full)
-                        repository.save(it, result)
+                        it to result
                     } else {
                         logger.info("block cache already exists: $it")
+                        null
                     }
                 }
-            }.awaitAll()
+            }.awaitAll().filterNotNull().toMap()
+            if (blockCacheProperties.batchSave) {
+                repository.save(loadedBlocks)
+            } else {
+                for ((id, blockCache) in loadedBlocks) {
+                    repository.save(id, blockCache)
+                }
+            }
         }
     }
 
