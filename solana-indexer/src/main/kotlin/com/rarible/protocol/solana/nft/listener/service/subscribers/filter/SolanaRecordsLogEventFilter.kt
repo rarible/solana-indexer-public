@@ -168,6 +168,8 @@ class SolanaRecordsLogEventFilter(
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
         is SolanaTokenRecord -> keepIfNft(record, record.mint)
         is SolanaAuctionHouseRecord -> record
+        is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> keepIfNft(record, record.mint)
+        is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> keepIfNft(record, record.mint)
         is SolanaMetaRecord -> record
         is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
         is SolanaAuctionHouseOrderRecord.BuyRecord -> {
