@@ -46,13 +46,7 @@ class BlockCacheTaskHandler(
                     }
                 }
             }.awaitAll().filterNotNull().toMap()
-            if (blockCacheProperties.batchSave) {
-                repository.save(loadedBlocks)
-            } else {
-                for ((id, blockCache) in loadedBlocks) {
-                    repository.save(id, blockCache)
-                }
-            }
+            repository.save(loadedBlocks)
         }
     }
 

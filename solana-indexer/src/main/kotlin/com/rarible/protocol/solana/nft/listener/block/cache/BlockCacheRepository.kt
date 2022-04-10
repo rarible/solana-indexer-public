@@ -1,5 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.block.cache
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -22,7 +25,8 @@ import javax.annotation.Resource
 @Component
 class BlockCacheRepository(
     @Resource(name = "reactiveMongoTemplateBlockCache")
-    private val mongo: ReactiveMongoOperations
+    private val mongo: ReactiveMongoOperations,
+    private val blockCacheProperties: BlockCacheProperties
 ) {
     private val logger = LoggerFactory.getLogger(BlockCacheRepository::class.java)
 
@@ -38,19 +42,33 @@ class BlockCacheRepository(
     }
 
     suspend fun save(blocks: Map<Long, ByteArray>) {
-        val blockCaches = blocks.map { (id, content) ->
-            val gzip = gzip(content)
-            logger.info("Saving batched block #$id to the cache: original size {}, gzip size: {}", content.size, gzip.size)
-            BlockCache(id, Binary(gzip))
-        }
-        try {
-            mongo.insertAll(blockCaches).asFlow().toList()
-            logger.info("Saved batch of ${blockCaches.size} blocks: [${blockCaches.joinToString { it.id.toString() }}]")
-        } catch (e: DuplicateKeyException) {
-            logger.warn("Failed to save batch of blocks, falling back to single save", e)
-            for (blockCache in blockCaches) {
-                mongo.save(blockCache).awaitFirst()
+        if (blockCacheProperties.batchSave) {
+            val blockCaches = blocks.map { (id, content) ->
+                val gzip = gzip(content)
+                logger.info(
+                    "Saving batched block #$id to the cache: original size {}, gzip size: {}",
+                    content.size,
+                    gzip.size
+                )
+                BlockCache(id, Binary(gzip))
             }
+            try {
+                mongo.insertAll(blockCaches).asFlow().toList()
+                logger.info("Saved batch of ${blockCaches.size} blocks: [${blockCaches.joinToString { it.id.toString() }}]")
+            } catch (e: DuplicateKeyException) {
+                logger.warn("Failed to save batch of blocks, falling back to single save", e)
+                for (blockCache in blockCaches) {
+                    mongo.save(blockCache).awaitFirst()
+                }
+            }
+        } else {
+            coroutineScope {
+                blocks.map { (id, content) ->
+                    async {
+                        save(id, content)
+                    }
+                }
+            }.awaitAll()
         }
     }
 
