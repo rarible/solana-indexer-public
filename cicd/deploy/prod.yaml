@@ -2,5 +2,6 @@ global:
   network: mainnet
 
 solana-api:
+  replicas: 2
   service:
     nodePort: 30128
