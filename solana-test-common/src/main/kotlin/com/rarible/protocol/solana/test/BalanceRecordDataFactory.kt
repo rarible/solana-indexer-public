@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.test
 
 import com.rarible.blockchain.scanner.solana.model.SolanaLog
+import com.rarible.core.common.nowMillis
 import com.rarible.core.test.data.randomBigInt
 import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
@@ -10,6 +11,21 @@ import java.time.Instant
 import java.time.ZonedDateTime
 
 object BalanceRecordDataFactory {
+
+    fun randomBalanceInitRecord(
+        account: String = randomString(),
+        owner: String = randomString(),
+        mint: String = randomString(),
+        log: SolanaLog = randomSolanaLog(),
+        timestamp: Instant = nowMillis()
+    ): SolanaBalanceRecord.InitializeBalanceAccountRecord =
+        SolanaBalanceRecord.InitializeBalanceAccountRecord(
+            account = account,
+            owner = owner,
+            mint = mint,
+            log = log,
+            timestamp = timestamp
+        )
 
     fun randomMintToRecord(
         mintAmount: BigInteger = randomBigInt(),

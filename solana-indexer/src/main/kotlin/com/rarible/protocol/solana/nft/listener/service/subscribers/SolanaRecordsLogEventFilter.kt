@@ -5,6 +5,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
@@ -30,6 +31,7 @@ class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val tokenFilter: SolanaTokenFilter,
+    private val auctionHouseFilter: SolanaAuctionHouseFilter
 ) : SolanaLogEventFilter {
 
     private val logger = LoggerFactory.getLogger(SolanaRecordsLogEventFilter::class.java)
@@ -91,7 +93,7 @@ class SolanaRecordsLogEventFilter(
             }
             val filteredRecords = event.logRecordsToInsert.mapNotNull {
                 if (it is SolanaBaseLogRecord) {
-                    keepIfNft(it, accountToMints)
+                    filterRecord(it, accountToMints)
                 } else {
                     // Keep non-target logs
                     it
@@ -155,7 +157,7 @@ class SolanaRecordsLogEventFilter(
         return accountGroups
     }
 
-    private fun keepIfNft(
+    private fun filterRecord(
         record: SolanaBaseLogRecord,
         accountToMintMapping: Map<String, String>,
     ): SolanaBaseLogRecord? = when (record) {
@@ -191,7 +193,7 @@ class SolanaRecordsLogEventFilter(
 
     private fun filterAuctionHouseRecord(
         record: SolanaAuctionHouseRecord
-    ): SolanaAuctionHouseRecord = record
+    ): SolanaBaseLogRecord? = record.takeIf { auctionHouseFilter.isAcceptableAuctionHouse(it.auctionHouse) }
 
     private fun filterMetaRecord(
         record: SolanaMetaRecord
@@ -209,47 +211,53 @@ class SolanaRecordsLogEventFilter(
     private fun filterAuctionHouseOrderRecord(
         record: SolanaAuctionHouseOrderRecord,
         accountToMintMapping: Map<String, String>
-    ): SolanaAuctionHouseOrderRecord? = when (record) {
-        is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
-        is SolanaAuctionHouseOrderRecord.BuyRecord -> {
-            if (record.mint.isNotEmpty()) {
-                record
-            } else {
-                val mint = accountToMintMapping[record.tokenAccount]
-                if (mint != null) {
-                    record.copy(mint = mint).withUpdatedOrderId()
+    ): SolanaAuctionHouseOrderRecord? {
+        val updatedRecord = when (record) {
+            is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
+            is SolanaAuctionHouseOrderRecord.BuyRecord -> {
+                if (record.mint.isNotEmpty()) {
+                    record
                 } else {
-                    val message = "Buy record is skipped: unknown mint by account ${record.tokenAccount}: $record"
-                    if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
-                        logger.error(message)
+                    val mint = accountToMintMapping[record.tokenAccount]
+                    if (mint != null) {
+                        record.copy(mint = mint).withUpdatedOrderId()
                     } else {
-                        logger.info(message)
+                        val message = "Buy record is skipped: unknown mint by account ${record.tokenAccount}: $record"
+                        if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                            logger.error(message)
+                        } else {
+                            logger.info(message)
+                        }
+                        null
                     }
-                    null
                 }
             }
-        }
-        is SolanaAuctionHouseOrderRecord.SellRecord -> {
-            if (record.mint.isNotEmpty()) {
-                record
-            } else {
-                val mint = accountToMintMapping[record.tokenAccount]
-                if (mint != null) {
-                    record.copy(mint = mint).withUpdatedOrderId()
+            is SolanaAuctionHouseOrderRecord.SellRecord -> {
+                if (record.mint.isNotEmpty()) {
+                    record
                 } else {
-                    val message = "Sell record is skipped: unknown mint by account ${record.tokenAccount}: $record"
-                    if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
-                        logger.error(message)
+                    val mint = accountToMintMapping[record.tokenAccount]
+                    if (mint != null) {
+                        record.copy(mint = mint).withUpdatedOrderId()
                     } else {
-                        logger.info(message)
+                        val message = "Sell record is skipped: unknown mint by account ${record.tokenAccount}: $record"
+                        if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                            logger.error(message)
+                        } else {
+                            logger.info(message)
+                        }
+                        null
                     }
-                    null
                 }
             }
+            is SolanaAuctionHouseOrderRecord.CancelRecord -> record
+            // Internal records, should not be produced by subscribers
+            is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> null
         }
-        is SolanaAuctionHouseOrderRecord.CancelRecord -> record
-        // Internal records, should not be produced by subscribers
-        is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> null
+        if (updatedRecord != null && auctionHouseFilter.isAcceptableAuctionHouse(updatedRecord.auctionHouse)) {
+            return updatedRecord
+        }
+        return null
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {

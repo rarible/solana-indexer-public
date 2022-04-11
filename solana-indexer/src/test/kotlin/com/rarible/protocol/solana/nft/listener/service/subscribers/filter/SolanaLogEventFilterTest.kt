@@ -6,6 +6,7 @@ import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
@@ -13,9 +14,8 @@ import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
-import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
-import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
-import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer
+import com.rarible.protocol.solana.test.BalanceRecordDataFactory
+import com.rarible.protocol.solana.test.OrderRecordDataFactory
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -40,6 +40,7 @@ class SolanaLogEventFilterTest {
     private val blackListedToken = randomString()
 
     private val nonCurrencyTokenFilter = mockk<SolanaBlackListTokenFilter>()
+    private val auctionHouseFilter = mockk<SolanaAuctionHouseFilter>()
 
     private val filter = SolanaRecordsLogEventFilter(
         accountToMintAssociationService = accountToMintAssociationService,
@@ -52,7 +53,8 @@ class SolanaLogEventFilterTest {
                 nonCurrencyTokenFilter,
                 SolanaBlackListTokenFilter(setOf(blackListedToken))
             )
-        )
+        ),
+        auctionHouseFilter = auctionHouseFilter
     )
 
     @BeforeEach
@@ -80,11 +82,12 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `transfer and init records`() = runBlocking<Unit> {
-        val init = randomBalanceInitRecord()
+        val init = BalanceRecordDataFactory.randomBalanceInitRecord()
 
-        val transferWithInitMint = randomBalanceIncomeTransfer().copy(mint = "").copy(account = init.account)
-        val transferWithMapping = randomBalanceOutcomeTransfer().copy(mint = "")
-        val transferWithoutMapping = randomBalanceIncomeTransfer().copy(mint = "")
+        val transferWithInitMint =
+            BalanceRecordDataFactory.randomIncomeRecord().copy(mint = "").copy(account = init.account)
+        val transferWithMapping = BalanceRecordDataFactory.randomOutcomeRecord().copy(mint = "")
+        val transferWithoutMapping = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = "")
 
         val initMint = init.mint
         val mappedMint = randomString()
@@ -129,8 +132,8 @@ class SolanaLogEventFilterTest {
     fun `transfer with mint`() = runBlocking<Unit> {
         val incomeMint = randomString()
         val outcomeMint = randomString()
-        val incomeTransfer = randomBalanceIncomeTransfer().copy(mint = incomeMint)
-        val outcomeTransfer = randomBalanceOutcomeTransfer().copy(mint = outcomeMint)
+        val incomeTransfer = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = incomeMint)
+        val outcomeTransfer = BalanceRecordDataFactory.randomOutcomeRecord().copy(mint = outcomeMint)
 
         // We're requesting balances in any way in order to determine - should we write new mapping in DB or not
         coEvery {
@@ -167,7 +170,7 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `transfer with blacklisted mint`() = runBlocking<Unit> {
-        val incomeTransfer = randomBalanceIncomeTransfer().copy(mint = "").copy(
+        val incomeTransfer = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = "").copy(
             mint = blackListedToken
         )
 
@@ -186,6 +189,30 @@ class SolanaLogEventFilterTest {
 
         val records = getRecords(result)
         assertThat(records).hasSize(0)
+    }
+
+    @Test
+    fun `auction house order with whitelisted auctionHouse`() = runBlocking<Unit> {
+        val whiteListedAuctionHouse = randomString()
+        val whiteListedOrderRecord =
+            OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = whiteListedAuctionHouse)
+
+        val ignoredAuctionHouse = randomString()
+        val ignoredOrderRecord = OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = ignoredAuctionHouse)
+
+        coEvery { accountToMintAssociationService.getMintsByAccounts(any()) } returns mapOf()
+        coEvery { accountToMintAssociationService.saveMintsByAccounts(mapOf()) } returns Unit
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(any()) } returns true
+        coEvery { auctionHouseFilter.isAcceptableAuctionHouse(whiteListedAuctionHouse) } returns true
+        coEvery { auctionHouseFilter.isAcceptableAuctionHouse(ignoredAuctionHouse) } returns false
+
+        val event = randomLogEvent(whiteListedOrderRecord, ignoredOrderRecord)
+        val result = filter.filter(listOf(event))
+
+        val records = getRecords(result)
+        assertThat(records).hasSize(1).satisfies {
+            assertThat(it.single()).isEqualTo(whiteListedOrderRecord)
+        }
     }
 
     private fun randomLogEvent(vararg records: SolanaLogRecord): LogEvent<SolanaLogRecord, SolanaDescriptor> {

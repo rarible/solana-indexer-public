@@ -20,6 +20,7 @@ data class FeatureFlags(
     val enableCacheApi: Boolean = false,
     val tokenFilter: TokenFilterType = TokenFilterType.NONE,
     val blacklistTokens: Set<String> = emptySet(),
+    val auctionHouses: Set<String> = emptySet(),
     /**
      * Flag indicating that we are indexing from the blockchain beginning.
      * Currently, we index only the 'mainnet-beta' from block #80KK (consider it is old enough),

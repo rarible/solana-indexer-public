@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.configuration
 
 import com.rarible.protocol.solana.common.converter.PackageConverters
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
 import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
@@ -59,6 +60,16 @@ class CommonConfiguration(
             }
         }
         return CompositeSolanaTokenFilter(listOf(nonCurrencySolanaTokenFilter, additionalTokenFilter))
+    }
+
+    @Bean
+    fun auctionHouseFilter(featureFlags: FeatureFlags): SolanaAuctionHouseFilter {
+        val auctionHouses = featureFlags.auctionHouses
+        return object : SolanaAuctionHouseFilter {
+            override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean {
+                return auctionHouses.isEmpty() || auctionHouse in auctionHouses
+            }
+        }
     }
 
     private companion object {
