@@ -212,7 +212,10 @@ class SolanaRecordsLogEventFilter(
         record: SolanaAuctionHouseOrderRecord,
         accountToMintMapping: Map<String, String>
     ): SolanaAuctionHouseOrderRecord? {
-        val updatedRecord = when (record) {
+        if (!auctionHouseFilter.isAcceptableAuctionHouse(record.auctionHouse)) {
+            return null
+        }
+        return when (record) {
             is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
             is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                 if (record.mint.isNotEmpty()) {
@@ -254,10 +257,6 @@ class SolanaRecordsLogEventFilter(
             // Internal records, should not be produced by subscribers
             is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> null
         }
-        if (updatedRecord != null && auctionHouseFilter.isAcceptableAuctionHouse(updatedRecord.auctionHouse)) {
-            return updatedRecord
-        }
-        return null
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
