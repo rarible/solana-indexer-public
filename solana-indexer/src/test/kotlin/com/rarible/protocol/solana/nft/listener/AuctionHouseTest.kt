@@ -383,7 +383,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         airdrop(10, buyerKeypair)
 
         sell(house.id, baseKeypair, 5, token, 1)
-        Wait.waitAssert(timeout) {
+        val originalSellRecord = Wait.waitFor(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
                     maker = sellerWallet,
@@ -417,11 +417,13 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         states = emptyList()
                     )
                 )
+
+            order!!
         }
         buy(house.id, buyerKeypair, 5, token, 1)
         val escrow = showEscrow(house.id, buyerKeypair, buyerWallet)
         assertThat(escrow).isEqualByComparingTo(5.scaleSupply(9).toBigDecimal())
-        Wait.waitAssert(timeout) {
+        val originalBuyRecord = Wait.waitFor(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
                     maker = buyerWallet,
@@ -455,6 +457,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         states = emptyList()
                     )
                 )
+
+            order!!
         }
         val sellerBalanceBefore = getBalance(sellerWallet)
         executeSale(house.id, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
@@ -532,8 +536,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::timestamp.name
             ).containsExactlyInAnyOrder(
-                    sellRecord,
-                    sellRecord.copy(direction = OrderDirection.BUY)
+                sellRecord,
+                sellRecord.copy(direction = OrderDirection.BUY)
             )
 
             val incomeTransfersRecords = findRecordByType(
@@ -606,7 +610,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.BUY,
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        states = listOf(buyOrder!!)
+                        states = listOf(originalBuyRecord)
                     )
                 )
 
@@ -640,7 +644,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
-                        states = listOf(sellOrder!!)
+                        states = listOf(originalSellRecord)
                     )
                 )
         }
