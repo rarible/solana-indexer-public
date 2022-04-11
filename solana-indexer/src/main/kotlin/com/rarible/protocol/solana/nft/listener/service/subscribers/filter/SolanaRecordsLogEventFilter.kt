@@ -158,6 +158,21 @@ class SolanaRecordsLogEventFilter(
         record: SolanaBaseLogRecord,
         accountToMintMapping: Map<String, String>,
     ): SolanaBaseLogRecord? = when (record) {
+        is SolanaBalanceRecord -> filterBalanceRecord(record, accountToMintMapping)
+        is SolanaTokenRecord -> filterTokenRecord(record)
+        is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
+        is SolanaMetaRecord -> filterMetaRecord(record)
+        is SolanaAuctionHouseOrderRecord -> filterAuctionHouseOrderRecord(record, accountToMintMapping)
+    }
+
+    private fun filterTokenRecord(
+        record: SolanaTokenRecord
+    ) = keepIfNft(record, record.mint)
+
+    private fun filterBalanceRecord(
+        record: SolanaBalanceRecord,
+        accountToMintMapping: Map<String, String>
+    ) = when (record) {
         is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
         is SolanaBalanceRecord.TransferOutcomeRecord -> keepBalanceRecordIfNft(
@@ -171,11 +186,29 @@ class SolanaRecordsLogEventFilter(
             updateMint = { record.copy(mint = it) }
         )
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
-        is SolanaTokenRecord -> keepIfNft(record, record.mint)
-        is SolanaAuctionHouseRecord -> record
+    }
+
+    private fun filterAuctionHouseRecord(
+        record: SolanaAuctionHouseRecord
+    ): SolanaAuctionHouseRecord = record
+
+    private fun filterMetaRecord(
+        record: SolanaMetaRecord
+    ): SolanaBaseLogRecord? = when (record) {
         is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> keepIfNft(record, record.mint)
         is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> keepIfNft(record, record.mint)
-        is SolanaMetaRecord -> record
+
+        // TODO: for these we can't determine 'mint' easily, so just keep them. Reducers will ignore them.
+        is SolanaMetaRecord.MetaplexSignMetadataRecord -> record
+        is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> record
+        is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> record
+        is SolanaMetaRecord.SetAndVerifyMetadataRecord -> record
+    }
+
+    private fun filterAuctionHouseOrderRecord(
+        record: SolanaAuctionHouseOrderRecord,
+        accountToMintMapping: Map<String, String>
+    ): SolanaAuctionHouseOrderRecord? = when (record) {
         is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
         is SolanaAuctionHouseOrderRecord.BuyRecord -> {
             if (record.mint.isNotEmpty()) {
