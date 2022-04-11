@@ -28,7 +28,7 @@ class BalanceReduceTaskHandler(
 ) : TaskHandler<String> {
     override val type: String = "BALANCE_REDUCER"
 
-    @Suppress("EXPERIMENTAL_API_USAGE")
+    @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
     override fun runLongTask(from: String?, param: String) : Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 

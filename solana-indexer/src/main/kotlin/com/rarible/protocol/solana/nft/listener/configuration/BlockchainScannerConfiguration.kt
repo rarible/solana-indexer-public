@@ -20,6 +20,10 @@ import com.rarible.protocol.solana.nft.listener.service.balance.BalanceIdService
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceReducer
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceTemplateProvider
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceUpdateService
+import com.rarible.protocol.solana.nft.listener.service.meta.MetaIdService
+import com.rarible.protocol.solana.nft.listener.service.meta.MetaReducer
+import com.rarible.protocol.solana.nft.listener.service.meta.MetaTemplateProvider
+import com.rarible.protocol.solana.nft.listener.service.meta.MetaUpdateService
 import com.rarible.protocol.solana.nft.listener.service.order.OrderIdService
 import com.rarible.protocol.solana.nft.listener.service.order.OrderReducer
 import com.rarible.protocol.solana.nft.listener.service.order.OrderTemplateProvider
@@ -29,6 +33,7 @@ import com.rarible.protocol.solana.nft.listener.service.token.TokenReducer
 import com.rarible.protocol.solana.nft.listener.service.token.TokenTemplateProvider
 import com.rarible.protocol.solana.nft.listener.service.token.TokenUpdateService
 import com.rarible.protocol.solana.nft.listener.task.BalanceStreamFullReduceService
+import com.rarible.protocol.solana.nft.listener.task.MetaplexMetaStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.TokenStreamFullReduceService
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
@@ -126,6 +131,19 @@ class BlockchainScannerConfiguration(
         orderIdService,
         orderTemplateProvider,
         orderReducer
+    )
+
+    @Bean
+    fun metaplexMetaStreamReducer(
+        metaUpdateService: MetaUpdateService,
+        metaIdService: MetaIdService,
+        metaTemplateProvider: MetaTemplateProvider,
+        metaReducer: MetaReducer
+    ) = MetaplexMetaStreamFullReduceService(
+        metaUpdateService,
+        metaIdService,
+        metaTemplateProvider,
+        metaReducer
     )
 
     private companion object {
