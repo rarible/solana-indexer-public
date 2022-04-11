@@ -48,7 +48,7 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
             )
             is MetaplexVerifyCreatorEvent -> entity.copy(
                 metaFields = entity.metaFields.copy(
-                    creators = entity.metaFields.creators?.map {
+                    creators = entity.metaFields.creators.map {
                         if (it.address == event.creatorAddress) {
                             MetaplexTokenCreator(it.address, it.share, verified = true)
                         } else {
