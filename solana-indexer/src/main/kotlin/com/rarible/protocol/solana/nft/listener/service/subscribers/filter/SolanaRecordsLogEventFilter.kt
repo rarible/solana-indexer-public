@@ -4,6 +4,7 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
@@ -14,6 +15,7 @@ import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.util.AccountGraph
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
@@ -25,8 +27,11 @@ import org.springframework.stereotype.Component
 @Component
 class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
+    private val solanaIndexerProperties: SolanaIndexerProperties,
     private val tokenFilter: SolanaTokenFilter,
 ) : SolanaLogEventFilter {
+
+    private val logger = LoggerFactory.getLogger(SolanaRecordsLogEventFilter::class.java)
 
     override suspend fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
@@ -173,13 +178,39 @@ class SolanaRecordsLogEventFilter(
         is SolanaMetaRecord -> record
         is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
         is SolanaAuctionHouseOrderRecord.BuyRecord -> {
-            accountToMintMapping[record.tokenAccount]?.let { mint ->
-                record.copy(mint = mint).withUpdatedOrderId()
+            if (record.mint.isNotEmpty()) {
+                record
+            } else {
+                val mint = accountToMintMapping[record.tokenAccount]
+                if (mint != null) {
+                    record.copy(mint = mint).withUpdatedOrderId()
+                } else {
+                    val message = "Buy record is skipped: unknown mint by account ${record.tokenAccount}: $record"
+                    if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                        logger.error(message)
+                    } else {
+                        logger.info(message)
+                    }
+                    null
+                }
             }
         }
         is SolanaAuctionHouseOrderRecord.SellRecord -> {
-            accountToMintMapping[record.tokenAccount]?.let { mint ->
-                record.copy(mint = mint).withUpdatedOrderId()
+            if (record.mint.isNotEmpty()) {
+                record
+            } else {
+                val mint = accountToMintMapping[record.tokenAccount]
+                if (mint != null) {
+                    record.copy(mint = mint).withUpdatedOrderId()
+                } else {
+                    val message = "Sell record is skipped: unknown mint by account ${record.tokenAccount}: $record"
+                    if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                        logger.error(message)
+                    } else {
+                        logger.info(message)
+                    }
+                    null
+                }
             }
         }
         is SolanaAuctionHouseOrderRecord.CancelRecord -> record
