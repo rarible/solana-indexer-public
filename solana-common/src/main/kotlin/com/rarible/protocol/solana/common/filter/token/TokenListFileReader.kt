@@ -1,9 +1,9 @@
-package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
+package com.rarible.protocol.solana.common.filter.token
 
 import org.slf4j.LoggerFactory
 import java.util.stream.Collectors
 
-class NftTokenReader(
+class TokenListFileReader(
     private val folder: String
 ) {
 

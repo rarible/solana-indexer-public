@@ -9,9 +9,7 @@ import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.StreamFullReduceService
-import com.rarible.protocol.solana.common.configuration.FeatureFlags
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
-import com.rarible.protocol.solana.common.configuration.TokenFilterType
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheProperties
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
@@ -26,10 +24,6 @@ import com.rarible.protocol.solana.nft.listener.service.order.OrderIdService
 import com.rarible.protocol.solana.nft.listener.service.order.OrderReducer
 import com.rarible.protocol.solana.nft.listener.service.order.OrderTemplateProvider
 import com.rarible.protocol.solana.nft.listener.service.order.OrderUpdateService
-import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.NftTokenReader
-import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaBlackListTokenFilter
-import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaTokenFilter
-import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.SolanaWhiteListTokenFilter
 import com.rarible.protocol.solana.nft.listener.service.token.TokenIdService
 import com.rarible.protocol.solana.nft.listener.service.token.TokenReducer
 import com.rarible.protocol.solana.nft.listener.service.token.TokenTemplateProvider
@@ -52,14 +46,6 @@ class BlockchainScannerConfiguration(
     private val applicationEnvironmentInfo: ApplicationEnvironmentInfo,
     private val blockCacheProperties: BlockCacheProperties
 ) {
-
-    private val WHITELIST_FILES = listOf(
-        "degenape",
-        "degenerate_ape_kindergarten",
-        "degeneratetrashpandas"
-    )
-
-    private val BLACKLIST_FILES = emptyList<String>()
 
     @Bean
     fun solanaApi(
@@ -101,25 +87,6 @@ class BlockchainScannerConfiguration(
             applicationEnvironmentInfo = applicationEnvironmentInfo,
             solanaBlockchainScannerProperties = solanaBlockchainScannerProperties
         ).apply { start(logRecordEventListener) }
-    }
-
-    @Bean
-    fun tokenFilter(featureFlags: FeatureFlags): SolanaTokenFilter {
-        return when (featureFlags.tokenFilter) {
-            TokenFilterType.NONE -> {
-                object : SolanaTokenFilter {
-                    override fun isAcceptableToken(mint: String): Boolean = true
-                }
-            }
-            TokenFilterType.WHITELIST -> {
-                val tokens = NftTokenReader("/whitelist").readTokens(WHITELIST_FILES)
-                SolanaWhiteListTokenFilter(tokens)
-            }
-            TokenFilterType.BLACKLIST -> {
-                val tokens = NftTokenReader("/blacklist").readTokens(BLACKLIST_FILES) + featureFlags.blacklistTokens
-                SolanaBlackListTokenFilter(tokens)
-            }
-        }
     }
 
     @Bean

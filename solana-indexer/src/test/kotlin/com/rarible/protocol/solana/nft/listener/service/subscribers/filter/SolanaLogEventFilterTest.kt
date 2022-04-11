@@ -5,10 +5,14 @@ import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
+import com.rarible.protocol.solana.common.filter.token.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
+import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceIncomeTransfer
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceInitRecord
 import com.rarible.protocol.solana.nft.listener.test.data.randomBalanceOutcomeTransfer
@@ -35,14 +39,26 @@ class SolanaLogEventFilterTest {
 
     private val blackListedToken = randomString()
 
+    private val nonCurrencyTokenFilter = mockk<SolanaBlackListTokenFilter>()
+
     private val filter = SolanaRecordsLogEventFilter(
-        accountToMintAssociationService,
-        SolanaBlackListTokenFilter(setOf(blackListedToken))
+        accountToMintAssociationService = accountToMintAssociationService,
+        solanaIndexerProperties = SolanaIndexerProperties(
+            kafkaReplicaSet = "kafka",
+            metricRootPath = "metricRootPath"
+        ),
+        tokenFilter = CompositeSolanaTokenFilter(
+            listOf(
+                nonCurrencyTokenFilter,
+                SolanaBlackListTokenFilter(setOf(blackListedToken))
+            )
+        )
     )
 
     @BeforeEach
     fun beforeEach() {
         clearMocks(accountToMintAssociationService)
+        clearMocks(nonCurrencyTokenFilter)
     }
 
     @Test
@@ -96,8 +112,8 @@ class SolanaLogEventFilterTest {
         } returns Unit
 
         // Event with currency token should be ignored
-        coEvery { accountToMintAssociationService.isCurrencyToken(initMint) } returns true
-        coEvery { accountToMintAssociationService.isCurrencyToken(mappedMint) } returns false
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(initMint) } returns false
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(mappedMint) } returns true
 
         val event = randomLogEvent(init, transferWithInitMint, transferWithMapping, transferWithoutMapping)
         val result = filter.filter(listOf(event))
@@ -138,8 +154,8 @@ class SolanaLogEventFilterTest {
         } returns Unit
 
         // Events with currency token should be ignored
-        coEvery { accountToMintAssociationService.isCurrencyToken(incomeMint) } returns true
-        coEvery { accountToMintAssociationService.isCurrencyToken(outcomeMint) } returns false
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(incomeMint) } returns false
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(outcomeMint) } returns true
 
         val event = randomLogEvent(incomeTransfer, outcomeTransfer)
         val result = filter.filter(listOf(event))
@@ -163,7 +179,7 @@ class SolanaLogEventFilterTest {
             accountToMintAssociationService.saveMintsByAccounts(mapOf())
         } returns Unit
 
-        coEvery { accountToMintAssociationService.isCurrencyToken(blackListedToken) } returns false
+        coEvery { nonCurrencyTokenFilter.isAcceptableToken(blackListedToken) } returns true
 
         val event = randomLogEvent(incomeTransfer)
         val result = filter.filter(listOf(event))

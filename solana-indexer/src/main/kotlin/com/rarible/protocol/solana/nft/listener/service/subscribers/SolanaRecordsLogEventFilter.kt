@@ -1,10 +1,11 @@
-package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
+package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
@@ -62,7 +63,7 @@ class SolanaRecordsLogEventFilter(
         return coroutineScope {
             // Saving new non-currency mappings in background while filtering event list
             val mappingToSave = HashMap(accountToMintMapping.filter {
-                isAcceptableToken(it.value)
+                tokenFilter.isAcceptableToken(it.value)
             })
             val updateMappingDeferred = async {
                 // Saving only non-existing mapping, including account references
@@ -252,7 +253,7 @@ class SolanaRecordsLogEventFilter(
     }
 
     private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
-        return if (isAcceptableToken(mint)) {
+        return if (tokenFilter.isAcceptableToken(mint)) {
             record
         } else {
             null
@@ -269,7 +270,7 @@ class SolanaRecordsLogEventFilter(
         // Skip records with unknown mint. We must have seen the account<->mint association before.
         ?: return null
 
-        if (!isAcceptableToken(mint)) {
+        if (!tokenFilter.isAcceptableToken(mint)) {
             return null
         }
 
@@ -284,7 +285,7 @@ class SolanaRecordsLogEventFilter(
         return groups.mapNotNull {
             val account = it.key
             val mint = it.value.mint
-            if (mint == null || isAcceptableToken(mint)) {
+            if (mint == null || tokenFilter.isAcceptableToken(mint)) {
                 account
             } else {
                 null
@@ -292,7 +293,4 @@ class SolanaRecordsLogEventFilter(
         }.toMutableSet()
     }
 
-    private fun isAcceptableToken(mint: String): Boolean =
-        !accountToMintAssociationService.isCurrencyToken(mint)
-                && tokenFilter.isAcceptableToken(mint)
 }

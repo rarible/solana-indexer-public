@@ -4,7 +4,6 @@ import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.repository.AccountToMintAssociationRepository
-import com.rarible.protocol.solana.nft.listener.service.subscribers.filter.CurrencyTokenReader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -12,13 +11,10 @@ import org.springframework.stereotype.Component
 @Component
 class AccountToMintAssociationService(
     private val accountToMintAssociationRepository: AccountToMintAssociationRepository,
-    @Autowired(required = false) private val accountToMintAssociationCache: AccountToMintAssociationCache?,
-    currencyTokenReader: CurrencyTokenReader
+    @Autowired(required = false) private val accountToMintAssociationCache: AccountToMintAssociationCache?
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    private val currencyTokens = currencyTokenReader.readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
 
     @CaptureSpan(type = SpanType.APP)
     suspend fun getMintsByAccounts(accounts: Collection<String>): Map<String, String> {
@@ -45,7 +41,5 @@ class AccountToMintAssociationService(
         accountToMintAssociationRepository.saveAll(associations.map { AccountToMintAssociation(it.key, it.value) })
         accountToMintAssociationCache?.saveMintsByAccounts(associations)
     }
-
-    fun isCurrencyToken(mint: String): Boolean = currencyTokens.contains(mint)
 
 }

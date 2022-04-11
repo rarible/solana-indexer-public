@@ -1,13 +1,15 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
+import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class SolanaWhiteListTokenFilterTest {
 
-    val whiteListFilter = SolanaWhiteListTokenFilter(
-        NftTokenReader("/whitelist").readTokens(listOf("degenape"))
+    private val whiteListFilter = SolanaWhiteListTokenFilter(
+        TokenListFileReader("/whitelist").readTokens(listOf("degenape"))
     )
 
     @Test
