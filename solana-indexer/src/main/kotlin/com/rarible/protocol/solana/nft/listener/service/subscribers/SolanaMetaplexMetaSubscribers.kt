@@ -188,7 +188,7 @@ class SetAndVerifyMetadataSubscriber : SolanaLogEventSubscriber {
 
         val record = SolanaMetaRecord.SetAndVerifyMetadataRecord(
             metaAccount = instruction.accounts[0],
-            mint = instruction.accounts[3],
+            mint = instruction.accounts[4],
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )

@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetada
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.isEmpty
 import org.springframework.stereotype.Component
@@ -59,9 +60,9 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
             )
             // TODO[test]: add a test for set and verify metadata.
             is MetaplexSetAndVerifyCollectionEvent -> entity.copy(
-                tokenAddress = event.mint,
                 metaFields = entity.metaFields.copy(
-                    collection = entity.metaFields.collection?.copy(
+                    collection = MetaplexMetaFields.Collection(
+                        address = event.mint,
                         verified = true
                     )
                 )
