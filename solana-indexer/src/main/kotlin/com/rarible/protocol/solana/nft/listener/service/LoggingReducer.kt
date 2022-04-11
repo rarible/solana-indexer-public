@@ -8,7 +8,13 @@ import org.slf4j.LoggerFactory
 class LoggingReducer<Id, Event : EntityEvent, E : Entity<Id, Event, E>> : Reducer<Event, E> {
     override suspend fun reduce(entity: E, event: Event): E {
         val log = event.log
-        logger.info("Reducing {} by event {} having log {}", entity.id, event, log)
+        logger.info(
+            "Reducing {} by {} event {} having log {}, reversed {}",
+            entity.id,
+            if (event.reversed) "reverted" else "",
+            event,
+            log
+        )
         return entity
     }
 

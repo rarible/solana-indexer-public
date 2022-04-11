@@ -118,7 +118,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
         airdrop(10, house.feePayerAcct)
         sell(house.id, baseKeypair, 5, token, 1)
-        Wait.waitAssert(timeout) {
+        val sellOrder = Wait.waitFor(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
                     maker = sellerWallet,
@@ -148,9 +148,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        takePrice = null
+                        takePrice = null,
+                        states = emptyList()
                     )
                 )
+
+            order!!
         }
         cancel(house.id, baseKeypair, 5, token, 1)
 
@@ -208,7 +211,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        takePrice = null
+                        takePrice = null,
+                        states = listOf(sellOrder)
                     )
                 )
         }
@@ -224,7 +228,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         airdrop(10, house.feePayerAcct)
         buy(house.id, keypair, 5, token, 1)
 
-        Wait.waitAssert(timeout) {
+        val buyOrder = Wait.waitFor(timeout) {
             val order = orderRepository.findById(
                 Order.calculateAuctionHouseOrderId(
                     maker = wallet,
@@ -254,9 +258,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.BUY,
                         makePrice = null,
-                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        states = emptyList()
                     )
                 )
+
+            order!!
         }
         cancel(house.id, keypair, 5, token, 1)
 
@@ -314,7 +321,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.BUY,
                         makePrice = null,
-                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        states = listOf(buyOrder)
                     )
                 )
         }
@@ -405,7 +413,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        takePrice = null
+                        takePrice = null,
+                        states = emptyList()
                     )
                 )
         }
@@ -442,7 +451,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.BUY,
                         makePrice = null,
-                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        states = emptyList()
                     )
                 )
         }
@@ -595,7 +605,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.BUY,
                         makePrice = null,
-                        takePrice = 5.scaleSupply(9).toBigDecimal(9)
+                        takePrice = 5.scaleSupply(9).toBigDecimal(9),
+                        states = listOf(buyOrder!!)
                     )
                 )
 
@@ -628,7 +639,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         revertableEvents = emptyList(),
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        takePrice = null
+                        takePrice = null,
+                        states = listOf(sellOrder!!)
                     )
                 )
         }

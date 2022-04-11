@@ -26,6 +26,7 @@ class ForwardOrderReducer(
         if (event !is OrderSellEvent && event !is OrderBuyEvent && entity.isEmpty) {
             return entity
         }
+        val states = if (entity.isEmpty) emptyList() else entity.states + entity.copy(states = emptyList())
         return when (event) {
 
             is ExecuteSaleEvent -> {
@@ -63,7 +64,8 @@ class ForwardOrderReducer(
                 ),
                 direction = OrderDirection.BUY,
                 makePrice = null,
-                takePrice = null
+                takePrice = null,
+                states = emptyList()
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
 
             is OrderSellEvent -> Order(
@@ -87,7 +89,8 @@ class ForwardOrderReducer(
                 ),
                 direction = OrderDirection.SELL,
                 makePrice = null,
-                takePrice = null
+                takePrice = null,
+                states = emptyList()
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
 
             is OrderCancelEvent -> entity.copy(
@@ -101,6 +104,6 @@ class ForwardOrderReducer(
                     is SolanaOrderUpdateInstruction.BalanceUpdate -> entity.copy(updatedAt = event.timestamp)
                 }
             }
-        }
+        }.copy(states = states)
     }
 }

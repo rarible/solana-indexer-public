@@ -37,6 +37,7 @@ data class Order(
     override val createdAt: Instant,
     override val updatedAt: Instant,
     val direction: OrderDirection,
+    val states: List<Order>,
     override val revertableEvents: List<OrderEvent>,
     @Id
     override val id: String = calculateAuctionHouseOrderId(
@@ -72,7 +73,8 @@ data class Order(
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
-            direction = OrderDirection.SELL
+            direction = OrderDirection.SELL,
+            states = emptyList()
         )
 
         fun calculateAuctionHouseOrderId(

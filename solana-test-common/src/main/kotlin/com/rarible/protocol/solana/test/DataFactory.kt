@@ -243,7 +243,8 @@ fun randomSellOrder(
         createdAt = nowMillis(),
         updatedAt = nowMillis(),
         direction = OrderDirection.SELL,
-        revertableEvents = emptyList()
+        revertableEvents = emptyList(),
+        states = emptyList()
     )
 }
 
@@ -264,7 +265,8 @@ fun randomBuyOrder(
         createdAt = nowMillis(),
         updatedAt = nowMillis(),
         direction = OrderDirection.BUY,
-        revertableEvents = emptyList()
+        revertableEvents = emptyList(),
+        states = emptyList()
     )
 }
 
