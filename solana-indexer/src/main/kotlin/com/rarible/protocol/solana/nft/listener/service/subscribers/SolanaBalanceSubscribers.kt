@@ -20,6 +20,32 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
+class InitializeBalanceAssociatedAccountSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
+        programId = SolanaProgramId.ASSOCIATED_TOKEN_ACCOUNT_PROGRAM,
+        id = "balance_initialize_associated_account",
+        groupId = SubscriberGroup.BALANCE.id,
+        entityType = SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java,
+        collection = SubscriberGroup.BALANCE.collectionName
+    ) {}
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaBalanceRecord.InitializeBalanceAccountRecord> {
+        return listOf(
+            SolanaBalanceRecord.InitializeBalanceAccountRecord(
+                account = log.instruction.accounts[1],
+                owner = log.instruction.accounts[2],
+                mint = log.instruction.accounts[3],
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+        )
+    }
+}
+
+@Component
 class InitializeBalanceAccountSubscriber : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
