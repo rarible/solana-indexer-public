@@ -54,22 +54,13 @@ object TokenMetaConverter {
             key = key
         )
 
-    /*fun convert(collection: TokenMeta.Collection): CollectionDto =
-        when (collection) {
-            is TokenMeta.Collection.OffChain -> JsonCollectionDto(
-                name = collection.name,
-                family = collection.family,
-                hash = collection.hash
-            )
-            is TokenMeta.Collection.OnChain -> OnChainCollectionDto(
-                address = collection.address,
-                verified = collection.verified
-            )
-        }*/
-
-    fun convert(collection: TokenMeta.Collection): String =
+    fun convert(collection: TokenMeta.Collection): String? =
         when (collection) {
             is TokenMeta.Collection.OffChain -> collection.hash
-            is TokenMeta.Collection.OnChain -> collection.address
+            is TokenMeta.Collection.OnChain -> if (collection.verified) {
+                collection.address
+            } else {
+                null
+            }
         }
 }
