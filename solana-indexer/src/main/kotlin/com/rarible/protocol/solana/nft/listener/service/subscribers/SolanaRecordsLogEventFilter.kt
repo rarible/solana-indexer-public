@@ -130,11 +130,9 @@ class SolanaRecordsLogEventFilter(
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
-                        accountToMintMapping[record.tokenAccount] = record.mint
                     }
                     is SolanaAuctionHouseOrderRecord.SellRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
-                        accountToMintMapping[record.tokenAccount] = record.mint
                     }
                     is SolanaAuctionHouseOrderRecord.CancelRecord -> Unit
                     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
@@ -165,11 +163,7 @@ class SolanaRecordsLogEventFilter(
         is SolanaTokenRecord -> filterTokenRecord(record)
         is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
         is SolanaMetaRecord -> filterMetaRecord(record)
-        is SolanaAuctionHouseOrderRecord -> {
-            val orderRecord = filterAuctionHouseOrderRecord(record, accountToMintMapping)
-            logger.info("Converted order record $record to $orderRecord")
-            orderRecord
-        }
+        is SolanaAuctionHouseOrderRecord -> filterAuctionHouseOrderRecord(record, accountToMintMapping)
     }
 
     private fun filterTokenRecord(
@@ -223,11 +217,11 @@ class SolanaRecordsLogEventFilter(
             is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
             is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                 if (record.mint.isNotEmpty()) {
-                    return record
+                    record
                 } else {
                     val mint = accountToMintMapping[record.tokenAccount]
                     if (mint != null) {
-                        return record.copy(mint = mint).withUpdatedOrderId()
+                        record.copy(mint = mint).withUpdatedOrderId()
                     } else {
                         val message = "Buy record is skipped: unknown mint by account ${record.tokenAccount}: $record"
                         if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
@@ -235,17 +229,17 @@ class SolanaRecordsLogEventFilter(
                         } else {
                             logger.info(message)
                         }
-                        return null
+                        null
                     }
                 }
             }
             is SolanaAuctionHouseOrderRecord.SellRecord -> {
                 if (record.mint.isNotEmpty()) {
-                    return record
+                    record
                 } else {
                     val mint = accountToMintMapping[record.tokenAccount]
                     if (mint != null) {
-                        return record.copy(mint = mint).withUpdatedOrderId()
+                        record.copy(mint = mint).withUpdatedOrderId()
                     } else {
                         val message = "Sell record is skipped: unknown mint by account ${record.tokenAccount}: $record"
                         if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
@@ -253,7 +247,7 @@ class SolanaRecordsLogEventFilter(
                         } else {
                             logger.info(message)
                         }
-                        return null
+                        null
                     }
                 }
             }
