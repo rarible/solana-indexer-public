@@ -16,3 +16,5 @@ data class MetaplexMetaFields(
         val verified: Boolean
     )
 }
+
+fun String.trimEndNulls(): String = trimEnd(0.toChar())

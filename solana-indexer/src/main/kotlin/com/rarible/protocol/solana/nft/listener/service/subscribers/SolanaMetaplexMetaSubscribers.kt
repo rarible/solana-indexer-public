@@ -14,6 +14,7 @@ import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.model.trimEndNulls
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import org.springframework.stereotype.Component
@@ -216,5 +217,3 @@ private fun MetaplexMetadata.Data.convertMetaplexMetaFields() = MetaplexMetaFiel
         )
     }
 )
-
-private fun String.trimEndNulls(): String = trimEnd(0.toChar())

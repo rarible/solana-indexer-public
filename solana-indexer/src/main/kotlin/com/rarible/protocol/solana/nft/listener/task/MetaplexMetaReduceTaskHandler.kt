@@ -2,9 +2,12 @@ package com.rarible.protocol.solana.nft.listener.task
 
 import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.core.task.TaskHandler
+import com.rarible.protocol.solana.borsh.MetaplexMetadata
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
+import com.rarible.protocol.solana.common.model.MetaplexMetaFields
+import com.rarible.protocol.solana.common.model.trimEndNulls
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.repository.SolanaMetaplexMetaRecordsRepository
 import com.rarible.protocol.solana.nft.listener.service.meta.MetaEventConverter
@@ -40,12 +43,32 @@ class MetaplexMetaReduceTaskHandler(
         val metaEventFlow = metaplexMetaRecordsRepository.findBy(
             criteria = criteria,
             sort = Sort.by(Sort.Direction.ASC, SolanaMetaRecord::metaAccount.name, "_id"),
-        ).flatMapConcat {
+        ).map { it.withFixedEndNulls() }.flatMapConcat {
             metaEventConverter.convert(it, false).asFlow()
         }
 
         return metaStreamFullReduceService.reduce(metaEventFlow).map { it.metaAddress }
     }
+
+    /**
+     * TODO: temporary workaround for /0000 trailing nulls.
+     * After full-reindex we will not have such records Create/Update meta records in the database.
+     * But for now we would like to do a full reduce and fix the trailing zeros.
+     */
+    private fun SolanaMetaRecord.withFixedEndNulls(): SolanaMetaRecord = when (this) {
+        is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> copy(meta = meta.withTrimmedEndNulls())
+        is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> copy(updatedMeta = updatedMeta?.withTrimmedEndNulls())
+        is SolanaMetaRecord.MetaplexSignMetadataRecord -> this
+        is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> this
+        is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> this
+        is SolanaMetaRecord.SetAndVerifyMetadataRecord -> this
+    }
+
+    private fun MetaplexMetaFields.withTrimmedEndNulls(): MetaplexMetaFields = copy(
+        name = name.trimEndNulls(),
+        symbol = symbol.trimEndNulls(),
+        uri = uri.trimEndNulls()
+    )
 
     companion object {
         val logger: Logger = LoggerFactory.getLogger(MetaplexMetaReduceTaskHandler::class.java)
