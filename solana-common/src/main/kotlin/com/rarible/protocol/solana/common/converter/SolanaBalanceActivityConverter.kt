@@ -29,7 +29,7 @@ class SolanaBalanceActivityConverter(
             is SolanaBalanceRecord.MintToRecord -> createMintActivity(source, reverted)
             is SolanaBalanceRecord.BurnRecord -> createBurnActivity(source, reverted)
             is SolanaBalanceRecord.TransferIncomeRecord -> createTransferIncomeActivity(source, reverted)
-            is SolanaBalanceRecord.TransferOutcomeRecord -> createTransferOutcomeActivity(source, reverted)
+            is SolanaBalanceRecord.TransferOutcomeRecord -> null
             is SolanaBalanceRecord.InitializeBalanceAccountRecord -> null
         }
     }
