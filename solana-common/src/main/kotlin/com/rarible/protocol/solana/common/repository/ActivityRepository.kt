@@ -47,7 +47,7 @@ class ActivityRepository(
         val criteria = Criteria(ActivityRecord::type.name).`in`(types)
             .addContinuation(continuation, sortAscending)
         val query = Query(criteria)
-            .with(Sort.by(ActivityRecord::date.name, "_id").direction(sortAscending))
+            .with(Sort.by("_id").direction(sortAscending))
             .limit(size)
         return mongo.find(query, ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
