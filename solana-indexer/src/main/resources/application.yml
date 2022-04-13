@@ -55,8 +55,7 @@ blockchain:
           enabled: true
       retryPolicy:
         scan:
-          reconnectDelay: 2s
-          reconnectAttempts: 10
+          reconnectDelay: 10s
         client:
           delay: 2s
           attempts: 3
