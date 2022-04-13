@@ -27,7 +27,7 @@ fun main() {
         val parsed = GsonJsonParser().parseMap(response)
         val items = parsed["items"] as List<Any?>
         items.forEach {
-            val item = it as Map<String, Any?>
+            val item = it as Map<*, *>
             tokens.add(item["token_add"] as String)
         }
         println("${items.size} downloaded for page = $page")

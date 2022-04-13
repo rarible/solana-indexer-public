@@ -11,10 +11,8 @@ import com.rarible.protocol.solana.common.util.RoyaltyDistributor
 import com.rarible.protocol.solana.dto.RoyaltyDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.merge
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -65,9 +63,10 @@ class TokenApiService(
 
     private fun getTokensByMetaplexCollectionAddress(
         collectionAddress: String,
-        fromTokenAddress: String?
+        fromTokenAddress: String?,
+        limit: Int
     ): Flow<Token> {
-        return metaplexMetaRepository.findByCollectionAddress(collectionAddress, fromTokenAddress)
+        return metaplexMetaRepository.findByCollectionAddress(collectionAddress, fromTokenAddress, limit)
             // TODO can be done with batch request
             .mapNotNull { meta ->
                 tokenRepository.findByMint(meta.tokenAddress)
@@ -77,8 +76,9 @@ class TokenApiService(
     private fun getTokensByOffChainCollectionHash(
         offChainCollectionHash: String,
         fromTokenAddress: String?,
+        limit: Int
     ): Flow<Token> {
-        return metaplexOffChainMetaRepository.findByOffChainCollectionHash(offChainCollectionHash, fromTokenAddress)
+        return metaplexOffChainMetaRepository.findByOffChainCollectionHash(offChainCollectionHash, fromTokenAddress, limit)
             .mapNotNull { tokenOffChainCollection ->
                 tokenRepository.findByMint(tokenOffChainCollection.tokenAddress)
             }
@@ -89,7 +89,7 @@ class TokenApiService(
         continuation: String?,
         limit: Int,
     ): Flow<TokenWithMeta> {
-        val metas = tokenMetaService.getTokensMetaByCollection(collection, continuation)
+        val metas = tokenMetaService.getTokensMetaByCollection(collection, continuation, limit)
         val tokens = tokenRepository.findByMints(metas.keys)
 
         return tokens.map { TokenWithMeta(it, metas[it.mint]) }

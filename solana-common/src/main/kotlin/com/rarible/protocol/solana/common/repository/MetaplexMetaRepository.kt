@@ -4,6 +4,7 @@ import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.TokenId
+import com.rarible.protocol.union.dto.continuation.page.PageSize
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -39,7 +40,11 @@ class MetaplexMetaRepository(
         return mongo.find(Query(criteria), MetaplexMeta::class.java).asFlow()
     }
 
-    fun findByCollectionAddress(collectionAddress: String, fromTokenAddress: String? = null): Flow<MetaplexMeta> {
+    fun findByCollectionAddress(
+        collectionAddress: String,
+        fromTokenAddress: String? = null,
+        limit: Int = PageSize.COLLECTION.default
+    ): Flow<MetaplexMeta> {
         val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
             .fromTokenAddress(fromTokenAddress)
 
@@ -49,7 +54,7 @@ class MetaplexMetaRepository(
                 MetaplexMeta::tokenAddress.name,
                 "_id"
             )
-        )
+        ).limit(limit)
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
@@ -63,7 +68,7 @@ class MetaplexMetaRepository(
 
     private fun Criteria.fromTokenAddress(fromTokenAddress: String?): Criteria {
         return fromTokenAddress?.let {
-            this.and(MetaplexMeta::tokenAddress.name).lt(it)
+            this.and(MetaplexMeta::tokenAddress.name).gt(it)
         } ?: this
     }
 
@@ -88,7 +93,8 @@ class MetaplexMetaRepository(
 
     companion object {
 
-        val collectionAddressKey = MetaplexMeta::metaFields.name + "." + MetaplexMetaFields::collection.name + "." + MetaplexMetaFields.Collection::address.name
+        val collectionAddressKey =
+            MetaplexMeta::metaFields.name + "." + MetaplexMetaFields::collection.name + "." + MetaplexMetaFields.Collection::address.name
     }
 
 }

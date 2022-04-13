@@ -29,7 +29,7 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
         val old = nowMillis().minusSeconds(1)
         val balance1 = balanceRepository.save(createRandomBalance(updatedAt = old))
         val balance2 = balanceRepository.save(createRandomBalance(mint = balance1.mint, owner = balance1.owner))
-        val balance3 = balanceRepository.save(createRandomBalance(mint = balance1.mint))
+        balanceRepository.save(createRandomBalance(mint = balance1.mint))
 
         val expected = listOf(balance1, balance2).sortedByDescending { it.updatedAt }
         val result = balanceRepository.findByOwner(balance1.owner, null, 100, true).toList()
@@ -52,7 +52,7 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
         val old = nowMillis().minusSeconds(1)
         val balance = balanceRepository.save(createRandomBalance(updatedAt = old))
         val balance2 = balanceRepository.save(createRandomBalance(mint = balance.mint, owner = balance.owner))
-        val balance3 = balanceRepository.save(createRandomBalance(owner = balance.owner))
+        balanceRepository.save(createRandomBalance(owner = balance.owner))
 
         val expected = listOf(balance, balance2).sortedByDescending { it.updatedAt }
 
@@ -74,7 +74,7 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
     fun `find by mint and owner`() = runBlocking<Unit> {
         val balance1 = balanceRepository.save(createRandomBalance())
         val balance2 = balanceRepository.save(createRandomBalance(mint = balance1.mint, owner = balance1.owner))
-        val balance3 = balanceRepository.save(createRandomBalance(owner = balance1.owner))
+        balanceRepository.save(createRandomBalance(owner = balance1.owner))
 
         val expected = setOf(balance1, balance2)
 

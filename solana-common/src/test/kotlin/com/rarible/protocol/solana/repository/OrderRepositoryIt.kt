@@ -57,11 +57,11 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
         // 2 orders with same currency
         val sellOrder1 = orderRepository.save(randomSellOrder(make = mintAsset))
-        val sellOrder2 = orderRepository.save(randomSellOrder(make = mintAsset, take = sellOrder1.take))
+        orderRepository.save(randomSellOrder(make = mintAsset, take = sellOrder1.take))
         // 1 order with another currency
         val sellOrder3 = orderRepository.save(randomSellOrder(make = mintAsset))
         // 1 order not related to target mint
-        val sellOrder4 = orderRepository.save(randomSellOrder())
+        orderRepository.save(randomSellOrder())
 
         // 2 buy orders, their currencies should not be in the result
         orderRepository.save(randomBuyOrder(take = mintAsset))
@@ -87,11 +87,11 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
         // 2 orders with same currency
         val buyOrder1 = orderRepository.save(randomBuyOrder(take = mintAsset))
-        val buyOrder2 = orderRepository.save(randomBuyOrder(take = mintAsset, make = buyOrder1.make))
+        orderRepository.save(randomBuyOrder(take = mintAsset, make = buyOrder1.make))
         // 1 order with another currency
         val buyOrder3 = orderRepository.save(randomBuyOrder(take = mintAsset))
         // 1 order not related to target mint
-        val buyOrder4 = orderRepository.save(randomBuyOrder())
+        orderRepository.save(randomBuyOrder())
 
         // 2 sell orders, their currencies should not be in the result
         orderRepository.save(randomSellOrder(make = mintAsset))

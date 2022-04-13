@@ -55,11 +55,11 @@ class TokenMetaService(
         if (tokenAddresses.isNotEmpty()) metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
         else emptyFlow()
 
-    private suspend fun getOnChainMetaByCollection(collection: String, fromTokenAddress: String?) =
-        metaplexMetaRepository.findByCollectionAddress(collection, fromTokenAddress)
+    private suspend fun getOnChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int) =
+        metaplexMetaRepository.findByCollectionAddress(collection, fromTokenAddress, limit)
 
-    private suspend fun getOffChainMetaByCollection(collection: String, fromTokenAddress: String?) =
-        metaplexOffChainMetaRepository.findByOffChainCollectionHash(collection, fromTokenAddress)
+    private suspend fun getOffChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int) =
+        metaplexOffChainMetaRepository.findByOffChainCollectionHash(collection, fromTokenAddress, limit)
 
     suspend fun extendWithAvailableMeta(tokens: Flow<Token>): Flow<TokenWithMeta> {
         val tokenMap = tokens.toList().associateBy { it.mint }
@@ -80,14 +80,18 @@ class TokenMetaService(
         return result
     }
 
-    suspend fun getTokensMetaByCollection(collection: String, fromTokenAddress: String?): Map<String, TokenMeta> {
+    suspend fun getTokensMetaByCollection(
+        collection: String,
+        fromTokenAddress: String?,
+        limit: Int
+    ): Map<String, TokenMeta> {
         val (onChainMap, offChainMap) = coroutineScope {
             val onChainMap = async {
-                getOnChainMetaByCollection(collection, fromTokenAddress)
+                getOnChainMetaByCollection(collection, fromTokenAddress, limit)
                     .toTokenAddressMetaMap()
             }
             val offChainMap = async {
-                getOffChainMetaByCollection(collection, fromTokenAddress)
+                getOffChainMetaByCollection(collection, fromTokenAddress, limit)
                     .toTokenAddressOffChainMetaMap()
             }
             onChainMap.await() to offChainMap.await()

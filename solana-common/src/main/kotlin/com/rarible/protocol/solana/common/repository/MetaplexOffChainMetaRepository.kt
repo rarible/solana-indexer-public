@@ -4,6 +4,7 @@ import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository.MetaIndexes.offChainCollectionHashKey
+import com.rarible.protocol.union.dto.continuation.page.PageSize
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -35,7 +36,9 @@ class MetaplexOffChainMetaRepository(
     }
 
     fun findByOffChainCollectionHash(
-        offChainCollectionHash: String, fromTokenAddress: String? = null
+        offChainCollectionHash: String,
+        fromTokenAddress: String? = null,
+        limit: Int = PageSize.COLLECTION.default
     ): Flow<MetaplexOffChainMeta> {
         val criteria = Criteria.where(offChainCollectionHashKey).isEqualTo(offChainCollectionHash)
             .fromTokenAddress(fromTokenAddress)
@@ -46,13 +49,13 @@ class MetaplexOffChainMetaRepository(
                 MetaplexOffChainMeta::tokenAddress.name,
                 "_id"
             )
-        )
+        ).limit(limit)
         return mongo.find(query, MetaplexOffChainMeta::class.java).asFlow()
     }
 
     private fun Criteria.fromTokenAddress(fromTokenAddress: String?): Criteria {
         return fromTokenAddress?.let {
-            this.and(MetaplexOffChainMeta::tokenAddress.name).lt(it)
+            this.and(MetaplexOffChainMeta::tokenAddress.name).gt(it)
         } ?: this
     }
 
