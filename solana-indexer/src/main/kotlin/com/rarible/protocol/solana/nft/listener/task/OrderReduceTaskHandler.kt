@@ -36,12 +36,14 @@ class OrderReduceTaskHandler(
     @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
     override fun runLongTask(from: String?, param: String) : Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
+        val auctionHouse = param.substringBefore(":")
+        val orderId = param.substringAfter(":")
 
-        require(param.isNotBlank()) { "Auction house must be specified" }
-        val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(param).andOperator(
+        require(auctionHouse.isNotBlank()) { "Auction house must be specified" }
+        val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(auctionHouse).andOperator(
             when {
                 from != null -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).gt(from)
-                param.isNotBlank() -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).`is`(param)
+                orderId.isNotBlank() -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).`is`(orderId)
                 else -> Criteria()
             }
         )
