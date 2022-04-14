@@ -27,7 +27,7 @@ data class Asset(
 data class Order(
     val auctionHouse: String,
     val maker: String,
-    val makerAccount: String,
+    val makerAccount: String?,
     val status: OrderStatus,
     val make: Asset,
     val take: Asset,

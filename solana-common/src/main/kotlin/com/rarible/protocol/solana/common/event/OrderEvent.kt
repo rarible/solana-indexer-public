@@ -19,7 +19,7 @@ sealed class OrderEvent : EntityEvent {
 data class OrderBuyEvent(
     override val auctionHouse: String,
     val maker: String,
-    val makerAccount: String,
+    val makerAccount: String?,
     val buyPrice: BigInteger,
     val buyAsset: Asset,
     override val timestamp: Instant,
@@ -30,7 +30,7 @@ data class OrderBuyEvent(
 data class OrderSellEvent(
     override val auctionHouse: String,
     val maker: String,
-    val makerAccount: String,
+    val makerAccount: String?,
     val sellAsset: Asset,
     val sellPrice: BigInteger,
     override val timestamp: Instant,

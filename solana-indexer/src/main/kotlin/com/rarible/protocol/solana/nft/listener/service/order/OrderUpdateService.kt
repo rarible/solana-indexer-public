@@ -66,7 +66,7 @@ class OrderUpdateService(
             return this.copy(makeStock = BigInteger.ZERO)
         }
 
-        val balance = balanceRepository.findByAccount(makerAccount)
+        val balance = makerAccount?.let { balanceRepository.findByAccount(it) }
         // Workaround for a race: balance has not been reduced yet.
         // Considering the order is active. When the balance changes, the status will become INACTIVE.
             ?: return this.copy(status = OrderStatus.ACTIVE)
