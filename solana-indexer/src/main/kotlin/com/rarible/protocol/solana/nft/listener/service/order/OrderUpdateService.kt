@@ -66,11 +66,7 @@ class OrderUpdateService(
             return this.copy(makeStock = BigInteger.ZERO)
         }
 
-        val balance = balanceRepository.findByMintAndOwner(
-            mint = make.type.tokenAddress,
-            owner = maker,
-            includeDeleted = true
-        ).firstOrNull()
+        val balance = balanceRepository.findByAccount(makerAccount)
         // Workaround for a race: balance has not been reduced yet.
         // Considering the order is active. When the balance changes, the status will become INACTIVE.
             ?: return this.copy(status = OrderStatus.ACTIVE)

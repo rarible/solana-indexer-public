@@ -21,6 +21,7 @@ class OrderEventConverter {
             OrderBuyEvent(
                 auctionHouse = record.auctionHouse,
                 maker = record.maker,
+                makerAccount = record.tokenAccount,
                 buyPrice = record.buyPrice,
                 buyAsset = Asset(
                     type = TokenNftAssetType(tokenAddress = record.mint),
@@ -49,6 +50,7 @@ class OrderEventConverter {
             OrderSellEvent(
                 auctionHouse = record.auctionHouse,
                 maker = record.maker,
+                makerAccount = record.tokenAccount,
                 sellAsset = Asset(
                     type = TokenNftAssetType(tokenAddress = record.mint),
                     amount = record.amount

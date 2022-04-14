@@ -27,6 +27,7 @@ data class Asset(
 data class Order(
     val auctionHouse: String,
     val maker: String,
+    val makerAccount: String,
     val status: OrderStatus,
     val make: Asset,
     val take: Asset,
@@ -64,6 +65,7 @@ data class Order(
         fun empty(): Order = Order(
             auctionHouse = "",
             maker = "",
+            makerAccount = "",
             status = OrderStatus.CANCELLED,
             make = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),
             take = Asset(TokenNftAssetType(tokenAddress = ""), BigInteger.ZERO),

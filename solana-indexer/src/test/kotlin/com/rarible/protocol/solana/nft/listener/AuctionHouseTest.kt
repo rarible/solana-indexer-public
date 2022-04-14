@@ -132,12 +132,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = sellerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
@@ -195,12 +197,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = sellerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.CANCELLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
@@ -242,12 +246,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = wallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.ACTIVE,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -305,12 +311,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = wallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.CANCELLED,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -397,12 +405,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = sellerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.ACTIVE,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
@@ -437,12 +447,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = buyerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.ACTIVE,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -593,12 +605,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = buyerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.FILLED,
                         make = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),
                         take = Asset(TokenNftAssetType(token), 1.toBigInteger()),
@@ -627,12 +641,14 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
-                    "revertableEvents"
+                    "revertableEvents",
+                    "makerAccount"
                 )
                 .isEqualTo(
                     Order(
                         auctionHouse = house.id,
                         maker = sellerWallet,
+                        makerAccount = "", // TODO: calculate maker account.
                         status = OrderStatus.FILLED,
                         make = Asset(TokenNftAssetType(token), 1.toBigInteger()),
                         take = Asset(WrappedSolAssetType(), 5.scaleSupply(9)),

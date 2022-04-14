@@ -233,6 +233,7 @@ fun randomSellOrder(
     return Order(
         auctionHouse = randomString(),
         maker = maker,
+        makerAccount = randomString(),
         status = OrderStatus.ACTIVE,
         make = make,
         take = take,
@@ -255,6 +256,7 @@ fun randomBuyOrder(
     return Order(
         auctionHouse = randomString(),
         maker = randomString(),
+        makerAccount = randomString(),
         status = OrderStatus.ACTIVE,
         make = make,
         take = take,
