@@ -9,9 +9,9 @@ class LoggingReducer<Id, Event : EntityEvent, E : Entity<Id, Event, E>> : Reduce
     override suspend fun reduce(entity: E, event: Event): E {
         val log = event.log
         logger.info(
-            "Reducing {} by {} event {} having log {}, reversed {}",
+            "Reducing {} by {}event {} having log {}",
             entity.id,
-            if (event.reversed) "reverted" else "",
+            if (event.reversed) "reverted " else "",
             event,
             log
         )
