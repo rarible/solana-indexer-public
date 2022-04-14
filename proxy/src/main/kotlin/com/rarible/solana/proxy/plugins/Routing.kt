@@ -3,13 +3,12 @@ package com.rarible.solana.proxy.plugins
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
-import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
 import com.rarible.solana.proxy.converter.BlockConverter
-import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
     val solanaClient = SolanaHttpRpcApi(
