@@ -97,7 +97,7 @@ class ActivityRepository(
 
     companion object {
         private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
-        private const val COLLECTION = "activity"
+        const val COLLECTION = "activity"
 
         private val TYPE_AND_MINT_AND_DATE_AND_ID = Index()
             .on(ActivityRecord::type.name, Sort.Direction.ASC)

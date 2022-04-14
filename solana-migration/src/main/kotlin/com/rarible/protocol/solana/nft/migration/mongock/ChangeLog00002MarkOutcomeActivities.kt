@@ -42,7 +42,7 @@ class ChangeLog00002MarkOutcomeActivities {
                 mongo.updateFirst(
                     Query(criteria),
                     Update().set("outcome", "true"),
-                    SubscriberGroup.BALANCE.collectionName
+                    ActivityRepository.COLLECTION
                 ).awaitFirst()
             }
             if (++processed % 10000 == 0) {
