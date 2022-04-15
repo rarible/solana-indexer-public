@@ -1,0 +1,18 @@
+# Request block by number.
+
+POST https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getBlock",
+  "params": [
+    125490829,
+    {
+      "encoding": "json",
+      "transactionDetails": "full",
+      "rewards": false
+    }
+  ]
+}
