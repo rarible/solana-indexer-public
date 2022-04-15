@@ -3,6 +3,7 @@
 package com.rarible.protocol.solana.common.service
 
 import com.google.common.cache.CacheBuilder
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.AssetType
 import com.rarible.protocol.solana.common.model.Order
@@ -19,7 +20,8 @@ import java.math.BigInteger
 
 @Component
 class PriceNormalizer(
-    private val tokenRepository: TokenRepository
+    private val tokenRepository: TokenRepository,
+    private val solanaIndexerProperties: SolanaIndexerProperties
 ) {
     private val logger = LoggerFactory.getLogger(PriceNormalizer::class.java)
 
@@ -74,7 +76,12 @@ class PriceNormalizer(
         }
         val token = tokenRepository.findByMint(mint)
         if (token == null) {
-            logger.error("Unable to fetch 'decimals' of the token mint $mint because it is not found")
+            val message = "Unable to fetch 'decimals' of the token mint '$mint' because it is not found"
+            if (solanaIndexerProperties.featureFlags.isIndexingFromBeginning) {
+                logger.error(message)
+            } else {
+                logger.info(message)
+            }
             return 0
         }
         return token.decimals
