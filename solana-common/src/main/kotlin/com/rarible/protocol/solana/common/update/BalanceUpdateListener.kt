@@ -12,12 +12,12 @@ import org.springframework.stereotype.Component
 @Component
 class BalanceUpdateListener(
     private val publisher: RaribleKafkaProducer<BalanceEventDto>,
-    private val tokenWithMetaService: TokenMetaService
+    private val tokenMetaService: TokenMetaService
 ) {
     private val logger = LoggerFactory.getLogger(BalanceUpdateListener::class.java)
 
     suspend fun onBalanceChanged(balance: Balance) {
-        val balanceWithMeta = tokenWithMetaService.extendWithAvailableMeta(balance)
+        val balanceWithMeta = tokenMetaService.extendWithAvailableMeta(balance)
         onBalanceChanged(balanceWithMeta)
     }
 

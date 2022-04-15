@@ -7,7 +7,7 @@ import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.common.continuation.TokenContinuation
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
-import com.rarible.protocol.solana.common.meta.TokenMetaService
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.dto.RoyaltiesDto
 import com.rarible.protocol.solana.dto.TokenDto
@@ -25,7 +25,7 @@ import java.time.Instant
 @RestController
 class TokenController(
     private val tokenApiService: TokenApiService,
-    private val tokenMetaService: TokenMetaService,
+    private val metaplexOffChainMetaLoadService: MetaplexOffChainMetaLoadService,
     private val balanceApiService: BalanceApiService
 ) : TokenControllerApi {
 
@@ -55,7 +55,7 @@ class TokenController(
     }
 
     override suspend fun getTokenMetaByAddress(tokenAddress: String): ResponseEntity<TokenMetaDto> {
-        val tokenMeta = tokenMetaService.loadTokenMeta(tokenAddress)
+        val tokenMeta = metaplexOffChainMetaLoadService.loadOffChainTokenMeta(tokenAddress)
             ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(TokenMetaConverter.convert(tokenMeta))
     }
