@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.meta
 
-import com.rarible.protocol.solana.common.converter.CollectionConverter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -10,7 +9,7 @@ import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
-import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.common.update.MetaplexMetaUpdateListener
@@ -29,9 +28,9 @@ import org.springframework.stereotype.Component
 class TokenMetaService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
-    private val tokenRepository: TokenRepository,
     private val metaplexOffChainMetaLoader: MetaplexOffChainMetaLoader,
     private val collectionService: CollectionService,
+    private val collectionConverter: CollectionConverter,
     private val collectionEventListener: CollectionEventListener,
 ) {
 
@@ -171,7 +170,7 @@ class TokenMetaService(
 
     private suspend fun updateCollection(metaplexOffChainMeta: MetaplexOffChainMeta) {
         val collection = collectionService.updateCollectionV1(metaplexOffChainMeta) ?: return
-        val dto = CollectionConverter.convertV1(collection)
+        val dto = collectionConverter.convertV1(collection)
         collectionEventListener.onCollectionChanged(dto)
     }
 }

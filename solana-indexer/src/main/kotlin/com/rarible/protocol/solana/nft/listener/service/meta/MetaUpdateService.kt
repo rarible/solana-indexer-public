@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
-import com.rarible.protocol.solana.common.service.CollectionConversionService
+import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
 import org.slf4j.LoggerFactory
@@ -16,7 +16,7 @@ class MetaUpdateService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val tokenMetaService: TokenMetaService,
     private val collectionService: CollectionService,
-    private val collectionConversionService: CollectionConversionService,
+    private val collectionConverter: CollectionConverter,
     private val collectionEventListener: CollectionEventListener
 ) : EntityService<MetaId, MetaplexMeta> {
 
@@ -38,7 +38,7 @@ class MetaUpdateService(
 
     private suspend fun updateCollection(entity: MetaplexMeta) {
         val collection = collectionService.updateCollectionV2(entity) ?: return
-        val dto = collectionConversionService.toDto(collection)
+        val dto = collectionConverter.toDto(collection)
         collectionEventListener.onCollectionChanged(dto)
     }
 

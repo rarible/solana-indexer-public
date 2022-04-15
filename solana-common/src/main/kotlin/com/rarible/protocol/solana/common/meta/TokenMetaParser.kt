@@ -16,6 +16,7 @@ object TokenMetaParser {
         symbol = onChainMeta.symbol,
         url = onChainMeta.uri,
         creators = onChainMeta.creators,
+        sellerFeeBasisPoints = onChainMeta.sellerFeeBasisPoints,
         collection = getCollection(onChainMeta, offChainMeta),
         description = offChainMeta?.description,
         attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() },

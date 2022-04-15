@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.common.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.AbstractIntegrationTest
-import com.rarible.protocol.solana.common.converter.CollectionConverter
+import com.rarible.protocol.solana.common.meta.TokenMetaParser
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
@@ -15,10 +15,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-class CollectionConversionServiceIt : AbstractIntegrationTest() {
+class CollectionConverterIt : AbstractIntegrationTest() {
 
     @Autowired
-    lateinit var collectionConversionService: CollectionConversionService
+    lateinit var collectionConverter: CollectionConverter
 
     @Autowired
     lateinit var metaplexMetaRepository: MetaplexMetaRepository
@@ -32,7 +32,7 @@ class CollectionConversionServiceIt : AbstractIntegrationTest() {
 
         val expected = CollectionDto(address = collection.id, name = collection.name)
 
-        val dto = collectionConversionService.toDto(collection)
+        val dto = collectionConverter.toDto(collection)
 
         assertThat(dto).isEqualTo(expected)
     }
@@ -44,9 +44,10 @@ class CollectionConversionServiceIt : AbstractIntegrationTest() {
 
         metaplexMetaRepository.save(meta)
 
-        val expected = CollectionConverter.convertV2(collection, meta.metaFields, null)
+        val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(meta.metaFields, null)
+        val expected = collectionConverter.convertV2(collection, tokenMeta)
 
-        val dto = collectionConversionService.toDto(collection)
+        val dto = collectionConverter.toDto(collection)
 
         assertThat(dto).isEqualTo(expected)
     }
@@ -60,9 +61,10 @@ class CollectionConversionServiceIt : AbstractIntegrationTest() {
         metaplexMetaRepository.save(meta)
         metaplexOffChainMetaRepository.save(metaOff)
 
-        val expected = CollectionConverter.convertV2(collection, meta.metaFields, metaOff.metaFields)
+        val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(meta.metaFields, metaOff.metaFields)
+        val expected = collectionConverter.convertV2(collection, tokenMeta)
 
-        val dto = collectionConversionService.toDto(collection)
+        val dto = collectionConverter.toDto(collection)
 
         assertThat(dto).isEqualTo(expected)
     }

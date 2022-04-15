@@ -119,6 +119,7 @@ fun createRandomTokenMeta(): TokenMeta =
         symbol = randomString(),
         url = randomUrl(),
         creators = listOf(createRandomTokenCreator()),
+        sellerFeeBasisPoints = randomInt(),
         collection = createRandomTokenMetadataCollection(),
         attributes = listOf(createRandomTokenMetaAttribute()),
         contents = listOf(createRandomTokenMetaContent()),
