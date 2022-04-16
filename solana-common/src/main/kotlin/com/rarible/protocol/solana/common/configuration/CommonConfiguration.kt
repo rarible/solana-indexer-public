@@ -4,10 +4,10 @@ import com.rarible.protocol.solana.common.converter.PackageConverters
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
-import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
 import com.rarible.protocol.solana.common.filter.token.SolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
+import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -52,6 +52,10 @@ class CommonConfiguration(
             }
             TokenFilterType.WHITELIST -> {
                 val tokens = TokenListFileReader("/whitelist").readTokens(WHITELIST_FILES)
+                SolanaWhiteListTokenFilter(tokens)
+            }
+            TokenFilterType.WHITELIST_V2 -> {
+                val tokens = TokenListFileReader("/whitelist_v2").readTokens(WHITELIST_FILES)
                 SolanaWhiteListTokenFilter(tokens)
             }
             TokenFilterType.BLACKLIST -> {

@@ -32,6 +32,7 @@ data class FeatureFlags(
 
 enum class TokenFilterType {
     WHITELIST,
+    WHITELIST_V2,
     BLACKLIST,
     NONE
 }

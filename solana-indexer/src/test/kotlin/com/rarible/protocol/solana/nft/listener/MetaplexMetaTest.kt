@@ -8,17 +8,62 @@ import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.records.SolanaMetaRecord
+import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import com.rarible.protocol.solana.test.createRandomBalance
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
 import com.rarible.protocol.solana.test.createRandomToken
 import io.mockk.coEvery
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
 class MetaplexMetaTest : EventAwareBlockScannerTest() {
+    @Test
+    fun `Update metadata`() = runBlocking {
+        val collectionOld = mintNft(baseKeypair)
+        val collectionNew = mintNft(baseKeypair)
+        val token = mintNft(baseKeypair, collectionOld)
+
+        updateMetadata(baseKeypair, token, collectionNew)
+
+        Wait.waitAssert {
+            val createRecord = findRecordByType(
+                SubscriberGroup.METAPLEX_META.collectionName,
+                SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class.java
+            ).filter { it.mint == token }.single()
+
+            val updateRecords = findRecordByType(
+                SubscriberGroup.METAPLEX_META.collectionName,
+                SolanaMetaRecord.MetaplexUpdateMetadataRecord::class.java
+            ).toList()
+
+            assertThat(updateRecords).usingElementComparatorIgnoringFields(
+                SolanaMetaRecord.MetaplexUpdateMetadataRecord::log.name,
+                SolanaMetaRecord.MetaplexUpdateMetadataRecord::timestamp.name
+            ).isEqualTo(
+                listOf(
+                    SolanaMetaRecord.MetaplexUpdateMetadataRecord(
+                        mint = token,
+                        updatedMeta = createRecord.meta.copy(collection = MetaplexMetaFields.Collection(collectionNew, false)),
+                        updatedMutable = null,
+                        updateAuthority = null,
+                        primarySaleHappened = null,
+                        metaAccount = createRecord.metaAccount,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            )
+        }
+    }
+
     @Test
     fun `create metadata - send token and balance update events`() = runBlocking {
         val wallet = getWallet()

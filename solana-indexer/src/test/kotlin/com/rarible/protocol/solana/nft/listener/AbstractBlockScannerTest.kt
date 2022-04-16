@@ -4,6 +4,7 @@ import com.rarible.blockchain.scanner.block.Block
 import com.rarible.blockchain.scanner.block.BlockRepository
 import com.rarible.blockchain.scanner.block.BlockStatus
 import com.rarible.blockchain.scanner.solana.client.SolanaClient
+import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.containers.KGenericContainer
 import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
@@ -21,7 +22,9 @@ import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgra
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coJustRun
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -29,6 +32,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -72,7 +78,7 @@ abstract class AbstractBlockScannerTest {
     protected val baseKeypair = "/home/solana/.config/solana/id.json"
 
     @Autowired
-    private lateinit var mongo: ReactiveMongoOperations
+    protected lateinit var mongo: ReactiveMongoOperations
 
     @Autowired
     private lateinit var client: SolanaClient
@@ -354,10 +360,30 @@ abstract class AbstractBlockScannerTest {
             add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
             add("mint")
             collection?.let {
-                add("-c")
+                add("--collection")
                 add(it)
             }
-            add("-u")
+            add("--url")
+            add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
+            add("--keypair")
+            add(keypair)
+        }
+
+        return processOperation(args) { it.parse(4, -1) }
+    }
+
+    protected fun updateMetadata(keypair: String, mint: String, collection: String? = null): String {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
+            add("update-metadata")
+            add("--mint")
+            add(mint)
+            collection?.let {
+                add("--collection")
+                add(it)
+            }
+            add("--url")
             add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
             add("--keypair")
             add(keypair)
@@ -461,6 +487,15 @@ abstract class AbstractBlockScannerTest {
 
     protected fun Int.scaleSupply(decimals: Int): BigInteger =
         BigInteger.valueOf(this.toLong()) * BigInteger.TEN.pow(decimals)
+
+    protected final inline fun <reified T : SolanaLogRecord> findRecordByType(
+        collection: String,
+        type: Class<T>
+    ): Flow<T> {
+        val criteria = Criteria.where("_class").isEqualTo(T::class.java.name)
+
+        return mongo.find(Query(criteria), type, collection).asFlow()
+    }
 
     companion object {
         val solana: GenericContainer<*> = KGenericContainer(

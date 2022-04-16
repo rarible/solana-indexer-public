@@ -71,7 +71,7 @@ class UpdateMetadataSubscriber : SolanaLogEventSubscriber {
         val updateArgs = metaplexUpdateMetadataAccount.updateArgs
         val record = SolanaMetaRecord.MetaplexUpdateMetadataRecord(
             metaAccount = log.instruction.accounts[0],
-            mint = log.instruction.accounts[1],
+            mint = "",
             updatedMeta = updateArgs.metadata?.convertMetaplexMetaFields(),
             updatedMutable = updateArgs.mutable,
             updateAuthority = updateArgs.updateAuthority,

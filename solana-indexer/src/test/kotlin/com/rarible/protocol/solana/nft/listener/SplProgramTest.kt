@@ -1,22 +1,14 @@
 package com.rarible.protocol.solana.nft.listener
 
-import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.mongodb.core.ReactiveMongoOperations
-import org.springframework.data.mongodb.core.query.Criteria
-import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.mongodb.core.query.isEqualTo
 import java.math.BigInteger
 import java.time.Duration
 import java.time.Instant
@@ -24,9 +16,6 @@ import java.util.*
 
 class SplProgramTest : AbstractBlockScannerTest() {
     private val timeout = Duration.ofSeconds(5)
-
-    @Autowired
-    private lateinit var mongo: ReactiveMongoOperations
 
     @Test
     fun initializeMint() = runBlocking {
@@ -203,14 +192,5 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 )
             )
         }
-    }
-
-    private inline fun <reified T : SolanaLogRecord> findRecordByType(
-        collection: String,
-        type: Class<T>
-    ): Flow<T> {
-        val criteria = Criteria.where("_class").isEqualTo(T::class.java.name)
-
-        return mongo.find(Query(criteria), type, collection).asFlow()
     }
 }
