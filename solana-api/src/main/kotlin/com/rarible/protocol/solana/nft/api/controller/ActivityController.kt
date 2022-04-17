@@ -56,10 +56,7 @@ class ActivityController(
     }
 
     private fun toSlice(result: List<ActivityDto>, asc: Boolean, size: Int): ActivitiesDto {
-        val continuationFactory =
-            if (asc) ActivityContinuation.ByLastUpdatedAndIdAsc
-            else ActivityContinuation.ByLastUpdatedAndIdDesc
-
+        val continuationFactory = ActivityContinuation.ById(asc)
         val slice = Paging(continuationFactory, result).getSlice(size)
         return ActivitiesDto(slice.continuation, slice.entities)
     }

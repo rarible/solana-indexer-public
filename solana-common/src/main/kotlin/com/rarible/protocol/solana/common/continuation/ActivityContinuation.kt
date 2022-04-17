@@ -4,27 +4,9 @@ import com.rarible.protocol.solana.dto.ActivityDto
 
 object ActivityContinuation {
 
-    object ByLastUpdatedAndIdDesc :
-        ContinuationFactory<ActivityDto, DateIdContinuation> {
-
-        override fun getContinuation(entity: ActivityDto): DateIdContinuation {
-            return DateIdContinuation(
-                entity.date,
-                entity.id,
-                false
-            )
-        }
+    class ById(val asc: Boolean) : ContinuationFactory<ActivityDto, IdContinuation> {
+        override fun getContinuation(entity: ActivityDto): IdContinuation =
+            IdContinuation(entity.id, asc)
     }
 
-    object ByLastUpdatedAndIdAsc :
-        ContinuationFactory<ActivityDto, DateIdContinuation> {
-
-        override fun getContinuation(entity: ActivityDto): DateIdContinuation {
-            return DateIdContinuation(
-                entity.date,
-                entity.id,
-                true
-            )
-        }
-    }
 }
