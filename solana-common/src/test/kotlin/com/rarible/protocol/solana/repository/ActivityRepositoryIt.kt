@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.repository
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.AbstractIntegrationTest
-import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
@@ -57,42 +57,42 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
 
         data.forEach { (type, expected) ->
             val result = activityRepository.findAllActivities(listOf(type), null, 50, false).toList()
-            assertEquals(1, result.size)
+            assertThat(result).hasSize(1)
             assertThat(result.single()).isInstanceOf(expected::class.java)
         }
 
         val c1desc = activityRepository.findAllActivities(data.keys, null, 3, false)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         val c2desc = activityRepository.findAllActivities(data.keys, c1desc, 3, false)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         activityRepository.findAllActivities(data.keys, c2desc, 3, false)
             .toList().let { result ->
-                assertEquals(2, result.size)
+                assertThat(result).hasSize(2)
             }
 
         val c1asc = activityRepository.findAllActivities(data.keys, null, 3, true)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         val c2asc = activityRepository.findAllActivities(data.keys, c1asc, 3, true)
             .toList().let { result ->
-                assertEquals(3, result.size)
+                assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         activityRepository.findAllActivities(data.keys, c2asc, 3, true)
             .toList().let { result ->
-                assertEquals(2, result.size)
+                assertThat(result).hasSize(2)
             }
     }
 
@@ -112,13 +112,13 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         val c2desc = activityRepository.findActivitiesByMint(data.keys, mint, c1desc, 3, false)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         activityRepository.findActivitiesByMint(data.keys, mint, c2desc, 3, false)
             .toList().let { result ->
@@ -129,13 +129,13 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         val c2asc = activityRepository.findActivitiesByMint(data.keys, mint, c1asc, 3, true)
             .toList().let { result ->
                 assertThat(result).hasSize(3)
                 val last = result.last()
-                DateIdContinuation(last.date, last.id)
+                IdContinuation(last.id)
             }
         activityRepository.findActivitiesByMint(data.keys, mint, c2asc, 3, true)
             .toList().let { result ->

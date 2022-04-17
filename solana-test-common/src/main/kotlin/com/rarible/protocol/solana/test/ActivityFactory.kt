@@ -42,8 +42,10 @@ fun randomBlockchainInfo(
     innerInstructionIndex = innerInstructionIndex
 )
 
+fun randomActivityId() = "id:" + randomString()
+
 fun randomMint(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     owner: String = randomString(),
@@ -61,7 +63,7 @@ fun randomMint(
 )
 
 fun randomBurn(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     owner: String = randomString(),
@@ -73,7 +75,7 @@ fun randomBurn(
 )
 
 fun randomTransfer(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     from: String = randomString(),
@@ -97,7 +99,7 @@ fun randomAssetNft(
 ) = AssetDto(type, value)
 
 fun randomList(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     hash: String = randomString(),
@@ -111,7 +113,7 @@ fun randomList(
 )
 
 fun randomCancelList(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     hash: String = randomString(),
@@ -124,7 +126,7 @@ fun randomCancelList(
 )
 
 fun randomBid(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     hash: String = randomString(),
@@ -138,7 +140,7 @@ fun randomBid(
 )
 
 fun randomCancelBid(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     hash: String = randomString(),
@@ -151,7 +153,7 @@ fun randomCancelBid(
 )
 
 fun randomSell(
-    id: String = randomString(),
+    id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,
     nft: AssetDto = randomAssetNft(),

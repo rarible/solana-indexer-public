@@ -1,6 +1,6 @@
 package com.rarible.protocol.solana.nft.api.service
 
-import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
@@ -21,7 +21,7 @@ class ActivityApiService(
 
     suspend fun getAllActivities(
         filter: ActivityFilterAllDto,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ): List<ActivityDto> {
@@ -34,7 +34,7 @@ class ActivityApiService(
 
     suspend fun getActivitiesByItem(
         filter: ActivityFilterByItemDto,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ): List<ActivityDto> {
@@ -47,14 +47,14 @@ class ActivityApiService(
 
     suspend fun getActivitiesByCollection(
         filter: ActivityFilterByCollectionDto,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ) = emptyList<ActivityDto>() // TODO: not implemented yet.
 
     suspend fun getActivitiesByUser(
         filter: ActivityFilterByUserDto,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ) = emptyList<ActivityDto>() // TODO: not implemented yet.

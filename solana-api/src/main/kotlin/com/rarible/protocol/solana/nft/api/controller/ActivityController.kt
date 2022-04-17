@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.api.controller
 import com.rarible.protocol.solana.api.controller.ActivityControllerApi
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.dto.ActivitiesDto
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -32,20 +33,20 @@ class ActivityController(
         val sortAscending = sort == ActivitySortDto.EARLIEST_FIRST
         val safeSize = PageSize.ACTIVITY.limit(size)
 
-        val dateIdContinuation = DateIdContinuation.parse(continuation)
+        val idContinuation = continuation?.let { IdContinuation(it) }
 
         val result = when (activityFilterDto) {
             is ActivityFilterAllDto -> activityApiService.getAllActivities(
-                activityFilterDto, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, idContinuation, safeSize, sortAscending
             )
             is ActivityFilterByItemDto -> activityApiService.getActivitiesByItem(
-                activityFilterDto, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, idContinuation, safeSize, sortAscending
             )
             is ActivityFilterByCollectionDto -> activityApiService.getActivitiesByCollection(
-                activityFilterDto, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, idContinuation, safeSize, sortAscending
             )
             is ActivityFilterByUserDto -> activityApiService.getActivitiesByUser(
-                activityFilterDto, dateIdContinuation, safeSize, sortAscending
+                activityFilterDto, idContinuation, safeSize, sortAscending
             )
         }
 

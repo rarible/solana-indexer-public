@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.common.repository
 
 import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
-import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.model.ActivityRecord
 import com.rarible.protocol.solana.common.model.asRecord
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -40,7 +40,7 @@ class ActivityRepository(
 
     fun findAllActivities(
         types: Collection<ActivityTypeDto>,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ): Flow<ActivityDto> {
@@ -56,7 +56,7 @@ class ActivityRepository(
     fun findActivitiesByMint(
         types: Collection<ActivityTypeDto>,
         mint: String,
-        continuation: DateIdContinuation?,
+        continuation: IdContinuation?,
         size: Int,
         sortAscending: Boolean,
     ): Flow<ActivityDto> {
@@ -64,24 +64,22 @@ class ActivityRepository(
             .and(ActivityRecord::mint.name).isEqualTo(mint)
             .addContinuation(continuation, sortAscending)
         val query = Query(criteria)
-            .with(Sort.by(ActivityRecord::date.name, "_id").direction(sortAscending))
+            .with(Sort.by("_id").direction(sortAscending))
             .limit(size)
         return mongo.find(query, ActivityRecord::class.java, COLLECTION).map { it.toDto() }.asFlow()
     }
 
-    private fun Criteria.addContinuation(continuation: DateIdContinuation?, sortAscending: Boolean) = this.apply {
-        continuation?.let { c ->
-            if (sortAscending) {
-                orOperator(
-                    Criteria(ActivityRecord::date.name).isEqualTo(c.date).and("_id").gt(c.id),
-                    Criteria(ActivityRecord::date.name).gt(c.date)
-                )
-            } else {
-                orOperator(
-                    Criteria(ActivityRecord::date.name).isEqualTo(c.date).and("_id").lt(c.id),
-                    Criteria(ActivityRecord::date.name).lt(c.date)
-                )
-            }
+    private fun Criteria.addContinuation(
+        continuation: IdContinuation?,
+        sortAscending: Boolean
+    ) = if (continuation == null) {
+        this
+    } else {
+        val idCriteria = Criteria.where("_id")
+        if (sortAscending) {
+            idCriteria.gt(continuation.id)
+        } else {
+            idCriteria.lt(continuation.id)
         }
     }
 
@@ -99,15 +97,14 @@ class ActivityRepository(
         private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
         const val COLLECTION = "activity"
 
-        private val TYPE_AND_MINT_AND_DATE_AND_ID = Index()
+        private val TYPE_AND_MINT_AND_ID = Index()
             .on(ActivityRecord::type.name, Sort.Direction.ASC)
             .on(ActivityRecord::mint.name, Sort.Direction.ASC)
-            .on(ActivityRecord::date.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .background()
 
         val ALL_INDEXES = listOf(
-            TYPE_AND_MINT_AND_DATE_AND_ID,
+            TYPE_AND_MINT_AND_ID,
         )
     }
 }
