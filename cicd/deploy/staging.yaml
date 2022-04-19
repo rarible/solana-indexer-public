@@ -4,3 +4,9 @@ global:
 solana-api:
   service:
     nodePort: 30228
+
+solana-indexer:
+  resources:
+    jvm:
+      xmx_megabytes: 3096
+      max_direct_memory_megabytes: 1024
