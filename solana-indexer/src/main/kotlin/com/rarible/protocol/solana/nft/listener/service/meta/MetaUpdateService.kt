@@ -4,10 +4,12 @@ import com.rarible.core.entity.reducer.service.EntityService
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
+import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
+import com.rarible.protocol.solana.nft.listener.service.order.OrderUpdateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -26,6 +28,10 @@ class MetaUpdateService(
         metaplexMetaRepository.findByMetaAddress(id)
 
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
+        if (entity.isEmpty) {
+            logger.info("Meta in empty state: ${entity.id}")
+            return entity
+        }
         // We need to update collection before item, otherwise there could be situation item belongs to collection
         // which is not exists in DB
         updateCollection(entity)
