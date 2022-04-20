@@ -16,6 +16,12 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.ConcurrentHashMap
 
 @Configuration
 @EnableSolanaScanner
@@ -42,5 +48,26 @@ class TestSolanaScannerConfiguration {
     @Qualifier("test.metaplex.off.chain.meta.repository")
     fun testMetaplexOffChainMetaRepository(): MetaplexOffChainMetaRepository = mockk() {
         coJustRun { createIndexes() }
+    }
+
+    @RestController
+    class MetaController {
+        private val map = ConcurrentHashMap<String, String>()
+
+        init {
+            val meta = "meta.json"
+
+            map[meta] = MetaController::class.java.classLoader.getResource(meta).readText()
+        }
+
+        @PostMapping("/meta/{id}")
+        fun upload(@PathVariable id: String, @RequestBody meta: String) {
+            map[id] = meta
+        }
+
+        @GetMapping("/meta/{id}")
+        fun download(@PathVariable id: String): String? {
+            return map[id]
+        }
     }
 }

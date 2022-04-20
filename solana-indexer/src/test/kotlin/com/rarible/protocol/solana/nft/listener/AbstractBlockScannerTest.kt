@@ -10,8 +10,8 @@ import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import com.rarible.core.test.ext.RedisTest
-import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
+import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -39,6 +40,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.Testcontainers.exposeHostPorts
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -62,6 +64,7 @@ data class AuctionHouse(
 @ContextConfiguration(classes = [TestSolanaScannerConfiguration::class])
 @SpringBootTest(
     classes = [NftListenerApplication::class],
+    webEnvironment = WebEnvironment.DEFINED_PORT,
     properties = [
         "application.environment = test",
         "spring.cloud.consul.config.enabled = false",
@@ -290,7 +293,7 @@ abstract class AbstractBlockScannerTest {
         auctionHouse: String,
         keypair: String,
         wallet: String
-    ) : BigDecimal {
+    ): BigDecimal {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
@@ -354,7 +357,11 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun mintNft(keypair: String, collection: String? = null): String {
+    protected fun mintNft(
+        keypair: String,
+        collection: String? = null,
+        meta: String = "meta.json"
+    ): String {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
@@ -364,7 +371,7 @@ abstract class AbstractBlockScannerTest {
                 add(it)
             }
             add("--url")
-            add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
+            add("http://host.testcontainers.internal:8080/meta/$meta")
             add("--keypair")
             add(keypair)
         }
@@ -372,7 +379,12 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(4, -1) }
     }
 
-    protected fun updateMetadata(keypair: String, mint: String, collection: String? = null): String {
+    protected fun updateMetadata(
+        keypair: String,
+        mint: String,
+        collection: String? = null,
+        meta: String = "meta.json"
+    ): String {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/cli-nft.ts")
@@ -384,7 +396,7 @@ abstract class AbstractBlockScannerTest {
                 add(it)
             }
             add("--url")
-            add("https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json")
+            add("http://host.testcontainers.internal:8080/meta/$meta")
             add("--keypair")
             add(keypair)
         }
@@ -512,6 +524,7 @@ abstract class AbstractBlockScannerTest {
         @JvmStatic
         @DynamicPropertySource
         fun properties(registry: DynamicPropertyRegistry) {
+            exposeHostPorts(8080)
             solana.start()
             val exec = solana.execInContainer(
                 "bash",
