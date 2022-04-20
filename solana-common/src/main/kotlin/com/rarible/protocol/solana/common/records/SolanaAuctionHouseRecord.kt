@@ -7,6 +7,8 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
     abstract val auctionHouse: String
 
     data class CreateAuctionHouseRecord(
+        val sellerFeeBasisPoints: Int?,
+        val requiresSignOff: Boolean?,
         val treasuryMint: String,
         val feeWithdrawalDestination: String,
         val treasuryWithdrawalDestination: String,
@@ -18,6 +20,8 @@ sealed class SolanaAuctionHouseRecord : SolanaBaseLogRecord() {
     }
 
     data class UpdateAuctionHouseRecord(
+        val sellerFeeBasisPoints: Int?,
+        val requiresSignOff: Boolean?,
         val updatedTreasuryMint: String,
         val updatedFeeWithdrawalDestination: String,
         val updatedTreasuryWithdrawalDestination: String,

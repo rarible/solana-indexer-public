@@ -43,6 +43,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseRecord.CreateAuctionHouseRecord(
+                        sellerFeeBasisPoints = 1000,
+                        requiresSignOff = false,
                         treasuryMint = WrappedSolAssetType.SOL,
                         feeWithdrawalDestination = wallet,
                         treasuryWithdrawalDestination = wallet,

@@ -26,8 +26,10 @@ class CreateAuctionHouseSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseRecord> {
-        val record = when (log.instruction.data.parseAuctionHouseInstruction()) {
+        val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is CreateAuctionHouse -> SolanaAuctionHouseRecord.CreateAuctionHouseRecord(
+                sellerFeeBasisPoints = instruction.sellerFeeBasisPoints.toInt(),
+                requiresSignOff = instruction.requiresSignOff,
                 treasuryMint = log.instruction.accounts[0],
                 feeWithdrawalDestination = log.instruction.accounts[3],
                 treasuryWithdrawalDestination = log.instruction.accounts[4],
@@ -56,10 +58,12 @@ class UpdateAuctionHouseSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SolanaAuctionHouseRecord> {
-        val record = when (log.instruction.data.parseAuctionHouseInstruction()) {
+        val record = when (val instruction = log.instruction.data.parseAuctionHouseInstruction()) {
             is UpdateAuctionHouse -> SolanaAuctionHouseRecord.UpdateAuctionHouseRecord(
                 // TODO: what to do with changed fees?
                 updatedTreasuryMint = log.instruction.accounts[0],
+                sellerFeeBasisPoints = instruction.sellerFeeBasisPoints.toInt(),
+                requiresSignOff = instruction.requiresSignOff,
                 updatedFeeWithdrawalDestination = log.instruction.accounts[3],
                 updatedTreasuryWithdrawalDestination = log.instruction.accounts[4],
                 auctionHouse = log.instruction.accounts[6],
