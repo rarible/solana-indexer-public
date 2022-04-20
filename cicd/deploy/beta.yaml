@@ -1,2 +1,23 @@
 global:
   network: mainnet
+
+solana-indexer:
+  networks:
+    common:
+      - prod-backend
+    additional:
+      - proxy
+
+solana-api:
+  networks:
+    common:
+      - prod-backend
+    additional:
+      - proxy
+
+solana-migration:
+  networks:
+    common:
+      - prod-backend
+    additional:
+      - proxy
