@@ -47,18 +47,6 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import java.math.BigInteger
 
-data class AuctionHouse(
-    val id: String,
-    val mint: String,
-    val authority: String,
-    val creator: String,
-    val feePayerAcct: String,
-    val treasuryAcct: String,
-    val feePayerWithdrawalAcct: String,
-    val treasuryWithdrawalAcct: String,
-    val sellerFeeBasisPoints: Int
-)
-
 @MongoTest
 @MongoCleanup
 @ContextConfiguration(classes = [TestSolanaScannerConfiguration::class])
