@@ -100,7 +100,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                         tokenAddress = tokenAddress,
                         metaFields = MetaplexMetaFields(
                             name = "My NFT #1",
-                            uri = "https://gist.githubusercontent.com/enslinmike/a18bd9fa8e922d641a8a8a64ce84dea6/raw/a8298b26e47f30279a1b107f19287be4f198e21d/meta.json",
+                            uri = "http://host.testcontainers.internal:8080/meta/meta.json",
                             symbol = "MY_SYMBOL",
                             sellerFeeBasisPoints = 420,
                             creators = listOf(
