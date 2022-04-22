@@ -26,10 +26,13 @@ class MetaplexMetaUpdateListener(
             tokenUpdateListener.onTokenChanged(TokenWithMeta(token, tokenMeta))
         }
 
-        // TODO not sure we need to send updates for deleted balances
-        balanceRepository.findByMint(tokenAddress, null, Int.MAX_VALUE, true)
-            .collect { balance ->
-                balanceUpdateListener.onBalanceChanged(BalanceWithMeta(balance, tokenMeta))
-            }
+        balanceRepository.findByMint(
+            mint = tokenAddress,
+            continuation = null,
+            limit = Int.MAX_VALUE,
+            includeDeleted = false
+        ).collect { balance ->
+            balanceUpdateListener.onBalanceChanged(BalanceWithMeta(balance, tokenMeta))
+        }
     }
 }
