@@ -42,7 +42,7 @@ class TokenControllerFt : AbstractControllerTest() {
     }
 
     @Test
-    fun `find all tokens`() = runBlocking<Unit> {
+    fun `find all tokens - without filter`() = runBlocking<Unit> {
         val now = nowMillis()
 
         val collection = createRandomMetaplexOffChainMetaFields().collection!!
@@ -56,7 +56,7 @@ class TokenControllerFt : AbstractControllerTest() {
             tokens = listOf(tokenWithMeta2).map { TokenWithMetaConverter.convert(it) },
             continuation = "${tokenWithMeta2.token.updatedAt.toEpochMilli()}_${tokenWithMeta2.token.mint}"
         )
-        val page1 = getAllTokens(null, 1)
+        val page1 = getAllTokens(continuation = null, size = 1)
         assertThat(page1).isEqualTo(expected1)
 
         // Page 2
@@ -64,13 +64,45 @@ class TokenControllerFt : AbstractControllerTest() {
             tokens = listOf(tokenWithMeta1).map { TokenWithMetaConverter.convert(it) },
             continuation = "${tokenWithMeta1.token.updatedAt.toEpochMilli()}_${tokenWithMeta1.token.mint}"
         )
-        val page2 = getAllTokens(page1.continuation, 1)
+        val page2 = getAllTokens(continuation = page1.continuation, size = 1)
         assertThat(page2).isEqualTo(expected2)
 
         // Empty page
         val expected3 = TokensDto()
-        val page3 = getAllTokens(page2.continuation, 1)
+        val page3 = getAllTokens(continuation = page2.continuation, size = 1)
         assertThat(page3).isEqualTo(expected3)
+    }
+
+    @Test
+    fun `find all tokens - with time filter`() = runBlocking<Unit> {
+        val now = nowMillis()
+
+        val collection = createRandomMetaplexOffChainMetaFields().collection!!
+        val tokenWithMeta1 = saveTokenWithMeta(offCollection = collection, updatedAt = now)
+        val tokenWithMeta2 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(10))
+        val tokenWithMeta3 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(20))
+        val tokenWithMeta4 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(30))
+
+        val from = tokenWithMeta4.token.updatedAt
+        val to = tokenWithMeta1.token.updatedAt
+
+        // Should be sorted from newest to oldest
+
+        //Page 1
+        val expected1 = TokensDto(
+            tokens = listOf(tokenWithMeta2).map { TokenWithMetaConverter.convert(it) },
+            continuation = "${tokenWithMeta2.token.updatedAt.toEpochMilli()}_${tokenWithMeta2.token.mint}"
+        )
+        val page1 = getAllTokens(from, to, null, 1)
+        assertThat(page1).isEqualTo(expected1)
+
+        // Page 2
+        val expected2 = TokensDto(
+            tokens = listOf(tokenWithMeta3).map { TokenWithMetaConverter.convert(it) },
+            continuation = null
+        )
+        val page2 = getAllTokens(from, to, page1.continuation, 2)
+        assertThat(page2).isEqualTo(expected2)
     }
 
     @Test
@@ -181,11 +213,16 @@ class TokenControllerFt : AbstractControllerTest() {
         return TokenWithMeta(token, tokenMeta)
     }
 
-    private suspend fun getAllTokens(continuation: String? = null, size: Int? = 50): TokensDto {
+    private suspend fun getAllTokens(
+        lastUpdatedFrom: Instant? = null,
+        lastUpdatedTo: Instant? = null,
+        continuation: String? = null,
+        size: Int? = 50
+    ): TokensDto {
         return tokenControllerApi.getAllTokens(
             false,
-            null,
-            null,
+            lastUpdatedFrom?.toEpochMilli(),
+            lastUpdatedTo?.toEpochMilli(),
             continuation,
             size
         ).awaitFirst()

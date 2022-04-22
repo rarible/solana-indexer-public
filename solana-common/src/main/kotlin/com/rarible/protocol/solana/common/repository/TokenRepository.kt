@@ -45,16 +45,13 @@ class TokenRepository(
         limit: Int
     ): Flow<Token> {
 
-        val criteria = Criteria()
-            .addContinuation(continuation)
-
-        // in continuation date will always less than param form query
-        // but in case if there is no continuation, we have to add this filter
-        if (continuation == null && lastUpdatedTo != null) {
-            criteria.and(Token::updatedAt.name).lt(lastUpdatedTo)
-        }
-
-        lastUpdatedFrom?.let { criteria.and(Token::updatedAt.name).gt(it) }
+        val criteria = continuation?.let {
+            // in continuation date will always less than param form query
+            Criteria().orOperator(
+                Criteria(Token::updatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                fromToCriteria(lastUpdatedFrom, continuation.date)
+            )
+        } ?: fromToCriteria(lastUpdatedFrom, lastUpdatedTo)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
         query.limit(limit)
@@ -65,13 +62,17 @@ class TokenRepository(
     private fun Query.withSortByLastUpdateAndId() =
         with(Sort.by(Sort.Direction.DESC, Token::updatedAt.name, "_id"))
 
-    private fun Criteria.addContinuation(continuation: DateIdContinuation?) =
-        continuation?.let {
-            orOperator(
-                Criteria(Token::updatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
-                Criteria(Token::updatedAt.name).lt(continuation.date)
-            )
-        } ?: this
+    private fun fromToCriteria(
+        lastUpdatedFrom: Instant?,
+        lastUpdatedTo: Instant?,
+    ): Criteria {
+        if (lastUpdatedFrom == null && lastUpdatedTo == null) return Criteria()
+
+        val criteria = Criteria(Token::updatedAt.name)
+        lastUpdatedFrom?.let { criteria.gt(it) }
+        lastUpdatedTo?.let { criteria.lt(it) }
+        return criteria
+    }
 
     suspend fun createIndexes() {
         logger.info("Ensuring indexes on ${Token.COLLECTION}")
