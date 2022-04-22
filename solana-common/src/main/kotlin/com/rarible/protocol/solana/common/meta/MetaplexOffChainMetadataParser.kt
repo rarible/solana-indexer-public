@@ -23,27 +23,7 @@ object MetaplexOffChainMetadataParser {
             name = name,
             symbol = symbol,
             description = description,
-            collection = collection?.let { collection ->
-                MetaplexOffChainMetaFields.Collection(
-                    name = collection.name,
-                    family = collection.family,
-                    hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-                        name = collection.name,
-                        family = collection.family,
-                        creators = metaplexMetaFields.creators.map { it.address }
-                    )
-                )
-            } ?: properties?.collection?.let { collectionName ->
-                MetaplexOffChainMetaFields.Collection(
-                    name = collectionName,
-                    family = null,
-                    hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-                        name = collectionName,
-                        family = null,
-                        creators = metaplexMetaFields.creators.map { it.address }
-                    )
-                )
-            },
+            collection = getCollection(metaplexMetaFields),
             sellerFeeBasisPoints = seller_fee_basis_points,
             externalUrl = external_url,
             edition = edition,
@@ -80,4 +60,47 @@ object MetaplexOffChainMetadataParser {
             animationUrl = animation_url
         )
 
+    private fun MetaplexOffChainMetadataJsonSchema.getCollection(
+        metaplexMetaFields: MetaplexMetaFields
+    ): MetaplexOffChainMetaFields.Collection? {
+        return when {
+            collection != null ->
+                MetaplexOffChainMetaFields.Collection(
+                    name = collection.name,
+                    family = collection.family,
+                    hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                        name = collection.name,
+                        family = collection.family,
+                        creators = metaplexMetaFields.creators.map { it.address }
+                    )
+                )
+            properties?.collection != null ->
+                MetaplexOffChainMetaFields.Collection(
+                    name = properties.collection,
+                    family = null,
+                    hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                        name = properties.collection,
+                        family = null,
+                        creators = metaplexMetaFields.creators.map { it.address }
+                    )
+                )
+            else -> {
+                val collectionAttribute = attributes?.find { it.trait_type == "Collection" }
+
+                if (collectionAttribute?.value != null) {
+                    MetaplexOffChainMetaFields.Collection(
+                        name = collectionAttribute.value,
+                        family = null,
+                        hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                            name = collectionAttribute.value,
+                            family = null,
+                            creators = metaplexMetaFields.creators.map { it.address }
+                        )
+                    )
+                } else {
+                    null
+                }
+            }
+        }
+    }
 }
