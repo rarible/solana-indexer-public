@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.api.service
 
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.repository.ActivityRepository
+import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
@@ -23,6 +24,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
+import kotlin.random.Random
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.junit.jupiter.api.BeforeEach
 
 class ActivityApiServiceIt : AbstractIntegrationTest() {
 
@@ -32,21 +36,17 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     @Autowired
     private lateinit var activityApiService: ActivityApiService
 
+    @BeforeEach
+    internal fun setUp() {
+        runBlocking {
+            mongo.dropCollection(ActivityRepository.COLLECTION).awaitFirstOrNull()
+        }
+    }
+
     @Test
-    fun `find by type`() = runBlocking<Unit> {
+    fun `find by type`() = runBlocking {
         val itemId = randomString()
-
-        val mint = randomMint(tokenAddress = itemId)
-        val burn = randomBurn(tokenAddress = itemId)
-        val transfer = randomTransfer(tokenAddress = itemId)
-        val list = randomList(make = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
-        val cancelList = randomCancelList(make = SolanaNftAssetTypeDto(itemId))
-        val bid = randomBid(take = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
-        val cancelBid = randomCancelBid(take = SolanaNftAssetTypeDto(itemId))
-        val sell = randomSell(nft = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
-
-        listOf(mint, burn, transfer, list, cancelList, bid, cancelBid, sell).forEach { activityRepository.save(it) }
-
+        testActivities(itemId).forEach { activityRepository.save(it) }
         ActivityFilterAllTypeDto.values().forEach { type ->
             val filter = ActivityFilterAllDto(listOf(type))
             val result = activityApiService.getAllActivities(filter, null, 50, true)
@@ -61,6 +61,31 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
             assertThat(result.single()).isInstanceOf(activityClassByType(type))
         }
 
+    }
+
+    @Test
+    internal fun `find by ids`() {
+        runBlocking {
+            val take = Random.nextInt(8)
+            val activities = testActivities()
+            activities.forEach { activityRepository.save(it) }
+            val ids = activities.map { it.id }.shuffled().take(take)
+            val result = activityApiService.getActivitiesByIds(ids)
+            assertThat(result).hasSize(take)
+            assertThat(result.map { it.id }).containsAll(ids)
+        }
+    }
+
+    private fun testActivities(itemId: String = randomString()): List<ActivityDto> {
+        val mint = randomMint(tokenAddress = itemId)
+        val burn = randomBurn(tokenAddress = itemId)
+        val transfer = randomTransfer(tokenAddress = itemId)
+        val list = randomList(make = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
+        val cancelList = randomCancelList(make = SolanaNftAssetTypeDto(itemId))
+        val bid = randomBid(take = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
+        val cancelBid = randomCancelBid(take = SolanaNftAssetTypeDto(itemId))
+        val sell = randomSell(nft = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
+        return listOf(mint, burn, transfer, list, cancelList, bid, cancelBid, sell)
     }
 
 }

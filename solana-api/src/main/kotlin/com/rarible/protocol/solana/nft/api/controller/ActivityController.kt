@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.api.controller.ActivityControllerApi
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
-import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.dto.ActivitiesDto
@@ -53,6 +52,11 @@ class ActivityController(
         val dto = toSlice(result, sortAscending, safeSize)
 
         return ResponseEntity.ok(dto)
+    }
+
+    override suspend fun searchActivitiesByIds(ids: List<String>): ResponseEntity<ActivitiesDto> {
+        val activities = activityApiService.getActivitiesByIds(ids)
+        return ResponseEntity.ok(ActivitiesDto(continuation = null, activities = activities))
     }
 
     private fun toSlice(result: List<ActivityDto>, asc: Boolean, size: Int): ActivitiesDto {
