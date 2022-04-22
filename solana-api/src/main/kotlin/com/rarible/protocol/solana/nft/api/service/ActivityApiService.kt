@@ -59,6 +59,10 @@ class ActivityApiService(
         sortAscending: Boolean,
     ) = emptyList<ActivityDto>() // TODO: not implemented yet.
 
+    suspend fun getActivitiesByIds(ids: List<String>): List<ActivityDto> {
+        return activityRepository.findByIds(ids).toList()
+    }
+
 
     private fun convert(type: ActivityFilterAllTypeDto): ActivityTypeDto {
         return when (type) {

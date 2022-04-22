@@ -38,6 +38,12 @@ class ActivityRepository(
     suspend fun findById(id: String): ActivityDto? =
         mongo.findById(id, ActivityRecord::class.java, COLLECTION).awaitFirstOrNull()?.toDto()
 
+    fun findByIds(ids:List<String>): Flow<ActivityDto> {
+        val criteria = Criteria.where("_id").`in`(ids)
+        return mongo.find(Query(criteria), ActivityRecord::class.java, COLLECTION)
+            .map { it.toDto() }.asFlow()
+    }
+
     fun findAllActivities(
         types: Collection<ActivityTypeDto>,
         continuation: IdContinuation?,
