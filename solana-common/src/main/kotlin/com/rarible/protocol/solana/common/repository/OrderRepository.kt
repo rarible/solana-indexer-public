@@ -71,11 +71,11 @@ class OrderRepository(
         ).asFlow()
     }
 
-    fun findSellOrdersByMintAndMaker(tokenAddress: String, maker: String, statuses: List<OrderStatus>): Flow<Order> {
+    fun findSellOrdersByMintAndMaker(mint: String, maker: String, statuses: List<OrderStatus>): Flow<Order> {
         val criteria = Criteria().andOperator(
             Order::direction isEqualTo OrderDirection.SELL,
             Order::maker isEqualTo maker,
-            Order::make / Asset::type / AssetType::tokenAddress isEqualTo tokenAddress,
+            Order::make / Asset::type / AssetType::tokenAddress isEqualTo mint,
             Order::status inValues statuses
         )
         val query = Query(criteria)

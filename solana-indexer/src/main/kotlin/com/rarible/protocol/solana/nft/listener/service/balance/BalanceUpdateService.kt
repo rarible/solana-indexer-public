@@ -54,7 +54,7 @@ class BalanceUpdateService(
 
     private suspend fun updateOrders(balance: Balance) {
         val orders = orderRepository.findSellOrdersByMintAndMaker(
-            tokenAddress = balance.mint,
+            mint = balance.mint,
             maker = balance.owner,
             statuses = listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE)
         ).toList()
