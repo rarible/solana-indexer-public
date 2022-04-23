@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.api.controller
 import com.rarible.protocol.solana.api.controller.ActivityControllerApi
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.dto.ActivitiesDto
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -32,7 +33,7 @@ class ActivityController(
         val sortAscending = sort == ActivitySortDto.EARLIEST_FIRST
         val safeSize = PageSize.ACTIVITY.limit(size)
 
-        val idContinuation = continuation?.let { IdContinuation(it) }
+        val idContinuation = continuation?.let { parseContinuation(it) }
 
         val result = when (activityFilterDto) {
             is ActivityFilterAllDto -> activityApiService.getAllActivities(
@@ -52,6 +53,16 @@ class ActivityController(
         val dto = toSlice(result, sortAscending, safeSize)
 
         return ResponseEntity.ok(dto)
+    }
+
+    private fun parseContinuation(continuation: String): IdContinuation {
+        // Union by default uses the DateIdContinuation.
+        //  We don't need the date part at all, so converting to just IdContinuation.
+        val asDateIdContinuation = DateIdContinuation.parse(continuation)
+        if (asDateIdContinuation != null) {
+            return IdContinuation(asDateIdContinuation.id)
+        }
+        return IdContinuation(continuation)
     }
 
     override suspend fun searchActivitiesByIds(ids: List<String>): ResponseEntity<ActivitiesDto> {
