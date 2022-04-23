@@ -89,7 +89,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
     @Test
     fun `existing order not updated - without balance, not a target status`() = runBlocking<Unit> {
         // ACTIVE order, but without balance - it should stay ACTIVE since it has FILLED status
-        val order = orderRepository.save(randomBuyOrder().copy(makeStock = BigInteger.ZERO, status = OrderStatus.FILLED))
+        val order =
+            orderRepository.save(randomBuyOrder().copy(makeStock = BigInteger.ZERO, status = OrderStatus.FILLED))
 
         orderUpdateService.update(order)
 
@@ -135,14 +136,23 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
     fun `existing order updated - balance is zero`() = runBlocking<Unit> {
         val mint = randomString()
         val owner = randomString()
+        val orderAccount = randomString()
 
-        balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.ZERO))
+        balanceRepository.save(
+            createRandomBalance(
+                owner = owner,
+                mint = mint,
+                value = BigInteger.ZERO,
+                account = orderAccount
+            )
+        )
 
         val order = orderRepository.save(
             randomSellOrder(
                 make = Asset(TokenNftAssetType(mint), BigInteger.TEN),
                 maker = owner,
-                fill = BigInteger.ZERO
+                fill = BigInteger.ZERO,
+                makerAccount = orderAccount
             )
         )
 
@@ -156,16 +166,25 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order updated - balance is less than make stock`() = runBlocking<Unit> {
+        val orderAccount = randomString()
         val mint = randomString()
         val owner = randomString()
 
-        balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.ONE))
+        balanceRepository.save(
+            createRandomBalance(
+                account = orderAccount,
+                owner = owner,
+                mint = mint,
+                value = BigInteger.ONE
+            )
+        )
 
         val order = orderRepository.save(
             randomSellOrder(
                 make = Asset(TokenNftAssetType(mint), BigInteger.TEN),
                 maker = owner,
-                fill = BigInteger.ZERO
+                fill = BigInteger.ZERO,
+                makerAccount = orderAccount
             )
         )
 

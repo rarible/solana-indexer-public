@@ -229,12 +229,13 @@ fun randomSellOrder(
     make: Asset = randomAsset(randomAssetTypeNft()),
     take: Asset = randomAsset(randomAssetTypeFt()),
     maker: String = randomString(),
-    fill: BigInteger = randomBigInt(2)
+    fill: BigInteger = randomBigInt(2),
+    makerAccount: String = randomString()
 ): Order {
     return Order(
         auctionHouse = randomString(),
         maker = maker,
-        makerAccount = randomString(),
+        makerAccount = makerAccount,
         status = OrderStatus.ACTIVE,
         make = make,
         take = take,
