@@ -84,7 +84,7 @@ class TokenRepository(
     private object TokenIndexes {
 
         val UPDATED_AT_AND_ID: Index = Index()
-            .on(Balance::updatedAt.name, Sort.Direction.ASC)
+            .on(Token::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
 
         val ALL_INDEXES = listOf(
