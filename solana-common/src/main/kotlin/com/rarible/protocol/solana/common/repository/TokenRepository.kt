@@ -77,7 +77,7 @@ class TokenRepository(
     suspend fun createIndexes() {
         logger.info("Ensuring indexes on ${Token.COLLECTION}")
         TokenIndexes.ALL_INDEXES.forEach { index ->
-            mongo.indexOps(Balance.COLLECTION).ensureIndex(index).awaitFirst()
+            mongo.indexOps(Token.COLLECTION).ensureIndex(index).awaitFirst()
         }
     }
 
