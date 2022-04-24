@@ -82,11 +82,13 @@ class ActivityRepository(
         this
     } else {
         val idCriteria = Criteria.where("_id")
-        if (sortAscending) {
-            idCriteria.gt(continuation.id)
-        } else {
-            idCriteria.lt(continuation.id)
-        }
+        andOperator(
+            if (sortAscending) {
+                idCriteria.gt(continuation.id)
+            } else {
+                idCriteria.lt(continuation.id)
+            }
+        )
     }
 
     private fun Sort.direction(asc: Boolean) =
