@@ -1,9 +1,10 @@
 package com.rarible.protocol.solana.common.repository
 
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
-import com.rarible.protocol.solana.common.model.Balance
+import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
+import com.rarible.protocol.solana.common.repository.TokenRepository.TokenIndexes.tokenCollectionKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -44,19 +45,52 @@ class TokenRepository(
         continuation: DateIdContinuation?,
         limit: Int
     ): Flow<Token> {
-
-        val criteria = continuation?.let {
-            // in continuation date will always less than param form query
-            Criteria().orOperator(
-                Criteria(Token::updatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
-                fromToCriteria(lastUpdatedFrom, continuation.date)
-            )
-        } ?: fromToCriteria(lastUpdatedFrom, lastUpdatedTo)
+        val criteria = Criteria(Token::hasMeta.name).isEqualTo(true)
+            .addContinuation(continuation, lastUpdatedFrom, lastUpdatedTo)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
         query.limit(limit)
 
         return mongo.find(query, Token::class.java).asFlow()
+    }
+
+    suspend fun findByCollection(
+        collection: String,
+        continuation: String?,
+        limit: Int
+    ): Flow<Token> {
+        val criteria = Criteria(tokenCollectionKey).`is`(collection)
+            .addContinuation(continuation)
+        val query = Query(criteria).with(Sort.by("_id").ascending())
+        query.limit(limit)
+        return mongo.find(query, Token::class.java).asFlow()
+    }
+
+    private fun Criteria.addContinuation(
+        continuation: DateIdContinuation?,
+        lastUpdatedFrom: Instant?,
+        lastUpdatedTo: Instant?,
+    ): Criteria {
+        if (continuation != null) {
+            return this.andOperator(
+                Criteria().orOperator(
+                    Criteria(Token::updatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                    fromToCriteria(lastUpdatedFrom, continuation.date)
+                )
+            )
+        }
+        if (lastUpdatedFrom == null && lastUpdatedTo == null) {
+            return this
+        }
+        return andOperator(fromToCriteria(lastUpdatedFrom, lastUpdatedTo))
+    }
+
+    private fun Criteria.addContinuation(
+        continuation: String?
+    ) = if (continuation == null) {
+        this
+    } else {
+        and("_id").gt(continuation)
     }
 
     private fun Query.withSortByLastUpdateAndId() =
@@ -66,8 +100,6 @@ class TokenRepository(
         lastUpdatedFrom: Instant?,
         lastUpdatedTo: Instant?,
     ): Criteria {
-        if (lastUpdatedFrom == null && lastUpdatedTo == null) return Criteria()
-
         val criteria = Criteria(Token::updatedAt.name)
         lastUpdatedFrom?.let { criteria.gt(it) }
         lastUpdatedTo?.let { criteria.lt(it) }
@@ -83,12 +115,23 @@ class TokenRepository(
 
     private object TokenIndexes {
 
+        val tokenCollectionKey = Token::tokenMeta.name + "." + TokenMeta::collection.name + "." + "_id"
+
         val UPDATED_AT_AND_ID: Index = Index()
+            .on(Token::hasMeta.name, Sort.Direction.ASC)
             .on(Token::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
+            .background()
+
+        val COLLECTION_AND_ID: Index = Index()
+            .on(tokenCollectionKey, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .sparse()
+            .background()
 
         val ALL_INDEXES = listOf(
-            UPDATED_AT_AND_ID
+            UPDATED_AT_AND_ID,
+            COLLECTION_AND_ID
         )
     }
 }

@@ -33,7 +33,9 @@ class TokenTest : EventAwareBlockScannerTest() {
             decimals = decimals,
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH, // TODO[tests]: consider fetching from the blockchain.
-            updatedAt = Instant.EPOCH
+            updatedAt = Instant.EPOCH,
+            tokenMeta = emptyTokenMeta,
+            hasMeta = emptyTokenMeta != null
         )
         val fromBalance = Balance(
             account = account,
@@ -43,6 +45,8 @@ class TokenTest : EventAwareBlockScannerTest() {
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
+            tokenName = null,
+            collection = null
         )
         val aliceBalance = Balance(
             account = aliceAccount,
@@ -52,6 +56,8 @@ class TokenTest : EventAwareBlockScannerTest() {
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
+            tokenName = null,
+            collection = null
         )
 
         Wait.waitAssert(timeout = timeout) {
