@@ -84,10 +84,10 @@ class BlockchainScannerConfiguration(
                 publisher.prepareGroup(it.id)
             }
         }
-        logger.info("Initializing KafkaEntityEventConsumer to connect to ${solanaIndexerProperties.oldKafkaReplicaSet}")
+        logger.info("Initializing KafkaEntityEventConsumer to connect to ${solanaIndexerProperties.kafkaReplicaSet}")
         return KafkaEntityEventConsumer(
             properties = KafkaProperties(
-                brokerReplicaSet = solanaIndexerProperties.oldKafkaReplicaSet,
+                brokerReplicaSet = solanaIndexerProperties.kafkaReplicaSet,
             ),
             meterRegistry = meterRegistry,
             applicationEnvironmentInfo = applicationEnvironmentInfo,

@@ -11,8 +11,6 @@ const val SOLANA_INDEXER_FEATURE_FLAGS = "common.featureFlags"
 data class SolanaIndexerProperties(
     val kafkaReplicaSet: String,
     val metricRootPath: String,
-    // TODO: temporary property to migrate to new Kafka, will be removed after migration.
-    val oldKafkaReplicaSet: String = kafkaReplicaSet,
     val confirmationBlocks: Int = 100,
     val metaplexOffChainMetaLoadingTimeout: Long = 20000,
     val featureFlags: FeatureFlags = FeatureFlags()
