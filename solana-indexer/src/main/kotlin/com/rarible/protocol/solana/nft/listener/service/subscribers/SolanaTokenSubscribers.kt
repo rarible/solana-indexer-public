@@ -10,14 +10,18 @@ import com.rarible.protocol.solana.borsh.InitializeMint1and2
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
-import com.rarible.protocol.solana.common.util.toBigInteger
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.common.util.toBigInteger
+import com.rarible.protocol.solana.nft.listener.util.hasCreateMetaplexMeta
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class InitializeMintSubscriber : SolanaLogEventSubscriber {
+class InitializeMintSubscriber(
+    private val properties: SolanaIndexerProperties
+) : SolanaLogEventSubscriber {
     override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
         programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
         id = "token_initialize_mint",
@@ -39,7 +43,13 @@ class InitializeMintSubscriber : SolanaLogEventSubscriber {
             log = log.log,
             timestamp = Instant.ofEpochSecond(block.timestamp)
         )
-        return listOf(record)
+
+        val skipTokensWithoutMeta = properties.featureFlags.skipTokensWithoutMeta
+
+        return if (skipTokensWithoutMeta && !block.hasCreateMetaplexMeta(log.log.transactionHash) { it.mint == record.mint })
+            emptyList()
+        else
+            listOf(record)
     }
 }
 

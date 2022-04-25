@@ -29,7 +29,8 @@ data class FeatureFlags(
      * but 'dev' and 'staging' (devnet) we're indexing from a random instant (like 3 months ago),
      * so we could have not seen balance/token initialization records.
      */
-    val isIndexingFromBeginning: Boolean = true
+    val isIndexingFromBeginning: Boolean = true,
+    val skipTokensWithoutMeta: Boolean = false
 )
 
 enum class TokenFilterType {

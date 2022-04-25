@@ -12,6 +12,7 @@ import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.util.transactionLogs
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 
@@ -99,7 +100,7 @@ class AuctionHouseOrderExecuteSaleSubscriber : SolanaLogEventSubscriber {
                 val result = ArrayList<SolanaAuctionHouseOrderRecord.ExecuteSaleRecord>(2)
 
                 // Don't want to filter logs twice, so moved out this action here
-                val filteredLogs = block.transactionLogs(log.log.transactionHash)
+                val filteredLogs = block.transactionLogs(log.log.transactionHash, SolanaProgramId.AUCTION_HOUSE_PROGRAM)
 
                 // There is no add-hoc SELL order, it means previously created SELL order matched
                 if (!block.hasSell(filteredLogs, executeSaleRecord.seller)) {
@@ -146,14 +147,11 @@ class AuctionHouseOrderCancelSubscriber : SolanaLogEventSubscriber {
     }
 }
 
-private fun SolanaBlockchainBlock.transactionLogs(transactionHash: String) =
-    logs.filter { it.log.transactionHash == transactionHash && it.instruction.programId == SolanaProgramId.AUCTION_HOUSE_PROGRAM }
-
 private fun SolanaBlockchainBlock.hasExecuteSell(
     transactionHash: String,
     matcher: (r: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord) -> Boolean
 ): Boolean {
-    return transactionLogs(transactionHash).any {
+    return transactionLogs(transactionHash, SolanaProgramId.AUCTION_HOUSE_PROGRAM).any {
         val instruction = it.instruction.data.parseAuctionHouseInstruction()
         if (instruction is ExecuteSale) {
             val executeSale = SolanaAuctionHouseLogConverter.convertExecuteSale(it, instruction, timestamp)
