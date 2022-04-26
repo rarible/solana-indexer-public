@@ -85,16 +85,17 @@ object MetaplexOffChainMetadataParser {
                     )
                 )
             else -> {
-                val collectionAttribute = attributes?.find { it.trait_type == "Collection" }
+                val collectionAttribute = attributes?.find { it.trait_type == "Collection" }?.value
 
-                if (collectionAttribute?.value != null) {
+                if (collectionAttribute != null) {
                     MetaplexOffChainMetaFields.Collection(
-                        name = collectionAttribute.value,
+                        name = collectionAttribute,
                         family = null,
                         hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-                            name = collectionAttribute.value,
+                            name = collectionAttribute,
                             family = null,
-                            creators = metaplexMetaFields.creators.map { it.address }
+                            // For such non-standard collections, the creators will probably diverge, too, so we don't count them.
+                            creators = emptyList()
                         )
                     )
                 } else {
