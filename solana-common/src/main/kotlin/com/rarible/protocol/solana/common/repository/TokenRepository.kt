@@ -41,8 +41,7 @@ class TokenRepository(
     suspend fun findAll(
         lastUpdatedFrom: Instant?,
         lastUpdatedTo: Instant?,
-        continuation: DateIdContinuation?,
-        limit: Int
+        continuation: DateIdContinuation?
     ): Flow<Token> {
 
         val criteria = continuation?.let {
@@ -54,8 +53,6 @@ class TokenRepository(
         } ?: fromToCriteria(lastUpdatedFrom, lastUpdatedTo)
 
         val query = Query(criteria).withSortByLastUpdateAndId()
-        query.limit(limit)
-
         return mongo.find(query, Token::class.java).asFlow()
     }
 

@@ -15,6 +15,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -54,22 +55,15 @@ class TokenMetaService(
         metaplexOffChainMetaRepository.findByOffChainCollectionHash(collection, fromTokenAddress, limit)
 
     suspend fun extendWithAvailableMeta(tokens: Flow<Token>): Flow<TokenWithMeta> {
-        val tokenMap = tokens.toList().associateBy { it.mint }
-        val offChainMetaMap = getOffChainMeta(tokenMap.keys)
-            .map { it.tokenAddress to it.metaFields }
-            .toList().toMap()
-
-        val result = getOnChainMeta(tokenMap.keys)
-            .map { metaplexMeta ->
-                metaplexMeta.tokenAddress to TokenMetaParser.mergeOnChainAndOffChainMeta(
-                    onChainMeta = metaplexMeta.metaFields,
-                    offChainMeta = offChainMetaMap[metaplexMeta.tokenAddress],
-                )
-            }
-            .map { (tokenAddress, tokenMeta) ->
-                TokenWithMeta(tokenMap[tokenAddress]!!, tokenMeta)
-            }
-        return result
+        return tokens.mapNotNull { token ->
+            val metaplexMeta = getOnChainMeta(token.mint) ?: return@mapNotNull null
+            val metaplexOffChainMeta = getOffChainMeta(token.mint) ?: return@mapNotNull null
+            val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(
+                onChainMeta = metaplexMeta.metaFields,
+                offChainMeta = metaplexOffChainMeta.metaFields
+            )
+            TokenWithMeta(token, tokenMeta)
+        }
     }
 
     suspend fun getTokensMetaByCollection(

@@ -13,6 +13,7 @@ import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.take
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -27,15 +28,15 @@ class TokenApiService(
     suspend fun findAll(
         lastUpdatedFrom: Instant?,
         lastUpdatedTo: Instant?,
-        continuation: DateIdContinuation?, limit: Int
+        continuation: DateIdContinuation?,
+        limit: Int
     ): Flow<TokenWithMeta> {
         val tokens = tokenRepository.findAll(
             lastUpdatedFrom,
             lastUpdatedTo,
-            continuation,
-            limit
+            continuation
         )
-        return tokenMetaService.extendWithAvailableMeta(tokens)
+        return tokenMetaService.extendWithAvailableMeta(tokens).take(limit)
     }
 
     suspend fun getTokensWithMeta(tokenAddresses: List<String>): Flow<TokenWithMeta> {
