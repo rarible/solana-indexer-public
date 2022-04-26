@@ -60,11 +60,6 @@ class TokenController(
         return ResponseEntity.ok(TokenMetaConverter.convert(tokenMeta))
     }
 
-    override suspend fun resetTokenMeta(tokenAddress: String): ResponseEntity<Unit> {
-        // TODO implement
-        return ResponseEntity.ok().build()
-    }
-
     override suspend fun getTokenRoyaltiesByAddress(tokenAddress: String): ResponseEntity<RoyaltiesDto> {
         val royalties = tokenApiService.getTokenRoyalties(tokenAddress)
         return ResponseEntity.ok(RoyaltiesDto(royalties))
