@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.api.service
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityFilterAllDto
@@ -19,14 +18,14 @@ import com.rarible.protocol.solana.test.randomList
 import com.rarible.protocol.solana.test.randomMint
 import com.rarible.protocol.solana.test.randomSell
 import com.rarible.protocol.solana.test.randomTransfer
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import kotlin.random.Random
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.junit.jupiter.api.BeforeEach
 
 class ActivityApiServiceIt : AbstractIntegrationTest() {
 
@@ -45,7 +44,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
 
     @Test
     fun `find by type`() = runBlocking {
-        val itemId = randomString()
+        val itemId = randomMint()
         testActivities(itemId).forEach { activityRepository.save(it) }
         ActivityFilterAllTypeDto.values().forEach { type ->
             val filter = ActivityFilterAllDto(listOf(type))
@@ -76,7 +75,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
         }
     }
 
-    private fun testActivities(itemId: String = randomString()): List<ActivityDto> {
+    private fun testActivities(itemId: String = randomMint()): List<ActivityDto> {
         val mint = randomMint(tokenAddress = itemId)
         val burn = randomBurn(tokenAddress = itemId)
         val transfer = randomTransfer(tokenAddress = itemId)

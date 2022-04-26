@@ -1,11 +1,11 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.nft.listener.test.data.randomBuyInstruction
 import com.rarible.protocol.solana.nft.listener.test.data.randomExecuteSaleInstruction
 import com.rarible.protocol.solana.nft.listener.test.data.randomSaleInstruction
 import com.rarible.protocol.solana.nft.listener.test.data.randomSolanaBlockchainBlock
+import com.rarible.protocol.solana.test.randomAccount
 import com.rarible.protocol.solana.test.randomSolanaLog
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -50,7 +50,7 @@ class AuctionHouseOrderBuySubscriberTest {
     @Test
     fun `with execute sale record`() = runBlocking<Unit> {
         val log = randomSolanaLog()
-        val buyer = randomString()
+        val buyer = randomAccount()
         val buyLog = SolanaBlockchainLog(log, randomBuyInstruction(maker = buyer))
         val executeSaleLog = SolanaBlockchainLog(log, randomExecuteSaleInstruction(buyer = buyer))
 
@@ -65,7 +65,7 @@ class AuctionHouseOrderBuySubscriberTest {
     @Test
     fun `with execute sale records - not matched`() = runBlocking<Unit> {
         val log = randomSolanaLog()
-        val buyer = randomString()
+        val buyer = randomAccount()
         val buyLog = SolanaBlockchainLog(log, randomBuyInstruction(maker = buyer))
         // Same log, but different buyer
         val executeSaleLog1 = SolanaBlockchainLog(log, randomExecuteSaleInstruction())

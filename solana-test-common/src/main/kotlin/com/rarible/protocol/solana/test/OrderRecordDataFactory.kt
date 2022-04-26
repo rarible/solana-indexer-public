@@ -13,15 +13,15 @@ import java.time.ZonedDateTime
 object OrderRecordDataFactory {
 
     fun randomBuyRecord(
-        maker: String = randomString(),
-        treasuryMint: String = randomString(),
+        maker: String = randomAccount(),
+        treasuryMint: String = randomMint(),
         buyPrice: BigInteger = randomBigInt(),
-        tokenAccount: String = randomString(),
-        mint: String = randomString(),
+        tokenAccount: String = randomAccount(),
+        mint: String = randomMint(),
         amount: BigInteger = randomBigInt(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
-        auctionHouse: String = randomString(),
+        auctionHouse: String = randomAccount(),
         orderId: String = randomString(),
     ) = SolanaAuctionHouseOrderRecord.BuyRecord(
         maker = maker,
@@ -37,14 +37,14 @@ object OrderRecordDataFactory {
     )
 
     fun randomSellRecord(
-        maker: String = randomString(),
+        maker: String = randomAccount(),
         sellPrice: BigInteger = randomBigInt(),
-        tokenAccount: String = randomString(),
-        mint: String = randomString(),
+        tokenAccount: String = randomAccount(),
+        mint: String = randomMint(),
         amount: BigInteger = randomBigInt(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
-        auctionHouse: String = randomString(),
+        auctionHouse: String = randomAccount(),
         orderId: String = randomString(),
     ) = SolanaAuctionHouseOrderRecord.SellRecord(
         maker = maker,
@@ -59,16 +59,16 @@ object OrderRecordDataFactory {
     )
 
     fun randomExecuteSaleRecord(
-        buyer: String = randomString(),
-        seller: String = randomString(),
+        buyer: String = randomAccount(),
+        seller: String = randomAccount(),
         price: BigInteger = randomBigInt(),
-        mint: String = randomString(),
-        treasuryMint: String = randomString(),
+        mint: String = randomMint(),
+        treasuryMint: String = randomMint(),
         amount: BigInteger = randomBigInt(),
         direction: OrderDirection = randomDirection(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
-        auctionHouse: String = randomString(),
+        auctionHouse: String = randomAccount(),
         orderId: String = randomString(),
     ) = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
         buyer = buyer,
@@ -85,14 +85,14 @@ object OrderRecordDataFactory {
     )
 
     fun randomCancel(
-        owner: String = randomString(),
-        mint: String = randomString(),
+        owner: String = randomAccount(),
+        mint: String = randomMint(),
         price: BigInteger = randomBigInt(),
         amount: BigInteger = randomBigInt(),
         direction: OrderDirection = randomDirection(),
         log: SolanaLog = randomSolanaLog(),
         timestamp: Instant = baseTimestamp.plusSeconds(randomLong(86400)),
-        auctionHouse: String = randomString(),
+        auctionHouse: String = randomAccount(),
         orderId: String = randomString(),
     ) = SolanaAuctionHouseOrderRecord.CancelRecord(
         maker = owner,

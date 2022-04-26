@@ -4,7 +4,6 @@ import com.rarible.blockchain.scanner.framework.data.BlockEvent
 import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
@@ -16,6 +15,8 @@ import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import com.rarible.protocol.solana.test.OrderRecordDataFactory
+import com.rarible.protocol.solana.test.randomAccount
+import com.rarible.protocol.solana.test.randomMint
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -37,7 +38,7 @@ class SolanaLogEventFilterTest {
         collection = SubscriberGroup.TOKEN.collectionName
     ) {}
 
-    private val blackListedToken = randomString()
+    private val blackListedToken = randomMint()
 
     private val nonCurrencyTokenFilter = mockk<SolanaBlackListTokenFilter>()
     private val auctionHouseFilter = mockk<SolanaAuctionHouseFilter>()
@@ -90,7 +91,7 @@ class SolanaLogEventFilterTest {
         val transferWithoutMapping = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = "")
 
         val initMint = init.mint
-        val mappedMint = randomString()
+        val mappedMint = randomMint()
 
         // Mapped mints should be requested for all non-currency transfers
         coEvery {
@@ -130,8 +131,8 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `transfer with mint`() = runBlocking<Unit> {
-        val incomeMint = randomString()
-        val outcomeMint = randomString()
+        val incomeMint = randomMint()
+        val outcomeMint = randomMint()
         val incomeTransfer = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = incomeMint)
         val outcomeTransfer = BalanceRecordDataFactory.randomOutcomeRecord().copy(mint = outcomeMint)
 
@@ -193,11 +194,11 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `auction house order with whitelisted auctionHouse`() = runBlocking<Unit> {
-        val whiteListedAuctionHouse = randomString()
+        val whiteListedAuctionHouse = randomAccount()
         val whiteListedOrderRecord =
             OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = whiteListedAuctionHouse)
 
-        val ignoredAuctionHouse = randomString()
+        val ignoredAuctionHouse = randomAccount()
         val ignoredOrderRecord = OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = ignoredAuctionHouse)
 
         coEvery { accountToMintAssociationService.getMintsByAccounts(any()) } returns mapOf()

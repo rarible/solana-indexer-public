@@ -11,8 +11,10 @@ import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.order.filter.OrderFilter
 import com.rarible.protocol.solana.common.model.order.filter.OrderFilterSort
 import com.rarible.protocol.solana.common.repository.OrderRepository
+import com.rarible.protocol.solana.test.randomAccount
 import com.rarible.protocol.solana.test.randomAsset
 import com.rarible.protocol.solana.test.randomBuyOrder
+import com.rarible.protocol.solana.test.randomMint
 import com.rarible.protocol.solana.test.randomSellOrder
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -52,7 +54,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `find currency types - sell orders`() = runBlocking<Unit> {
-        val mint = randomString()
+        val mint = randomMint()
         val mintAsset = randomAsset(TokenNftAssetType(mint))
 
         // 2 orders with same currency
@@ -82,7 +84,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `find currency types - buy orders`() = runBlocking<Unit> {
-        val mint = randomString()
+        val mint = randomMint()
         val mintAsset = randomAsset(TokenNftAssetType(mint))
 
         // 2 orders with same currency
@@ -173,13 +175,13 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `find sell orders by item`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))
 
-        val maker = randomString()
+        val maker = randomAccount()
 
         val order1 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
         val order2 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
@@ -241,13 +243,13 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun `find buy orders by item`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))
 
-        val maker = randomString()
+        val maker = randomMint()
         val old = nowMillis().minusSeconds(120)
 
         val order1 = orderRepository.save(randomBuyOrder(take = nftAsset, make = currencyAsset))

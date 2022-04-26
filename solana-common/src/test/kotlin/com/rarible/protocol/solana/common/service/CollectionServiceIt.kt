@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
+import com.rarible.protocol.solana.test.randomMint
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ class CollectionServiceIt : AbstractIntegrationTest() {
     @Test
     fun `save and get`() = runBlocking<Unit> {
         val v1 = SolanaCollectionV1(randomString(), randomString(), randomString())
-        val v2 = SolanaCollectionV2(randomString())
+        val v2 = SolanaCollectionV2(randomMint())
 
         collectionService.save(v1)
         collectionService.save(v2)

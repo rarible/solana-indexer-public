@@ -1,13 +1,14 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.update.OrderUpdateListener
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
 import com.rarible.protocol.solana.test.createRandomBalance
+import com.rarible.protocol.solana.test.randomAccount
 import com.rarible.protocol.solana.test.randomBuyOrder
+import com.rarible.protocol.solana.test.randomMint
 import com.rarible.protocol.solana.test.randomSellOrder
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -102,8 +103,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order not updated - balance not changed`() = runBlocking<Unit> {
-        val mint = randomString()
-        val owner = randomString()
+        val mint = randomMint()
+        val owner = randomAccount()
 
         val balance = balanceRepository.save(createRandomBalance(owner = owner, mint = mint))
 
@@ -134,9 +135,9 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order updated - balance is zero`() = runBlocking<Unit> {
-        val mint = randomString()
-        val owner = randomString()
-        val orderAccount = randomString()
+        val mint = randomMint()
+        val owner = randomAccount()
+        val orderAccount = randomAccount()
 
         balanceRepository.save(
             createRandomBalance(
@@ -166,9 +167,9 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order updated - balance is less than make stock`() = runBlocking<Unit> {
-        val orderAccount = randomString()
-        val mint = randomString()
-        val owner = randomString()
+        val orderAccount = randomAccount()
+        val mint = randomMint()
+        val owner = randomAccount()
 
         balanceRepository.save(
             createRandomBalance(
@@ -198,8 +199,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     @Test
     fun `existing order updated - balance greater than make stock`() = runBlocking<Unit> {
-        val mint = randomString()
-        val owner = randomString()
+        val mint = randomMint()
+        val owner = randomAccount()
 
         balanceRepository.save(createRandomBalance(owner = owner, mint = mint, value = BigInteger.TEN))
 

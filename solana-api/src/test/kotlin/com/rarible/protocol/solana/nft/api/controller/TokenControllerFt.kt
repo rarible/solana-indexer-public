@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.core.common.nowMillis
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMetaParser
@@ -18,6 +17,7 @@ import com.rarible.protocol.solana.test.createRandomMetaplexMetaFieldsCollection
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMetaFields
 import com.rarible.protocol.solana.test.createRandomToken
+import com.rarible.protocol.solana.test.randomMint
 import io.mockk.coEvery
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -195,7 +195,7 @@ class TokenControllerFt : AbstractControllerTest() {
     }
 
     private suspend fun saveTokenWithMeta(
-        mint: String = randomString(),
+        mint: String = randomMint(),
         updatedAt: Instant = nowMillis(),
         onCollection: MetaplexMetaFields.Collection? = null,
         offCollection: MetaplexOffChainMetaFields.Collection? = null

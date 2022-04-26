@@ -12,6 +12,7 @@ import com.rarible.protocol.solana.dto.SolanaFtAssetTypeDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.randomAsset
 import com.rarible.protocol.solana.test.randomBuyOrder
+import com.rarible.protocol.solana.test.randomMint
 import com.rarible.protocol.solana.test.randomSellOrder
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -50,8 +51,8 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Test
     fun `get item sell currencies`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))
@@ -68,8 +69,8 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Test
     fun `get best sell order by item`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))
@@ -133,8 +134,8 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Test
     fun `get item buy currencies`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))
@@ -151,8 +152,8 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Test
     fun `get best buy order by item`() = runBlocking<Unit> {
-        val currencyMint = randomString()
-        val nftMint = randomString()
+        val currencyMint = randomMint()
+        val nftMint = randomMint()
 
         val currencyAsset = randomAsset(TokenFtAssetType(currencyMint))
         val nftAsset = randomAsset(TokenNftAssetType(nftMint))

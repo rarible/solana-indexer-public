@@ -1,7 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
+import com.rarible.protocol.solana.test.randomAccount
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -21,9 +21,9 @@ class AccountToMintAssociationCacheIt : AbstractBlockScannerTest() {
 
     @Test
     fun `save and get mapping`() = runBlocking<Unit> {
-        val account1 = randomString()
-        val account2 = randomString()
-        val account3 = randomString()
+        val account1 = randomAccount()
+        val account2 = randomAccount()
+        val account3 = randomAccount()
 
         cache.saveMintsByAccounts(mapOf(account1 to "1", account2 to "2"))
 

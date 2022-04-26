@@ -8,6 +8,8 @@ import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.borsh.Base58
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
+import com.rarible.protocol.solana.test.randomAccount
+import com.rarible.protocol.solana.test.randomMint
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -26,9 +28,9 @@ fun randomSolanaBlockchainBlock(
 }
 
 fun randomSaleInstruction(
-    maker: String = randomString(),
-    tokenAccount: String = randomString(),
-    auctionHouse: String = randomString(),
+    maker: String = randomAccount(),
+    tokenAccount: String = randomAccount(),
+    auctionHouse: String = randomAccount(),
     price: Long = randomLong(),
     size: Long = randomLong()
 ): SolanaInstruction {
@@ -54,10 +56,10 @@ fun randomSaleInstruction(
 }
 
 fun randomBuyInstruction(
-    maker: String = randomString(),
-    tokenAccount: String = randomString(),
-    treasuryMint: String = randomString(),
-    auctionHouse: String = randomString(),
+    maker: String = randomAccount(),
+    tokenAccount: String = randomAccount(),
+    treasuryMint: String = randomMint(),
+    auctionHouse: String = randomAccount(),
     price: Long = randomLong(),
     size: Long = randomLong()
 ): SolanaInstruction {
@@ -87,11 +89,11 @@ fun randomBuyInstruction(
 }
 
 fun randomExecuteSaleInstruction(
-    seller: String = randomString(),
-    buyer: String = randomString(),
-    mint: String = randomString(),
-    treasuryMint: String = randomString(),
-    auctionHouse: String = randomString(),
+    seller: String = randomAccount(),
+    buyer: String = randomAccount(),
+    mint: String = randomMint(),
+    treasuryMint: String = randomMint(),
+    auctionHouse: String = randomAccount(),
     buyerPrice: Long = randomLong(),
     size: Long = randomLong()
 ): SolanaInstruction {
@@ -123,9 +125,9 @@ fun randomExecuteSaleInstruction(
 }
 
 fun randomCancelInstruction(
-    maker: String = randomString(),
-    mint: String = randomString(),
-    auctionHouse: String = randomString(),
+    maker: String = randomAccount(),
+    mint: String = randomMint(),
+    auctionHouse: String = randomAccount(),
     price: Long = randomLong(),
     size: Long = randomLong()
 ): SolanaInstruction {

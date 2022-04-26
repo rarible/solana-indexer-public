@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.core.common.nowMillis
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
@@ -10,6 +9,8 @@ import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.dto.BalancesDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomBalance
+import com.rarible.protocol.solana.test.randomAccount
+import com.rarible.protocol.solana.test.randomMint
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -39,7 +40,7 @@ class BalanceControllerFt : AbstractControllerTest() {
     @Test
     fun `find balances by owner - first page`() = runBlocking<Unit> {
         val now = nowMillis()
-        val owner = randomString()
+        val owner = randomAccount()
 
         val balanceWithMeta1 = saveRandomBalanceWithMeta(owner = owner, updatedAt = now)
         val balanceWithMeta2 = saveRandomBalanceWithMeta(owner = owner, updatedAt = now.minusSeconds(1))
@@ -58,7 +59,7 @@ class BalanceControllerFt : AbstractControllerTest() {
 
     @Test
     fun `find balances by owner - second page`() = runBlocking<Unit> {
-        val owner = randomString()
+        val owner = randomAccount()
         val updatedAt = nowMillis()
         val balanceWithMeta = saveRandomBalanceWithMeta(owner = owner, updatedAt = updatedAt)
 
@@ -80,7 +81,7 @@ class BalanceControllerFt : AbstractControllerTest() {
     @Test
     fun `find balances by mint`() = runBlocking<Unit> {
         val now = nowMillis()
-        val mint = randomString()
+        val mint = randomMint()
 
         val balanceWithMeta1 = saveRandomBalanceWithMeta(mint = mint, updatedAt = now)
         val balanceWithMeta2 = saveRandomBalanceWithMeta(mint = mint, updatedAt = now.minusSeconds(1))
@@ -98,7 +99,7 @@ class BalanceControllerFt : AbstractControllerTest() {
 
     @Test
     fun `find balances by mint - second page`() = runBlocking<Unit> {
-        val mint = randomString()
+        val mint = randomMint()
         val updatedAt = nowMillis()
         val balanceWithMeta = saveRandomBalanceWithMeta(mint = mint, updatedAt = updatedAt)
 
@@ -118,11 +119,11 @@ class BalanceControllerFt : AbstractControllerTest() {
     }
 
     private val defaultCollectionV1 = MetaplexOffChainMetaFields.Collection("name", "family", "123")
-    private val defaultCollectionV2 = MetaplexMetaFields.Collection(randomString(), true)
+    private val defaultCollectionV2 = MetaplexMetaFields.Collection(randomAccount(), true)
 
     private suspend fun saveRandomBalanceWithMeta(
-        owner: String = randomString(),
-        mint: String = randomString(),
+        owner: String = randomAccount(),
+        mint: String = randomMint(),
         updatedAt: Instant = nowMillis()
     ): BalanceWithMeta {
         val balance = createRandomBalance(owner = owner, mint = mint, updatedAt = updatedAt)

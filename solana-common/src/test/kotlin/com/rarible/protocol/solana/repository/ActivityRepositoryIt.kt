@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.repository
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.repository.ActivityRepository
@@ -98,7 +97,7 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
 
     @Test
     fun findActivitiesByItem() = runBlocking<Unit> {
-        val mint = randomString()
+        val mint = randomMint()
         val data = eachActivitiesByMint(mint)
         data.values.forEach { activityRepository.save(it) }
 

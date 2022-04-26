@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.listener.meta
 
-import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.meta.ExternalHttpClient
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
@@ -10,6 +9,7 @@ import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
+import com.rarible.protocol.solana.test.randomMint
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -56,7 +56,7 @@ class MetaplexOffChainMetaLoaderTest {
             )
         }
 
-        val tokenAddress = randomString()
+        val tokenAddress = randomMint()
         val expected = MetaplexOffChainMeta(
             tokenAddress = tokenAddress,
             metaFields = MetaplexOffChainMetaFields(
@@ -135,7 +135,7 @@ class MetaplexOffChainMetaLoaderTest {
             )
         }
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
-            tokenAddress = randomString(),
+            tokenAddress = randomMint(),
             metaplexMetaFields = metaplexMeta.metaFields
         )
         val collection = metaplexOffChainMeta?.metaFields?.collection

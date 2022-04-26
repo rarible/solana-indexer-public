@@ -25,11 +25,15 @@ import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.TokenWithMeta
+import com.rarible.protocol.solana.common.pubkey.Keypair
 import com.rarible.protocol.solana.common.records.OrderDirection
 import java.math.BigInteger
 import java.time.Instant
 
-fun createRandomToken(mint: String = randomString()): Token = Token(
+fun randomAccount() = Keypair.createRandom().publicKey.toBase58()
+fun randomMint() = randomAccount()
+
+fun createRandomToken(mint: String = randomMint()): Token = Token(
     mint = mint,
     supply = randomBigInt(),
     revertableEvents = emptyList(),
@@ -44,9 +48,9 @@ fun createRandomTokenWithMeta(): TokenWithMeta = TokenWithMeta(
 )
 
 fun createRandomMetaplexMeta(
-    mint: String = randomString()
+    mint: String = randomMint()
 ): MetaplexMeta = MetaplexMeta(
-    metaAddress = randomString(),
+    metaAddress = randomAccount(),
     tokenAddress = mint,
     metaFields = createRandomMetaplexMetaFields(),
     isMutable = randomBoolean(),
@@ -56,7 +60,7 @@ fun createRandomMetaplexMeta(
 )
 
 fun createRandomMetaplexOffChainMeta(): MetaplexOffChainMeta = MetaplexOffChainMeta(
-    tokenAddress = randomString(),
+    tokenAddress = randomMint(),
     metaFields = createRandomMetaplexOffChainMetaFields(),
     loadedAt = nowMillis()
 )
@@ -73,7 +77,7 @@ fun createRandomMetaplexMetaFields() = MetaplexMetaFields(
 fun createRandomMetaplexOffChainMetaFields(): MetaplexOffChainMetaFields {
     val collectionName = randomString()
     val collectionFamily = randomString()
-    val creators = listOf(MetaplexTokenCreator(randomString(), 100, randomBoolean()))
+    val creators = listOf(MetaplexTokenCreator(randomAccount(), 100, randomBoolean()))
     return MetaplexOffChainMetaFields(
         name = randomString(),
         symbol = randomString(),
@@ -150,7 +154,7 @@ fun createRandomTokenMetaAttribute(): TokenMeta.Attribute =
 fun createRandomTokenMetadataCollection(): TokenMeta.Collection =
     if (randomBoolean()) {
         TokenMeta.Collection.OnChain(
-            address = randomString(),
+            address = randomAccount(),
             verified = randomBoolean()
         )
     } else {
@@ -163,21 +167,21 @@ fun createRandomTokenMetadataCollection(): TokenMeta.Collection =
 
 fun createRandomMetaplexMetaFieldsCollection(): MetaplexMetaFields.Collection =
     MetaplexMetaFields.Collection(
-        address = randomString(),
+        address = randomAccount(),
         verified = randomBoolean()
     )
 
 fun createRandomTokenCreator(): MetaplexTokenCreator =
     MetaplexTokenCreator(
-        address = randomString(),
+        address = randomAccount(),
         share = randomInt(101),
         verified = randomBoolean()
     )
 
 fun createRandomBalance(
-    account: String = randomString(),
-    owner: String = randomString(),
-    mint: String = randomString(),
+    account: String = randomAccount(),
+    owner: String = randomAccount(),
+    mint: String = randomMint(),
     updatedAt: Instant = nowMillis(),
     value: BigInteger = randomBigInt()
 ): Balance = Balance(
@@ -191,9 +195,9 @@ fun createRandomBalance(
 )
 
 fun createRandomBalanceWithMeta(
-    account: String = randomString(),
-    owner: String = randomString(),
-    mint: String = randomString(),
+    account: String = randomAccount(),
+    owner: String = randomAccount(),
+    mint: String = randomMint(),
     updatedAt: Instant = nowMillis()
 ): BalanceWithMeta = BalanceWithMeta(
     balance = createRandomBalance(account = account, owner = owner, mint = mint, updatedAt = updatedAt),
@@ -228,9 +232,9 @@ fun randomSolanaLog(): SolanaLog {
 fun randomSellOrder(
     make: Asset = randomAsset(randomAssetTypeNft()),
     take: Asset = randomAsset(randomAssetTypeFt()),
-    maker: String = randomString(),
+    maker: String = randomAccount(),
     fill: BigInteger = randomBigInt(2),
-    makerAccount: String = randomString()
+    makerAccount: String = randomAccount()
 ): Order {
     return Order(
         auctionHouse = randomString(),
@@ -257,8 +261,8 @@ fun randomBuyOrder(
 ): Order {
     return Order(
         auctionHouse = randomString(),
-        maker = randomString(),
-        makerAccount = randomString(),
+        maker = randomAccount(),
+        makerAccount = randomAccount(),
         status = OrderStatus.ACTIVE,
         make = make,
         take = take,
@@ -283,13 +287,13 @@ fun randomAsset(type: AssetType = randomAssetTypeNft()): Asset {
 
 fun randomAssetTypeNft(): AssetType {
     return TokenNftAssetType(
-        tokenAddress = randomString()
+        tokenAddress = randomMint()
     )
 }
 
 fun randomAssetTypeFt(): AssetType {
     return TokenFtAssetType(
-        tokenAddress = randomString()
+        tokenAddress = randomMint()
     )
 }
 
