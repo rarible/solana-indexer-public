@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.borsh.SignMetadata
 import com.rarible.protocol.solana.borsh.UnVerifyCollection
 import com.rarible.protocol.solana.borsh.VerifyCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
+import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord.MetaplexCreateMetadataAccountRecord
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord.MetaplexSignMetadataRecord
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord.MetaplexUnVerifyCollectionRecord

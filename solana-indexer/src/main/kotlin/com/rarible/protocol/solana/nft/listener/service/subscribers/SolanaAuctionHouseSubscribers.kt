@@ -7,6 +7,7 @@ import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.CreateAuctionHouse
 import com.rarible.protocol.solana.borsh.UpdateAuctionHouse
 import com.rarible.protocol.solana.borsh.parseAuctionHouseInstruction
+import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import org.springframework.stereotype.Component

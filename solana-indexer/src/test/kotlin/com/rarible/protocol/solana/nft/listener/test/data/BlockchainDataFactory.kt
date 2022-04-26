@@ -7,7 +7,7 @@ import com.rarible.core.common.nowMillis
 import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.borsh.Base58
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaProgramId
+import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
