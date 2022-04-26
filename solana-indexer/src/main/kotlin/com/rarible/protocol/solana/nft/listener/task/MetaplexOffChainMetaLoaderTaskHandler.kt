@@ -29,7 +29,12 @@ class MetaplexOffChainMetaLoaderTaskHandler(
         return metaplexMetaRepository.findAll(from)
             .map {
                 val tokenAddress = it.tokenAddress
-                if (reload || metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress) == null) {
+                val hasOffChainMeta = metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress) != null
+                if (reload || !hasOffChainMeta) {
+                    logger.info(
+                        "Loading off chain metaplex meta for $tokenAddress" +
+                                if (reload) "because reload is requested" else " because the off-chain meta has not been loaded before"
+                    )
                     metaplexOffChainMetaLoadService.loadOffChainTokenMeta(tokenAddress)
                 }
                 tokenAddress

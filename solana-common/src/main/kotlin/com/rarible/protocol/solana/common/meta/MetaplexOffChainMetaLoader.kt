@@ -40,7 +40,13 @@ class MetaplexOffChainMetaLoader(
         tokenAddress: TokenId,
         metaplexMetaFields: MetaplexMetaFields
     ): MetaplexOffChainMeta? {
-        val metadataUrl = url(metaplexMetaFields.uri)
+        val metadataUrl = try {
+            url(metaplexMetaFields.uri)
+        } catch (e: Exception) {
+            logger.error("Invalid metadata URL for token $tokenAddress: ${metaplexMetaFields.uri.take(1024)}", e)
+            metaMetrics.onMetaLoadingError()
+            return null
+        }
         // TODO: when meta gets changed, we have to send a token update event.
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
         val offChainMetadataJsonContent = try {
