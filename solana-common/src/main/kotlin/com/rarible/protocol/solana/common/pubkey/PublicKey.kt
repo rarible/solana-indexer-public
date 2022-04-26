@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.pubkey
 
-import org.bitcoinj.core.Base58
+import com.rarible.protocol.solana.borsh.Base58
+
 
 data class PublicKey(private val pubKey: ByteArray) {
     init {

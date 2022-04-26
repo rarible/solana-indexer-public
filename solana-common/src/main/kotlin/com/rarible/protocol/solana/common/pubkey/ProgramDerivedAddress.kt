@@ -1,9 +1,9 @@
 package com.rarible.protocol.solana.common.pubkey
 
 import com.rarible.protocol.solana.common.util.TweetNaclFast
-import org.bitcoinj.core.Sha256Hash
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 
 /**
  * Program Derived Address (PDA) in Solana is a deterministic account controlled by a program and not a private key.
@@ -71,6 +71,8 @@ object ProgramDerivedAddressCalc {
         programId: PublicKey
     ): PublicKey {
         val buffer = ByteArrayOutputStream()
+        val sha256 = MessageDigest.getInstance("SHA-256")
+
         for (seed in seeds) {
             require(seed.size <= 32) { "Max seed length exceeded" }
             try {
@@ -85,7 +87,7 @@ object ProgramDerivedAddressCalc {
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        val hash = Sha256Hash.hash(buffer.toByteArray())
+        val hash = sha256.digest(buffer.toByteArray())
         if (TweetNaclFast.is_on_curve(hash) != 0) {
             throw RuntimeException("Invalid seeds, address must fall off the curve")
         }

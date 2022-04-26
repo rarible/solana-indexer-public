@@ -3,9 +3,9 @@ package com.rarible.protocol.solana.nft.api.controller
 import com.google.crypto.tink.subtle.Ed25519Verify
 import com.google.crypto.tink.subtle.Hex
 import com.rarible.protocol.solana.api.controller.SignatureControllerApi
+import com.rarible.protocol.solana.borsh.Base58
 import com.rarible.protocol.solana.dto.SolanaSignatureValidationFormDto
 import com.rarible.protocol.solana.nft.api.exceptions.ValidationApiException
-import org.bitcoinj.core.Base58
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
