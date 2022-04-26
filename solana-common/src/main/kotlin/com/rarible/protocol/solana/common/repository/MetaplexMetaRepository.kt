@@ -58,6 +58,22 @@ class MetaplexMetaRepository(
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
+    fun findAll(fromMint: String?): Flow<MetaplexMeta> {
+        val criteria = if (fromMint != null) {
+            Criteria(MetaplexMeta::tokenAddress.name).gt(fromMint)
+        } else {
+            Criteria()
+        }
+        val query = Query(criteria).with(
+            Sort.by(
+                Sort.Direction.ASC,
+                MetaplexMeta::tokenAddress.name,
+                "_id"
+            )
+        )
+        return mongo.find(query, MetaplexMeta::class.java).asFlow()
+    }
+
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(MetaplexMetaRepository::class.java)
         logger.info("Ensuring indexes on ${MetaplexMeta.COLLECTION}")
