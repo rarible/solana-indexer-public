@@ -1,10 +1,10 @@
 package com.rarible.protocol.solana.nft.listener
 
 import com.rarible.core.test.wait.Wait
+import com.rarible.protocol.solana.common.records.EMPTY_SOLANA_LOG
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -37,7 +37,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         mint = token,
                         mintAuthority = wallet,
                         decimals = 3,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -66,7 +66,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         mint = token,
                         owner = wallet,
                         account = account,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -97,7 +97,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         mint = token,
                         mintAmount = 5.scaleSupply(decimals),
                         tokenAccount = account,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -129,7 +129,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         mint = token,
                         burnAmount = 4.scaleSupply(decimals),
                         tokenAccount = account,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -161,7 +161,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         mint = token,
                         owner = wallet,
                         account = secondary,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -186,7 +186,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         oldOwner = wallet,
                         newOwner = aliceWallet,
                         account = secondary,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -221,7 +221,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         from = account,
                         account = aliceAccount,
                         incomeAmount = BigInteger.ONE,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         mint = token
                     )
@@ -245,7 +245,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                         account = account,
                         mint = token,
                         outcomeAmount = BigInteger.ONE,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )

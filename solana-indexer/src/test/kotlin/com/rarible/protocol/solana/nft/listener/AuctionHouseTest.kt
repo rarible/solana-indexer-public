@@ -7,12 +7,12 @@ import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.records.EMPTY_SOLANA_LOG
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -49,7 +49,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         feeWithdrawalDestination = wallet,
                         treasuryWithdrawalDestination = wallet,
                         auctionHouse = house.id,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )
@@ -87,7 +87,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         amount = 1L.toBigInteger(),
                         sellPrice = 1.scaleSupply(9),
                         auctionHouse = house.id,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
                     ).withUpdatedOrderId()
@@ -157,7 +157,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 mint = token,
                 amount = 1L.toBigInteger(),
                 auctionHouse = house.id,
-                log = ANY_SOLANA_LOG,
+                log = EMPTY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
                 orderId = "",
                 maker = sellerWallet,
@@ -271,7 +271,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 mint = token,
                 amount = 1L.toBigInteger(),
                 auctionHouse = house.id,
-                log = ANY_SOLANA_LOG,
+                log = EMPTY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
                 orderId = "",
                 maker = wallet,
@@ -355,7 +355,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         amount = 1L.toBigInteger(),
                         buyPrice = 1.scaleSupply(9),
                         auctionHouse = house.id,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
                     ).withUpdatedOrderId()
@@ -487,7 +487,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         mint = token,
                         amount = 1L.toBigInteger(),
                         auctionHouse = house.id,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
                     ).withUpdatedOrderId()
@@ -510,7 +510,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         mint = token,
                         amount = 1L.toBigInteger(),
                         auctionHouse = house.id,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                         orderId = ""
                     ).withUpdatedOrderId()
@@ -528,7 +528,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 amount = 1L.toBigInteger(),
                 price = 5.scaleSupply(9),
                 auctionHouse = house.id,
-                log = ANY_SOLANA_LOG,
+                log = EMPTY_SOLANA_LOG,
                 timestamp = Instant.EPOCH,
                 direction = OrderDirection.SELL,
                 treasuryMint = WrappedSolAssetType.SOL
@@ -555,7 +555,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         account = toAccount,
                         mint = token,
                         incomeAmount = 1.toBigInteger(),
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                     )
                 )
@@ -575,7 +575,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         account = fromAccount,
                         mint = token,
                         outcomeAmount = 1.toBigInteger(),
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH,
                     )
                 )

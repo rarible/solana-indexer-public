@@ -8,9 +8,9 @@ import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
+import com.rarible.protocol.solana.common.records.EMPTY_SOLANA_LOG
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.test.ANY_SOLANA_LOG
 import com.rarible.protocol.solana.test.createRandomBalance
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
@@ -51,12 +51,17 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                 listOf(
                     SolanaMetaRecord.MetaplexUpdateMetadataRecord(
                         mint = token,
-                        updatedMeta = createRecord.meta.copy(collection = MetaplexMetaFields.Collection(collectionNew, false)),
+                        updatedMeta = createRecord.meta.copy(
+                            collection = MetaplexMetaFields.Collection(
+                                collectionNew,
+                                false
+                            )
+                        ),
                         updatedMutable = null,
                         updateAuthority = null,
                         primarySaleHappened = null,
                         metaAccount = createRecord.metaAccount,
-                        log = ANY_SOLANA_LOG,
+                        log = EMPTY_SOLANA_LOG,
                         timestamp = Instant.EPOCH
                     )
                 )

@@ -26,6 +26,7 @@ import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.pubkey.Keypair
+import com.rarible.protocol.solana.common.records.EMPTY_SOLANA_LOG
 import com.rarible.protocol.solana.common.records.OrderDirection
 import java.math.BigInteger
 import java.time.Instant
@@ -205,18 +206,6 @@ fun createRandomBalanceWithMeta(
 )
 
 fun randomUrl(): String = "https://test.com/" + randomString()
-
-/**
- * [SolanaLog] used in tests as a placeholder in places where the log is not necessary to compare.
- */
-val ANY_SOLANA_LOG = SolanaLog(
-    blockNumber = 0L,
-    transactionHash = "",
-    blockHash = "",
-    transactionIndex = 0,
-    instructionIndex = 0,
-    innerInstructionIndex = null
-)
 
 fun randomSolanaLog(): SolanaLog {
     return SolanaLog(
