@@ -12,6 +12,7 @@ import com.rarible.protocol.solana.test.randomCancelBid
 import com.rarible.protocol.solana.test.randomCancelList
 import com.rarible.protocol.solana.test.randomList
 import com.rarible.protocol.solana.test.randomMint
+import com.rarible.protocol.solana.test.randomMintActivity
 import com.rarible.protocol.solana.test.randomSell
 import com.rarible.protocol.solana.test.randomTransfer
 import kotlinx.coroutines.flow.toList
@@ -144,7 +145,7 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
     }
 
     private fun eachActivitiesByOne() = mapOf(
-        ActivityTypeDto.MINT to randomMint(),
+        ActivityTypeDto.MINT to randomMintActivity(tokenAddress = randomMint()),
         ActivityTypeDto.BURN to randomBurn(),
         ActivityTypeDto.TRANSFER to randomTransfer(),
         ActivityTypeDto.LIST to randomList(),
@@ -155,7 +156,7 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
     )
 
     private fun eachActivitiesByMint(mint: String) = mapOf(
-        ActivityTypeDto.MINT to randomMint(tokenAddress = mint),
+        ActivityTypeDto.MINT to randomMintActivity(tokenAddress = mint),
         ActivityTypeDto.BURN to randomBurn(tokenAddress = mint),
         ActivityTypeDto.TRANSFER to randomTransfer(tokenAddress = mint),
         ActivityTypeDto.LIST to randomList(make = randomAssetNft(type = SolanaNftAssetTypeDto(mint = mint))),

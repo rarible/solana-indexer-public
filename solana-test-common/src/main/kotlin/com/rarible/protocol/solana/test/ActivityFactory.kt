@@ -44,7 +44,7 @@ fun randomBlockchainInfo(
 
 fun randomActivityId() = "id:" + randomString()
 
-fun randomMint(
+fun randomMintActivity(
     id: String = randomActivityId(),
     date: Instant = randomTimestamp(),
     reverted: Boolean = false,

@@ -16,6 +16,7 @@ import com.rarible.protocol.solana.test.randomCancelBid
 import com.rarible.protocol.solana.test.randomCancelList
 import com.rarible.protocol.solana.test.randomList
 import com.rarible.protocol.solana.test.randomMint
+import com.rarible.protocol.solana.test.randomMintActivity
 import com.rarible.protocol.solana.test.randomSell
 import com.rarible.protocol.solana.test.randomTransfer
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -63,7 +64,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     }
 
     @Test
-    internal fun `find by ids`() {
+    fun `find by ids`() {
         runBlocking {
             val take = Random.nextInt(8)
             val activities = testActivities()
@@ -76,7 +77,7 @@ class ActivityApiServiceIt : AbstractIntegrationTest() {
     }
 
     private fun testActivities(itemId: String = randomMint()): List<ActivityDto> {
-        val mint = randomMint(tokenAddress = itemId)
+        val mint = randomMintActivity(tokenAddress = itemId)
         val burn = randomBurn(tokenAddress = itemId)
         val transfer = randomTransfer(tokenAddress = itemId)
         val list = randomList(make = AssetDto(SolanaNftAssetTypeDto(itemId), BigDecimal.ONE))
