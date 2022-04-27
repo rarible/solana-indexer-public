@@ -26,6 +26,15 @@ sealed class SolanaBalanceRecord : SolanaBaseLogRecord() {
         override val timestamp: Instant
     ) : SolanaBalanceRecord()
 
+    data class ChangeOwnerRecord(
+        val oldOwner: String,
+        val newOwner: String,
+        override val mint: String,
+        override val account: String,
+        override val log: SolanaLog,
+        override val timestamp: Instant
+    ) : SolanaBalanceRecord()
+
     data class BurnRecord(
         override val mint: String,
         val burnAmount: BigInteger,

@@ -26,6 +26,7 @@ import java.time.Instant
     JsonSubTypes.Type(name = "BALANCE_MINT_TO", value = SolanaBalanceRecord.MintToRecord::class),
     JsonSubTypes.Type(name = "BALANCE_TRANSFER_INCOME", value = SolanaBalanceRecord.TransferIncomeRecord::class),
     JsonSubTypes.Type(name = "BALANCE_TRANSFER_OUTCOME", value = SolanaBalanceRecord.TransferOutcomeRecord::class),
+    JsonSubTypes.Type(name = "BALANCE_CHANGE_OWNER", value = SolanaBalanceRecord.ChangeOwnerRecord::class),
     JsonSubTypes.Type(
         name = "METAPLEX_META_CREATE_ACCOUNT", value = SolanaMetaRecord.MetaplexCreateMetadataAccountRecord::class
     ),
@@ -70,4 +71,5 @@ private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record)
     is SolanaTokenRecord.BurnRecord -> Unit
     is SolanaTokenRecord.InitializeMintRecord -> Unit
     is SolanaTokenRecord.MintToRecord -> Unit
+    is SolanaBalanceRecord.ChangeOwnerRecord -> Unit
 }

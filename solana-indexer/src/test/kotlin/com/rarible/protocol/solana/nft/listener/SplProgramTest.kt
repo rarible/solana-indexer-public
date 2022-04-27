@@ -15,7 +15,7 @@ import java.time.Instant
 import java.util.*
 
 class SplProgramTest : AbstractBlockScannerTest() {
-    private val timeout = Duration.ofSeconds(5)
+    private val timeout = Duration.ofSeconds(10)
 
     @Test
     fun initializeMint() = runBlocking {
@@ -134,6 +134,65 @@ class SplProgramTest : AbstractBlockScannerTest() {
                     )
                 )
             )
+        }
+    }
+
+    @Test
+    fun changeOwner() = runBlocking {
+        val decimals = 3
+        val token = createToken(decimals)
+        val keypair = createKeypair("${UUID.randomUUID()}")
+        val secondary = createAccount(token, keypair = keypair)
+        val wallet = getWallet(baseKeypair)
+        val aliceWallet = createWallet("${UUID.randomUUID()}")
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                SubscriberGroup.BALANCE.collectionName,
+                SolanaBalanceRecord.InitializeBalanceAccountRecord::class.java
+            ).toList()
+
+            assertThat(records).anySatisfy { record ->
+                assertThat(record).usingRecursiveComparison().ignoringFields(
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord::log.name,
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord::timestamp.name
+                ).isEqualTo(
+                    SolanaBalanceRecord.InitializeBalanceAccountRecord(
+                        mint = token,
+                        owner = wallet,
+                        account = secondary,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            }
+        }
+
+        changeOwner(secondary, aliceWallet)
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                SubscriberGroup.BALANCE.collectionName,
+                SolanaBalanceRecord.ChangeOwnerRecord::class.java
+            ).toList()
+
+            assertThat(records).anySatisfy { record ->
+                assertThat(record).usingRecursiveComparison().ignoringFields(
+                    SolanaBalanceRecord.ChangeOwnerRecord::log.name,
+                    SolanaBalanceRecord.ChangeOwnerRecord::timestamp.name
+                ).isEqualTo(
+                    SolanaBalanceRecord.ChangeOwnerRecord(
+                        mint = token,
+                        oldOwner = wallet,
+                        newOwner = aliceWallet,
+                        account = secondary,
+                        log = ANY_SOLANA_LOG,
+                        timestamp = Instant.EPOCH
+                    )
+                )
+            }
+
+            assertThat(balanceRepository.findByAccount(secondary)?.owner).isEqualTo(aliceWallet)
         }
     }
 

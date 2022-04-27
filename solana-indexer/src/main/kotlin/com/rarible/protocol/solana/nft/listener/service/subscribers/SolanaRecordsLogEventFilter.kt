@@ -148,6 +148,9 @@ class SolanaRecordsLogEventFilter(
                 is SolanaAuctionHouseRecord -> Unit
                 is SolanaMetaRecord -> Unit
                 is SolanaTokenRecord -> Unit
+                is SolanaBalanceRecord.ChangeOwnerRecord -> {
+                    accounts.addRib(record.account, record.account)
+                }
                 null -> Unit
             }
         }
@@ -194,6 +197,11 @@ class SolanaRecordsLogEventFilter(
             updateMint = { record.copy(mint = it) }
         )
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
+        is SolanaBalanceRecord.ChangeOwnerRecord -> keepBalanceRecordIfNft(
+            record = record,
+            accountToMints = accountToMintMapping,
+            updateMint = { record.copy(mint = it) }
+        )
     }
 
     private fun filterAuctionHouseRecord(

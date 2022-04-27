@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.balance
 
+import com.rarible.protocol.solana.common.event.BalanceChangeOwnerEvent
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
@@ -55,6 +56,16 @@ class BalanceEventConverter {
                 account = record.account,
                 owner = record.owner,
                 mint = record.mint,
+                log = record.log,
+                timestamp = record.timestamp
+            )
+        )
+        is SolanaBalanceRecord.ChangeOwnerRecord -> listOf(
+            BalanceChangeOwnerEvent(
+                reversed = reversed,
+                account = record.account,
+                oldOwner = record.oldOwner,
+                newOwner = record.newOwner,
                 log = record.log,
                 timestamp = record.timestamp
             )

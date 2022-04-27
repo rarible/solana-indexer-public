@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
+import com.rarible.protocol.solana.common.event.BalanceChangeOwnerEvent
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.event.BalanceIncomeEvent
 import com.rarible.protocol.solana.common.event.BalanceInitializeAccountEvent
@@ -21,6 +22,7 @@ class BalanceMetricReducer(
             is BalanceInitializeAccountEvent -> "initialize_account"
             is BalanceOutcomeEvent -> "transfer_from"
             is BalanceIncomeEvent -> "transfer_to"
+            is BalanceChangeOwnerEvent -> "change_owner"
         }
     }
 }

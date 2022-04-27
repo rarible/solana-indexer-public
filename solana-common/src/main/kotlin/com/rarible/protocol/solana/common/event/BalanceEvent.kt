@@ -12,6 +12,23 @@ sealed class BalanceEvent : EntityEvent {
     abstract fun invert(): BalanceEvent?
 }
 
+data class BalanceChangeOwnerEvent(
+    override val timestamp: Instant,
+    override val account: String,
+    override val reversed: Boolean,
+    override val log: SolanaLog,
+    val oldOwner: String,
+    val newOwner: String
+) : BalanceEvent() {
+    override fun invert(): BalanceEvent = BalanceChangeOwnerEvent(
+        timestamp,
+        account,
+        reversed,
+        log,
+        oldOwner = newOwner,
+        newOwner = oldOwner
+    )
+}
 data class BalanceInitializeAccountEvent(
     override val timestamp: Instant,
     override val account: String,

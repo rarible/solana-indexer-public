@@ -425,12 +425,28 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse(0, -1) }
     }
 
-    protected fun createAccount(token: String, wallet: String? = null): String {
+    protected fun createAccount(token: String, wallet: String? = null, keypair: String? = null): String {
         val args = buildList {
             add("spl-token")
             add("create-account")
             add(token)
             wallet?.let { add("--owner"); add(it) }
+            keypair?.let { add(keypair) }
+        }
+
+        return processOperation(args) { it.parse(0, -1) }
+    }
+
+    protected fun changeOwner(
+        account: String,
+        newOwner: String
+    ): String {
+        val args = buildList {
+            add("spl-token")
+            add("authorize")
+            add(account)
+            add("owner")
+            add(newOwner)
         }
 
         return processOperation(args) { it.parse(0, -1) }

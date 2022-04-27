@@ -4,12 +4,14 @@ import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainLog
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
+import com.rarible.protocol.solana.borsh.AuthorityType
 import com.rarible.protocol.solana.borsh.Burn
 import com.rarible.protocol.solana.borsh.BurnChecked
 import com.rarible.protocol.solana.borsh.InitializeAccount
 import com.rarible.protocol.solana.borsh.InitializeAccount2and3
 import com.rarible.protocol.solana.borsh.MintTo
 import com.rarible.protocol.solana.borsh.MintToChecked
+import com.rarible.protocol.solana.borsh.SetAuthority
 import com.rarible.protocol.solana.borsh.Transfer
 import com.rarible.protocol.solana.borsh.TransferChecked
 import com.rarible.protocol.solana.borsh.parseTokenInstruction
@@ -201,5 +203,35 @@ class TransferOutcomeSubscriber : SolanaLogEventSubscriber {
         }
 
         return listOf(record)
+    }
+}
+
+@Component
+class ChangeOwnerSubscriber : SolanaLogEventSubscriber {
+    override fun getDescriptor(): SolanaDescriptor = object : SolanaDescriptor(
+        programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
+        groupId = SubscriberGroup.BALANCE.id,
+        id = "balance_change_owner",
+        entityType = SolanaBalanceRecord.ChangeOwnerRecord::class.java,
+        collection = SubscriberGroup.BALANCE.collectionName
+    ) {}
+
+    override suspend fun getEventRecords(
+        block: SolanaBlockchainBlock,
+        log: SolanaBlockchainLog
+    ): List<SolanaBalanceRecord> {
+        val instruction = log.instruction.data.parseTokenInstruction()
+        if (instruction !is SetAuthority || instruction.authorityType != AuthorityType.AccountOwner) return emptyList()
+
+        return listOf(
+            SolanaBalanceRecord.ChangeOwnerRecord(
+                mint = "",
+                account = log.instruction.accounts[0],
+                oldOwner = log.instruction.accounts[1],
+                newOwner = instruction.newAuthority ?: error("New owner is empty for: $log"),
+                log = log.log,
+                timestamp = Instant.ofEpochSecond(block.timestamp)
+            )
+        )
     }
 }

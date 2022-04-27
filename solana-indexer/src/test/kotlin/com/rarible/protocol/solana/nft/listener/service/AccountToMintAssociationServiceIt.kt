@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service
 import com.rarible.protocol.solana.nft.listener.AbstractBlockScannerTest
 import com.rarible.protocol.solana.nft.listener.model.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.repository.AccountToMintAssociationRepository
+import com.rarible.protocol.solana.test.randomAccount
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
