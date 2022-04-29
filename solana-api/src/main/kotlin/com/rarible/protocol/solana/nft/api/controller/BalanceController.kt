@@ -10,6 +10,7 @@ import com.rarible.protocol.solana.dto.BalanceDto
 import com.rarible.protocol.solana.dto.BalancesDto
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -40,9 +41,15 @@ class BalanceController(
         return ResponseEntity.ok(dto)
     }
 
-    override suspend fun getBalancesByMintAndOwner(mint: String, owner: String): ResponseEntity<BalancesDto> {
-
-        TODO("Not yet implemented, lib version 0.1.29")
+    override suspend fun getBalancesByMintAndOwner(
+        mint: String,
+        owner: String
+    ): ResponseEntity<BalancesDto> {
+        val balancesWithMeta = balanceApiService.getBalancesWithMetaByMintAndOwner(
+            mint = mint,
+            owner = owner
+        ).map { BalanceWithMetaConverter.convert(it) }.toList()
+        return ResponseEntity.ok(BalancesDto(balancesWithMeta, null))
     }
 
     override suspend fun getBalanceByMint(

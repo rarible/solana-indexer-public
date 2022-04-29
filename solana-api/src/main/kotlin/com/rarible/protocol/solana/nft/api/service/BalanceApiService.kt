@@ -28,6 +28,11 @@ class BalanceApiService(
         return tokenMetaService.extendWithAvailableMeta(balances.first())
     }
 
+    suspend fun getBalancesWithMetaByMintAndOwner(mint: String, owner: String): Flow<BalanceWithMeta> {
+        return balanceRepository.findByMintAndOwner(mint, owner, false)
+            .map { tokenMetaService.extendWithAvailableMeta(it) }
+    }
+
     fun getBalanceWithMetaByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
         balanceRepository.findByOwner(
             owner,

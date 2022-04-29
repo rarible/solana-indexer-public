@@ -5,6 +5,8 @@ import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
+import com.rarible.protocol.solana.common.pubkey.ProgramDerivedAddressCalc
+import com.rarible.protocol.solana.common.pubkey.PublicKey
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.dto.BalancesDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
@@ -35,6 +37,34 @@ class BalanceControllerFt : AbstractControllerTest() {
         ).awaitFirst()
 
         assertThat(result).isEqualTo(expected)
+    }
+
+    @Test
+    fun `find balances by mint and owner`() = runBlocking<Unit> {
+        val owner = randomAccount()
+        val mint = randomMint()
+        val balanceWithMeta0 = saveRandomBalanceWithMeta(
+            owner = owner,
+            mint = mint,
+            account = ProgramDerivedAddressCalc.getAssociatedTokenAccount(
+                mint = PublicKey(mint),
+                owner = PublicKey(owner)
+            ).address.toBase58()
+        )
+        val balanceWithMeta1 = saveRandomBalanceWithMeta(owner = owner, mint = mint)
+        val balanceWithMeta2 = saveRandomBalanceWithMeta(owner = owner, mint = mint)
+        saveRandomBalanceWithMeta(owner = owner) // Different owner
+        saveRandomBalanceWithMeta(mint = mint) // Different mint
+
+        val result = balanceControllerApi.getBalancesByMintAndOwner(mint, owner).awaitFirst()
+        val expected = BalancesDto(
+            balances = listOf(balanceWithMeta0, balanceWithMeta1, balanceWithMeta2)
+                .sortedBy { it.balance.account }
+                .map { BalanceWithMetaConverter.convert(it) },
+            continuation = null
+        )
+        assertThat(result).isEqualTo(expected)
+        assertThat(result.balances).anyMatch { it.isAssociatedTokenAccount == true }
     }
 
     @Test
@@ -124,9 +154,15 @@ class BalanceControllerFt : AbstractControllerTest() {
     private suspend fun saveRandomBalanceWithMeta(
         owner: String = randomAccount(),
         mint: String = randomMint(),
+        account: String = randomAccount(),
         updatedAt: Instant = nowMillis()
     ): BalanceWithMeta {
-        val balance = createRandomBalance(owner = owner, mint = mint, updatedAt = updatedAt)
+        val balance = createRandomBalance(
+            account = account,
+            owner = owner,
+            mint = mint,
+            updatedAt = updatedAt
+        )
 
         balanceRepository.save(balance)
         val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(

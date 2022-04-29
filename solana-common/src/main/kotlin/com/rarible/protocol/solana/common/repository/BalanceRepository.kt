@@ -31,13 +31,17 @@ class BalanceRepository(
     suspend fun findByAccount(account: BalanceId): Balance? =
         mongo.findById<Balance>(account).awaitFirstOrNull()
 
-    fun findByMintAndOwner(mint: String, owner: String, includeDeleted: Boolean): Flow<Balance> {
+    fun findByMintAndOwner(
+        mint: String,
+        owner: String,
+        includeDeleted: Boolean
+    ): Flow<Balance> {
         val criteria = Criteria()
             .addMint(mint)
             .addOwner(owner)
             .includeDeleted(includeDeleted)
 
-        val query = Query(criteria)
+        val query = Query(criteria).with(Sort.by("_id").ascending())
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
