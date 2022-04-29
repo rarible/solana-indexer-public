@@ -40,6 +40,11 @@ class BalanceController(
         return ResponseEntity.ok(dto)
     }
 
+    override suspend fun getBalancesByMintAndOwner(mint: String, owner: String): ResponseEntity<BalancesDto> {
+
+        TODO("Not yet implemented, lib version 0.1.29")
+    }
+
     override suspend fun getBalanceByMint(
         mint: String,
         continuation: String?,
