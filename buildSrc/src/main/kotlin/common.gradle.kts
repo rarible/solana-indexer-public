@@ -35,6 +35,14 @@ tasks.compileTestKotlin {
 
 tasks.test {
     useJUnitPlatform()
+
+    reports {
+        junitXml.required.set(true)
+        junitXml.mergeReruns.set(true)
+        junitXml.outputLocation.set(
+            project.buildDir.resolve("surefire-reports")
+        )
+    }
 }
 
 tasks.register<TestReport>("coverage")
