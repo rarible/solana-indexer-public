@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener
 import com.rarible.core.test.data.randomString
 import com.rarible.core.test.wait.Wait
 import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.AuctionHouse
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
@@ -23,7 +24,8 @@ import java.time.Duration
 import java.time.Instant
 
 class AuctionHouseTest : AbstractBlockScannerTest() {
-    private val timeout = Duration.ofSeconds(120)
+    private val timeout = Duration.ofSeconds(20)
+
     @Test
     fun createAuctionHouseTest() = runBlocking {
         val keypair = createKeypair(randomString())
@@ -54,6 +56,65 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
             )
+
+            assertThat(actionHouseRepository.findByAccount(house.id)).usingRecursiveComparison()
+                .ignoringFields(
+                    AuctionHouse::createdAt.name,
+                    AuctionHouse::updatedAt.name,
+                    AuctionHouse::revertableEvents.name
+                )
+                .isEqualTo(
+                    AuctionHouse(
+                        requiresSignOff = false,
+                        sellerFeeBasisPoints = 1000,
+                        account = house.id,
+                        revertableEvents = emptyList(),
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH
+                    )
+                )
+        }
+
+        updateAuctionHouse(house.id, 500, true, keypair)
+
+        Wait.waitAssert(timeout) {
+            assertThat(actionHouseRepository.findByAccount(house.id)).usingRecursiveComparison()
+                .ignoringFields(
+                    AuctionHouse::createdAt.name,
+                    AuctionHouse::updatedAt.name,
+                    AuctionHouse::revertableEvents.name
+                )
+                .isEqualTo(
+                    AuctionHouse(
+                        requiresSignOff = true,
+                        sellerFeeBasisPoints = 500,
+                        account = house.id,
+                        revertableEvents = emptyList(),
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH
+                    )
+                )
+        }
+
+        updateAuctionHouse(house.id, 300, null, keypair)
+
+        Wait.waitAssert(timeout) {
+            assertThat(actionHouseRepository.findByAccount(house.id)).usingRecursiveComparison()
+                .ignoringFields(
+                    AuctionHouse::createdAt.name,
+                    AuctionHouse::updatedAt.name,
+                    AuctionHouse::revertableEvents.name
+                )
+                .isEqualTo(
+                    AuctionHouse(
+                        requiresSignOff = true,
+                        sellerFeeBasisPoints = 300,
+                        account = house.id,
+                        revertableEvents = emptyList(),
+                        createdAt = Instant.EPOCH,
+                        updatedAt = Instant.EPOCH
+                    )
+                )
         }
     }
 

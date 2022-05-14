@@ -17,9 +17,9 @@ data class CreateAuctionHouse(
 ) : AuctionHouseInstruction()
 
 data class UpdateAuctionHouse(
-    val sellerFeeBasisPoints: UShort,
-    val requiresSignOff: Boolean,
-    val canChangeSalePrice: Boolean
+    val sellerFeeBasisPoints: UShort?,
+    val requiresSignOff: Boolean?,
+    val canChangeSalePrice: Boolean?
 ) : AuctionHouseInstruction()
 
 data class Buy(
@@ -54,11 +54,11 @@ internal fun ByteBuffer.parseCreateAuctionHouse(): CreateAuctionHouse {
 }
 
 internal fun ByteBuffer.parseUpdateAuctionHouse(): UpdateAuctionHouse {
-    val sellerFeeBasisPoints = getShort()
-    val requiresSignOff = readBoolean()
-    val canChangeSalePrice = readBoolean()
+    val sellerFeeBasisPoints = readNullable { getShort() }
+    val requiresSignOff = readNullable { readBoolean() }
+    val canChangeSalePrice = readNullable { readBoolean() }
 
-    return UpdateAuctionHouse(sellerFeeBasisPoints.toUShort(), requiresSignOff, canChangeSalePrice)
+    return UpdateAuctionHouse(sellerFeeBasisPoints?.toUShort(), requiresSignOff, canChangeSalePrice)
 }
 
 internal fun ByteBuffer.parseBuy(): Buy {

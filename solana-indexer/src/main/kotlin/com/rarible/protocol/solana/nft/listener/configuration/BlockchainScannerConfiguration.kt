@@ -16,6 +16,10 @@ import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
+import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseIdService
+import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseReducer
+import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseTemplateProvider
+import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseUpdateService
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceIdService
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceReducer
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceTemplateProvider
@@ -32,6 +36,7 @@ import com.rarible.protocol.solana.nft.listener.service.token.TokenIdService
 import com.rarible.protocol.solana.nft.listener.service.token.TokenReducer
 import com.rarible.protocol.solana.nft.listener.service.token.TokenTemplateProvider
 import com.rarible.protocol.solana.nft.listener.service.token.TokenUpdateService
+import com.rarible.protocol.solana.nft.listener.task.AuctionHouseStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.BalanceStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.MetaplexMetaStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.TokenStreamFullReduceService
@@ -145,6 +150,19 @@ class BlockchainScannerConfiguration(
         metaIdService,
         metaTemplateProvider,
         metaReducer
+    )
+
+    @Bean
+    fun auctionHouseStreamReducer(
+        auctionHouseUpdateService: AuctionHouseUpdateService,
+        auctionHouseIdService: AuctionHouseIdService,
+        auctionHouseTemplateProvider: AuctionHouseTemplateProvider,
+        auctionHouseReducer: AuctionHouseReducer
+    ) = AuctionHouseStreamFullReduceService(
+        auctionHouseUpdateService,
+        auctionHouseIdService,
+        auctionHouseTemplateProvider,
+        auctionHouseReducer
     )
 
     private companion object {

@@ -2,8 +2,8 @@ package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.protocol.solana.api.controller.ActivityControllerApi
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
-import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
+import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.dto.ActivitiesByIdRequestDto
 import com.rarible.protocol.solana.dto.ActivitiesDto
@@ -66,8 +66,11 @@ class ActivityController(
         return IdContinuation(continuation)
     }
 
-    override suspend fun searchActivitiesByIds(activitiesByIdRequestDto: ActivitiesByIdRequestDto): ResponseEntity<ActivitiesDto> {
+    override suspend fun searchActivitiesByIds(
+        activitiesByIdRequestDto: ActivitiesByIdRequestDto
+    ): ResponseEntity<ActivitiesDto> {
         val activities = activityApiService.getActivitiesByIds(activitiesByIdRequestDto.ids)
+
         return ResponseEntity.ok(ActivitiesDto(continuation = null, activities = activities))
     }
 

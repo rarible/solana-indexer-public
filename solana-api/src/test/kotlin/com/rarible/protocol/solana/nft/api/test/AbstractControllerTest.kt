@@ -12,6 +12,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaParser
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
+import com.rarible.protocol.solana.common.repository.AuctionHouseRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
@@ -32,6 +33,9 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
 
     @Autowired
     lateinit var metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository
+
+    @Autowired
+    lateinit var auctionHouseRepository: AuctionHouseRepository
 
     protected lateinit var tokenControllerApi: TokenControllerApi
 

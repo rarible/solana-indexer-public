@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.api.controller
 import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.PriceIdContinuation
+import com.rarible.protocol.solana.common.model.AuctionHouse
 import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.repository.OrderRepository
@@ -20,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
+import java.time.Instant
 
 // Since most of the cases for queries checked in OrderRepositoryIt, there will be only basic tests
 class OrderControllerFt : AbstractControllerTest() {
@@ -30,15 +32,49 @@ class OrderControllerFt : AbstractControllerTest() {
     @Test
     fun `get by id`() = runBlocking<Unit> {
         val order = orderRepository.save(randomSellOrder())
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
         val result = orderControllerApi.getOrderById(order.id).awaitFirst()
 
         assertThat(result.hash).isEqualTo(order.id)
+        assertThat(result.auctionHouseFee).isEqualTo(100)
+        assertThat(result.auctionHouseRequiresSignOff).isEqualTo(true)
     }
 
     @Test
     fun `get by ids`() = runBlocking<Unit> {
         val order1 = orderRepository.save(randomSellOrder())
         val order2 = orderRepository.save(randomSellOrder())
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
 
         val payload = OrderIdsDto(listOf(order1.id, randomString(), order2.id))
 
@@ -78,6 +114,28 @@ class OrderControllerFt : AbstractControllerTest() {
         val order1 = orderRepository.save(randomSellOrder(nftAsset, currencyAsset).copy(makePrice = BigDecimal.ONE))
         val order2 = orderRepository.save(randomSellOrder(nftAsset, currencyAsset).copy(makePrice = BigDecimal.TEN))
 
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
         val bestSell = orderControllerApi.getSellOrdersByItem(
             nftMint,
             currencyMint,
@@ -93,12 +151,36 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(bestSell.continuation).isEqualTo(expectedContinuation)
         assertThat(bestSell.orders).hasSize(1)
         assertThat(bestSell.orders[0].hash).isEqualTo(order1.id)
+        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(100)
+        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(true)
     }
 
     @Test
     fun `get sell orders`() = runBlocking<Unit> {
         val order1 = orderRepository.save(randomSellOrder())
         val order2 = orderRepository.save(randomSellOrder())
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
 
         val sorted = listOf(order1, order2).sortedByDescending { it.updatedAt }
         val from = sorted[0]
@@ -112,12 +194,36 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isNull()
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(sorted[1].id)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(100)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(true)
     }
 
     @Test
     fun `get sell orders by maker`() = runBlocking<Unit> {
         val order1 = orderRepository.save(randomSellOrder())
         val order2 = orderRepository.save(randomSellOrder())
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
 
         val result = orderControllerApi.getSellOrdersByMaker(
             order2.maker,
@@ -130,6 +236,8 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isNull()
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(300)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
     }
 
     @Test
@@ -161,6 +269,28 @@ class OrderControllerFt : AbstractControllerTest() {
         val order1 = orderRepository.save(randomBuyOrder(currencyAsset, nftAsset).copy(takePrice = BigDecimal.ONE))
         val order2 = orderRepository.save(randomBuyOrder(currencyAsset, nftAsset).copy(takePrice = BigDecimal.TEN))
 
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
         val bestSell = orderControllerApi.getOrderBidsByItem(
             nftMint,
             currencyMint,
@@ -176,14 +306,39 @@ class OrderControllerFt : AbstractControllerTest() {
         val expectedContinuation = PriceIdContinuation(order2.takePrice, order2.id).toString()
 
         assertThat(bestSell.continuation).isEqualTo(expectedContinuation)
+        assertThat(bestSell.continuation).isEqualTo(expectedContinuation)
         assertThat(bestSell.orders).hasSize(1)
         assertThat(bestSell.orders[0].hash).isEqualTo(order2.id)
+        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(300)
+        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
     }
 
     @Test
     fun `get buy orders by maker`() = runBlocking<Unit> {
         val order1 = orderRepository.save(randomBuyOrder())
         val order2 = orderRepository.save(randomBuyOrder())
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order1.auctionHouse,
+                100,
+                true,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
+
+        auctionHouseRepository.save(
+            AuctionHouse(
+                order2.auctionHouse,
+                300,
+                false,
+                emptyList(),
+                Instant.EPOCH,
+                Instant.EPOCH
+            )
+        )
 
         val result = orderControllerApi.getOrderBidsByMaker(
             order2.maker,
@@ -198,5 +353,7 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isEqualTo(DateIdContinuation(order2.updatedAt, order2.id).toString())
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(300)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
     }
 }

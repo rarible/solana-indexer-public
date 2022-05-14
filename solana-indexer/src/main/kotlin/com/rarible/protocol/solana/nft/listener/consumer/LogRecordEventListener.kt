@@ -23,5 +23,8 @@ object LogRecordEventListenerId {
     fun auctionHouseListenerId(env: String): String =
         "${prefix(env)}.auction.house.listener"
 
+    fun auctionHousePropertiesListenerId(env: String): String =
+        "${prefix(env)}.auction.house.properties.listener"
+
     private fun prefix(env: String): String = "$env.protocol.solana.nft"
 }

@@ -14,6 +14,7 @@ import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
+import com.rarible.protocol.solana.common.repository.AuctionHouseRepository
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
@@ -101,6 +102,9 @@ abstract class AbstractBlockScannerTest {
     protected lateinit var orderRepository: OrderRepository
 
     @Autowired
+    protected lateinit var actionHouseRepository: AuctionHouseRepository
+
+    @Autowired
     private lateinit var repository: BlockRepository
 
     @BeforeEach
@@ -185,13 +189,26 @@ abstract class AbstractBlockScannerTest {
         return processOperation(args) { it.parse() }
     }
 
-    protected fun updateAuctionHouse(auctionHouse: String, keypair: String) {
+    protected fun updateAuctionHouse(
+        auctionHouse: String,
+        sellerFeeBasisPoints: Int?,
+        requiresSignOff: Boolean?,
+        keypair: String
+    ) {
         val args = buildList {
             add("ts-node")
             add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
             add("update_auction_house")
             add("--auction-house")
             add(auctionHouse)
+            sellerFeeBasisPoints?.let {
+                add("-sfbp")
+                add("$it")
+            }
+            requiresSignOff?.let {
+                add("-rso")
+                add("$it")
+            }
             add("--keypair")
             add(keypair)
         }

@@ -1,15 +1,14 @@
 package com.rarible.protocol.solana.common.converter
 
+import com.rarible.protocol.solana.common.model.AuctionHouse
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
-import com.rarible.protocol.solana.common.model.order.filter.OrdersWithContinuation
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.service.PriceNormalizer
 import com.rarible.protocol.solana.dto.AuctionHouseOrderDataV1Dto
 import com.rarible.protocol.solana.dto.AuctionHouseOrderDto
 import com.rarible.protocol.solana.dto.OrderDto
 import com.rarible.protocol.solana.dto.OrderStatusDto
-import com.rarible.protocol.solana.dto.OrdersDto
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,8 +17,10 @@ class OrderConverter(
     private val priceNormalizer: PriceNormalizer
 ) {
 
-    suspend fun convert(order: Order): OrderDto =
+    suspend fun convert(order: Order, auctionHouse: AuctionHouse): OrderDto =
         AuctionHouseOrderDto(
+            auctionHouseFee = auctionHouse.sellerFeeBasisPoints,
+            auctionHouseRequiresSignOff = auctionHouse.requiresSignOff,
             maker = order.maker,
             make = assetConverter.convert(order.make),
             take = assetConverter.convert(order.take),
@@ -37,12 +38,6 @@ class OrderConverter(
             hash = order.id,
             status = order.status.toDto(),
             data = AuctionHouseOrderDataV1Dto(auctionHouse = order.auctionHouse)
-        )
-
-    suspend fun convert(ordersWithContinuation: OrdersWithContinuation): OrdersDto =
-        OrdersDto(
-            orders = ordersWithContinuation.orders.map { convert(it) },
-            continuation = ordersWithContinuation.continuation
         )
 
     private fun OrderStatus.toDto() = when (this) {

@@ -4,10 +4,10 @@ import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.common.event.MetaplexCreateMetadataAccountEvent
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.event.MetaplexSetAndVerifyCollectionEvent
-import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.event.MetaplexUnVerifyCollectionMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexUpdateMetadataEvent
 import com.rarible.protocol.solana.common.event.MetaplexVerifyCollectionMetadataEvent
+import com.rarible.protocol.solana.common.event.MetaplexVerifyCreatorEvent
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import org.slf4j.LoggerFactory
@@ -67,7 +67,7 @@ class ReversedMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
             }
             is MetaplexVerifyCreatorEvent -> entity.copy(
                 metaFields = entity.metaFields.copy(
-                    creators = entity.metaFields.creators?.map {
+                    creators = entity.metaFields.creators.map {
                         if (it.address == event.creatorAddress) {
                             MetaplexTokenCreator(it.address, it.share, verified = false)
                         } else {

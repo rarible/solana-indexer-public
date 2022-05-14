@@ -63,11 +63,11 @@ class UpdateAuctionHouseSubscriber : SolanaLogEventSubscriber {
             is UpdateAuctionHouse -> SolanaAuctionHouseRecord.UpdateAuctionHouseRecord(
                 // TODO: what to do with changed fees?
                 updatedTreasuryMint = log.instruction.accounts[0],
-                sellerFeeBasisPoints = instruction.sellerFeeBasisPoints.toInt(),
+                sellerFeeBasisPoints = instruction.sellerFeeBasisPoints?.toInt(),
                 requiresSignOff = instruction.requiresSignOff,
-                updatedFeeWithdrawalDestination = log.instruction.accounts[3],
-                updatedTreasuryWithdrawalDestination = log.instruction.accounts[4],
-                auctionHouse = log.instruction.accounts[6],
+                updatedFeeWithdrawalDestination = log.instruction.accounts[4],
+                updatedTreasuryWithdrawalDestination = log.instruction.accounts[5],
+                auctionHouse = log.instruction.accounts[7],
                 log = log.log,
                 timestamp = Instant.ofEpochSecond(block.timestamp)
             )
