@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaBaseLogRecord
+import com.rarible.protocol.solana.common.records.SolanaEscrowRecord
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
@@ -145,13 +146,11 @@ class SolanaRecordsLogEventFilter(
                     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
                     is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> Unit
                 }
-                is SolanaAuctionHouseRecord -> Unit
-                is SolanaMetaRecord -> Unit
-                is SolanaTokenRecord -> Unit
                 is SolanaBalanceRecord.ChangeOwnerRecord -> {
                     accounts.addRib(record.account, record.account)
                 }
                 null -> Unit
+                else -> Unit
             }
         }
 
@@ -174,6 +173,7 @@ class SolanaRecordsLogEventFilter(
         is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
         is SolanaMetaRecord -> filterMetaRecord(record, accountToMintMapping)
         is SolanaAuctionHouseOrderRecord -> filterAuctionHouseOrderRecord(record, accountToMintMapping)
+        is SolanaEscrowRecord -> record
     }
 
     private fun filterTokenRecord(

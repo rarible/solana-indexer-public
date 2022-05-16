@@ -8,12 +8,16 @@ import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
+import com.rarible.protocol.solana.common.pubkey.ProgramDerivedAddressCalc
+import com.rarible.protocol.solana.common.pubkey.PublicKey
 import com.rarible.protocol.solana.common.records.EMPTY_SOLANA_LOG
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
+import com.rarible.protocol.solana.common.records.SolanaEscrowRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -24,7 +28,170 @@ import java.time.Duration
 import java.time.Instant
 
 class AuctionHouseTest : AbstractBlockScannerTest() {
-    private val timeout = Duration.ofSeconds(20)
+    private val timeout = Duration.ofSeconds(10)
+
+    @Test
+    fun escrow() = runBlocking {
+        val auctionHouseKeypair = createKeypair(randomString())
+        airdrop(10, getWallet(auctionHouseKeypair))
+        val house = createAuctionHouse(auctionHouseKeypair)
+        val sellerWallet = getWallet(baseKeypair)
+
+        val buyerKeypair = createKeypair(randomString())
+        airdrop(10, buyerKeypair)
+        val buyerWallet = getWallet(buyerKeypair)
+        val token = mintNft(keypair = baseKeypair)
+
+        airdrop(10, house.feePayerAcct)
+        airdrop(10, buyerKeypair)
+
+        sell(house.id, baseKeypair, 5, token, 1)
+
+        buy(house.id, buyerKeypair, 3, token, 1)
+        val escrow = ProgramDerivedAddressCalc.getEscrowPaymentAccount(
+            PublicKey(buyerWallet),
+            PublicKey(house.id)
+        ).address.toBase58()
+
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.ESCROW.collectionName,
+                type = SolanaEscrowRecord.BuyRecord::class.java
+            ).single()
+
+            assertThat(records).usingRecursiveComparison().ignoringFields(
+                SolanaEscrowRecord.BuyRecord::log.name,
+                SolanaEscrowRecord.BuyRecord::timestamp.name
+            ).isEqualTo(
+                SolanaEscrowRecord.BuyRecord(
+                    auctionHouse = house.id,
+                    escrow = escrow,
+                    wallet = buyerWallet,
+                    buyPrice = 3.scaleSupply(9),
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
+                )
+            )
+
+            val balance = escrowRepository.findByAccount(escrow)?.value
+            assertThat(balance).isEqualByComparingTo(3.scaleSupply(9))
+
+            assertThat(showEscrow(house.id, buyerKeypair, buyerWallet))
+                .isEqualByComparingTo(3.scaleSupply(9).toBigDecimal())
+        }
+
+        buy(house.id, buyerKeypair, 5, token, 1)
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.ESCROW.collectionName,
+                type = SolanaEscrowRecord.BuyRecord::class.java
+            ).toList().maxByOrNull { it.timestamp }
+
+            assertThat(records).usingRecursiveComparison().ignoringFields(
+                SolanaEscrowRecord.BuyRecord::log.name,
+                SolanaEscrowRecord.BuyRecord::timestamp.name
+            ).isEqualTo(
+                SolanaEscrowRecord.BuyRecord(
+                    auctionHouse = house.id,
+                    escrow = escrow,
+                    wallet = buyerWallet,
+                    buyPrice = 5.scaleSupply(9),
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
+                )
+            )
+
+            val balance = escrowRepository.findByAccount(escrow)?.value
+            assertThat(balance).isEqualByComparingTo(5.scaleSupply(9))
+
+            assertThat(showEscrow(house.id, buyerKeypair, buyerWallet))
+                .isEqualByComparingTo(5.scaleSupply(9).toBigDecimal())
+        }
+
+        executeSale(house.id, auctionHouseKeypair, 5, token, 1, buyerWallet = buyerWallet, sellerWallet = sellerWallet)
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.ESCROW.collectionName,
+                type = SolanaEscrowRecord.ExecuteSaleRecord::class.java
+            ).single()
+
+            assertThat(records).usingRecursiveComparison().ignoringFields(
+                SolanaEscrowRecord.ExecuteSaleRecord::log.name,
+                SolanaEscrowRecord.ExecuteSaleRecord::timestamp.name
+            ).isEqualTo(
+                SolanaEscrowRecord.ExecuteSaleRecord(
+                    auctionHouse = house.id,
+                    escrow = escrow,
+                    wallet = buyerWallet,
+                    buyPrice = 5.scaleSupply(9),
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
+                )
+            )
+
+            val balance = escrowRepository.findByAccount(escrow)?.value
+            assertThat(balance).isEqualByComparingTo(BigInteger.ZERO)
+
+            assertThat(showEscrow(house.id, buyerKeypair, buyerWallet))
+                .isEqualByComparingTo(BigDecimal.ZERO)
+        }
+
+        deposit(house.id, buyerKeypair, 2UL)
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.ESCROW.collectionName,
+                type = SolanaEscrowRecord.DepositRecord::class.java
+            ).single()
+
+            assertThat(records).usingRecursiveComparison().ignoringFields(
+                SolanaEscrowRecord.DepositRecord::log.name,
+                SolanaEscrowRecord.DepositRecord::timestamp.name
+            ).isEqualTo(
+                SolanaEscrowRecord.DepositRecord(
+                    auctionHouse = house.id,
+                    escrow = escrow,
+                    wallet = buyerWallet,
+                    amount = 2.scaleSupply(9),
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
+                )
+            )
+
+            val balance = escrowRepository.findByAccount(escrow)?.value
+            assertThat(balance).isEqualByComparingTo(2.scaleSupply(9))
+
+            assertThat(showEscrow(house.id, buyerKeypair, buyerWallet))
+                .isEqualByComparingTo(2.scaleSupply(9).toBigDecimal())
+        }
+
+        withdraw(house.id, buyerKeypair, 1UL)
+        Wait.waitAssert(timeout) {
+            val records = findRecordByType(
+                collection = SubscriberGroup.ESCROW.collectionName,
+                type = SolanaEscrowRecord.WithdrawRecord::class.java
+            ).single()
+
+            assertThat(records).usingRecursiveComparison().ignoringFields(
+                SolanaEscrowRecord.WithdrawRecord::log.name,
+                SolanaEscrowRecord.WithdrawRecord::timestamp.name
+            ).isEqualTo(
+                SolanaEscrowRecord.WithdrawRecord(
+                    auctionHouse = house.id,
+                    escrow = escrow,
+                    wallet = buyerWallet,
+                    amount = 1.scaleSupply(9),
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
+                )
+            )
+
+            val balance = escrowRepository.findByAccount(escrow)?.value
+            assertThat(balance).isEqualByComparingTo(1.scaleSupply(9))
+
+            assertThat(showEscrow(house.id, buyerKeypair, buyerWallet))
+                .isEqualByComparingTo(1.scaleSupply(9).toBigDecimal())
+        }
+    }
 
     @Test
     fun createAuctionHouseTest() = runBlocking {
@@ -409,7 +576,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             ).isEqualTo(
                 listOf(
                     SolanaAuctionHouseOrderRecord.BuyRecord(
-                        maker = getWallet(keypair),
+                        maker = wallet,
                         treasuryMint = WrappedSolAssetType.SOL,
                         tokenAccount = "",
                         mint = token,

@@ -45,6 +45,23 @@ object ProgramDerivedAddressCalc {
         )
     }
 
+    /**
+     * Escrow payment account for [wallet] and [auctionHouse].
+     */
+    fun getEscrowPaymentAccount(
+        wallet: PublicKey,
+        auctionHouse: PublicKey
+    ): ProgramDerivedAddress {
+        return findProgramAddress(
+            listOf(
+                "auction_house".toByteArray(),
+                auctionHouse.toByteArray(),
+                wallet.toByteArray()
+            ),
+            PublicKey(SolanaProgramId.AUCTION_HOUSE_PROGRAM)
+        )
+    }
+
     fun findProgramAddress(
         seeds: List<ByteArray>,
         programId: PublicKey

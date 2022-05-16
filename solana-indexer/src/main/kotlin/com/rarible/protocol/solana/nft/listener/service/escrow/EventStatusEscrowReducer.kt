@@ -1,0 +1,21 @@
+package com.rarible.protocol.solana.nft.listener.service.escrow
+
+import com.rarible.core.entity.reducer.service.Reducer
+import com.rarible.protocol.solana.common.event.EscrowEvent
+import com.rarible.protocol.solana.common.model.Escrow
+import org.springframework.stereotype.Component
+
+@Component
+class EventStatusEscrowReducer(
+    private val forwardEscrowReducer: ForwardEscrowReducer,
+    private val reversedEscrowValueReducer: ReversedEscrowValueReducer,
+) : Reducer<EscrowEvent, Escrow> {
+
+    override suspend fun reduce(entity: Escrow, event: EscrowEvent): Escrow {
+        return if (event.reversed) {
+            reversedEscrowValueReducer.reduce(entity, event)
+        } else {
+            forwardEscrowReducer.reduce(entity, event)
+        }
+    }
+}

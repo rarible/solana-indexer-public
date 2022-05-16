@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.records
 
 enum class SubscriberGroup {
+    ESCROW,
     TOKEN,
     BALANCE,
     METAPLEX_META,

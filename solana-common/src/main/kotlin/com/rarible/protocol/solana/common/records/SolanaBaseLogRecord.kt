@@ -7,6 +7,10 @@ import java.time.Instant
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(
+    JsonSubTypes.Type(name = "ESCROW_DEPOSIT", value = SolanaEscrowRecord.DepositRecord::class),
+    JsonSubTypes.Type(name = "ESCROW_WITHDRAW", value = SolanaEscrowRecord.WithdrawRecord::class),
+    JsonSubTypes.Type(name = "ESCROW_BUY", value = SolanaEscrowRecord.BuyRecord::class),
+    JsonSubTypes.Type(name = "ESCROW_EXECUTE_SALE", value = SolanaEscrowRecord.ExecuteSaleRecord::class),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_BUY", value = SolanaAuctionHouseOrderRecord.BuyRecord::class),
     JsonSubTypes.Type(name = "AUCTION_HOUSE_ORDER_CANCEL", value = SolanaAuctionHouseOrderRecord.CancelRecord::class),
     JsonSubTypes.Type(
@@ -72,4 +76,8 @@ private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record)
     is SolanaTokenRecord.InitializeMintRecord -> Unit
     is SolanaTokenRecord.MintToRecord -> Unit
     is SolanaBalanceRecord.ChangeOwnerRecord -> Unit
+    is SolanaEscrowRecord.BuyRecord -> Unit
+    is SolanaEscrowRecord.DepositRecord -> Unit
+    is SolanaEscrowRecord.ExecuteSaleRecord -> Unit
+    is SolanaEscrowRecord.WithdrawRecord -> Unit
 }

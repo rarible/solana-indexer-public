@@ -37,6 +37,14 @@ data class Cancel(
     val size: ULong
 ) : AuctionHouseInstruction()
 
+data class Deposit(
+    val amount: ULong
+) : AuctionHouseInstruction()
+
+data class Withdraw(
+    val amount: ULong
+) : AuctionHouseInstruction()
+
 data class ExecuteSale(
     val buyerPrice: ULong,
     val size: ULong
@@ -91,6 +99,18 @@ internal fun ByteBuffer.parseCancel(): Cancel {
     return Cancel(price = price, size = size)
 }
 
+internal fun ByteBuffer.parseDeposit(): Deposit {
+    repeat(1) { get() } // skipped
+    val amount = getLong().toULong()
+
+    return Deposit(amount = amount)
+}
+internal fun ByteBuffer.parseWithdraw(): Withdraw {
+    repeat(1) { get() } // skipped
+    val amount = getLong().toULong()
+
+    return Withdraw(amount = amount)
+}
 fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {
     val bytes = Base58.decode(this)
     val buffer = ByteBuffer.wrap(bytes).apply { order(ByteOrder.LITTLE_ENDIAN) }
@@ -101,6 +121,8 @@ fun String.parseAuctionHouseInstruction(): AuctionHouseInstruction? {
         -1042918692164058403L -> ByteBuffer::parseCreateAuctionHouse
         -2597168572136237228L -> ByteBuffer::parseUpdateAuctionHouse
         -4693616285582369816L -> ByteBuffer::parseCancel
+        -5263897269827656718L -> ByteBuffer::parseDeposit
+        2495396153584390839L -> ByteBuffer::parseWithdraw
         442251406432881189L -> ByteBuffer::parseExecuteSell
         else -> return null
     }

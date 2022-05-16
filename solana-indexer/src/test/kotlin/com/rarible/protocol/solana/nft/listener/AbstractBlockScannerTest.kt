@@ -16,6 +16,7 @@ import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.repository.AuctionHouseRepository
 import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.EscrowRepository
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.OrderRepository
@@ -103,6 +104,9 @@ abstract class AbstractBlockScannerTest {
 
     @Autowired
     protected lateinit var actionHouseRepository: AuctionHouseRepository
+
+    @Autowired
+    protected lateinit var escrowRepository: EscrowRepository
 
     @Autowired
     private lateinit var repository: BlockRepository
@@ -307,6 +311,46 @@ abstract class AbstractBlockScannerTest {
             add(auctionHouse)
             add("--wallet")
             add(wallet)
+            add("--keypair")
+            add(keypair)
+        }
+
+        return processOperation(args) { it.parse(1, -1) }.toBigDecimal()
+    }
+
+    protected fun deposit(
+        auctionHouse: String,
+        keypair: String,
+        amount: ULong
+    ): BigDecimal {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("deposit")
+            add("--auction-house")
+            add(auctionHouse)
+            add("--amount")
+            add("$amount")
+            add("--keypair")
+            add(keypair)
+        }
+
+        return processOperation(args) { it.parse(1, -1) }.toBigDecimal()
+    }
+
+    protected fun withdraw(
+        auctionHouse: String,
+        keypair: String,
+        amount: ULong
+    ): BigDecimal {
+        val args = buildList {
+            add("ts-node")
+            add("/home/solana/metaplex/js/packages/cli/src/auction-house-cli.ts")
+            add("withdraw")
+            add("--auction-house")
+            add(auctionHouse)
+            add("--amount")
+            add("$amount")
             add("--keypair")
             add(keypair)
         }

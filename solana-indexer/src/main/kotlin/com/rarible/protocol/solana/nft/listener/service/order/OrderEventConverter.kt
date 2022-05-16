@@ -84,5 +84,6 @@ class OrderEventConverter {
                 instruction = record.instruction
             )
         )
+        else -> emptyList()
     }
 }
