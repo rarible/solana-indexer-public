@@ -9,7 +9,7 @@ package com.rarible.protocol.solana.common.model
 data class MetaplexOffChainMetaFields(
     val name: String,
     val symbol: String,
-    val description: String,
+    val description: String?,
     val collection: Collection?,
     val sellerFeeBasisPoints: Int?,
     val externalUrl: String?,
