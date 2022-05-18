@@ -37,6 +37,7 @@ data class Order(
     val fill: BigInteger,
     override val createdAt: Instant,
     override val updatedAt: Instant,
+    val dbUpdatedAt: Instant,
     val direction: OrderDirection,
     val states: List<Order>,
     override val revertableEvents: List<OrderEvent>,
@@ -51,6 +52,8 @@ data class Order(
         auctionHouse = auctionHouse
     ),
 ) : SolanaEntity<OrderId, OrderEvent, Order> {
+
+    fun withDbUpdated(): Order = copy(dbUpdatedAt = Instant.now())
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order = copy(revertableEvents = events)
 
@@ -76,7 +79,8 @@ data class Order(
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
             direction = OrderDirection.SELL,
-            states = emptyList()
+            states = emptyList(),
+            dbUpdatedAt = Instant.EPOCH
         )
 
         fun calculateAuctionHouseOrderId(

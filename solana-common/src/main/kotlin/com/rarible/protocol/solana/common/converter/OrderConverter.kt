@@ -35,6 +35,7 @@ class OrderConverter(
             end = null,
             createdAt = order.createdAt,
             updatedAt = order.updatedAt,
+            dbUpdatedAt = order.dbUpdatedAt,
             hash = order.id,
             status = order.status.toDto(),
             data = AuctionHouseOrderDataV1Dto(auctionHouse = order.auctionHouse)

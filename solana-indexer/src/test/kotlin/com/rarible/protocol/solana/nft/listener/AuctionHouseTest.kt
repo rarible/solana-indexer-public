@@ -182,6 +182,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -201,7 +202,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
-                        states = emptyList()
+                        states = emptyList(),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
 
@@ -248,6 +250,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     "createdAt",
                     "updatedAt",
                     "revertableEvents",
+                    Order::dbUpdatedAt.name,
                     "makerAccount"
                 )
                 .isEqualTo(
@@ -266,7 +269,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
-                        states = listOf(sellOrder)
+                        states = listOf(sellOrder),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
         }
@@ -296,6 +300,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -315,7 +320,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.BUY,
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        states = emptyList()
+                        states = emptyList(),
+                        dbUpdatedAt = Instant.EPOCH,
                     )
                 )
 
@@ -361,6 +367,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -380,7 +387,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.BUY,
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        states = listOf(buyOrder)
+                        states = listOf(buyOrder),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
         }
@@ -455,6 +463,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -474,7 +483,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
-                        states = emptyList()
+                        states = emptyList(),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
 
@@ -497,6 +507,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -516,7 +527,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.BUY,
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        states = emptyList()
+                        states = emptyList(),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
 
@@ -655,6 +667,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -674,7 +687,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.BUY,
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
-                        states = listOf(originalBuyRecord)
+                        states = listOf(originalBuyRecord),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
 
@@ -691,6 +705,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     "createdAt",
                     "updatedAt",
+                    Order::dbUpdatedAt.name,
                     "revertableEvents",
                     "makerAccount"
                 )
@@ -710,7 +725,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         direction = OrderDirection.SELL,
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
-                        states = listOf(originalSellRecord)
+                        states = listOf(originalSellRecord),
+                        dbUpdatedAt = Instant.EPOCH
                     )
                 )
         }

@@ -22,6 +22,21 @@ sealed class OrderFilter {
 
     abstract fun getQuery(limit: Int): Query
 
+    data class SyncAll(
+        val sort: OrderFilterSort,
+        val continuation: DateIdContinuation? = null
+    ) : OrderFilter() {
+
+        override fun getQuery(limit: Int): Query {
+            val criteria = Criteria()
+                .addSyncContinuation(continuation, sort)
+
+            return Query(criteria)
+                .limit(limit)
+                .with(sort(sort))
+        }
+    }
+
     data class All(
         val sort: OrderFilterSort,
         val statuses: List<OrderStatus>?,
@@ -188,6 +203,16 @@ sealed class OrderFilter {
                 Order::updatedAt.name,
                 Order::id.name
             )
+            OrderFilterSort.DB_UPDATE_ASC -> Sort.by(
+                Sort.Direction.ASC,
+                Order::dbUpdatedAt.name,
+                Order::id.name
+            )
+            OrderFilterSort.DB_UPDATE_DESC -> Sort.by(
+                Sort.Direction.DESC,
+                Order::dbUpdatedAt.name,
+                Order::id.name
+            )
         }
     }
 
@@ -212,6 +237,21 @@ sealed class OrderFilter {
 
         return this
     }
+
+    fun Criteria.addSyncContinuation(continuation: DateIdContinuation?, sort: OrderFilterSort) =
+        continuation?.let {
+            if (sort == OrderFilterSort.DB_UPDATE_DESC) {
+                orOperator(
+                    Criteria(Order::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                    Criteria(Order::dbUpdatedAt.name).lt(continuation.date)
+                )
+            } else {
+                orOperator(
+                    Criteria(Order::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").gt(continuation.id),
+                    Criteria(Order::dbUpdatedAt.name).gt(continuation.date)
+                )
+            }
+        } ?: this
 
     fun Criteria.addContinuation(continuation: DateIdContinuation?, sort: OrderFilterSort) =
         continuation?.let {

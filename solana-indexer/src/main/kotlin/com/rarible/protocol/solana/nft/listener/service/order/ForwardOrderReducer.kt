@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
+import com.rarible.core.common.nowMillis
 import com.rarible.core.entity.reducer.service.Reducer
 import com.rarible.protocol.solana.common.event.ExecuteSaleEvent
 import com.rarible.protocol.solana.common.event.InternalUpdateEvent
@@ -66,7 +67,8 @@ class ForwardOrderReducer(
                 direction = OrderDirection.BUY,
                 makePrice = null,
                 takePrice = null,
-                states = emptyList()
+                states = emptyList(),
+                dbUpdatedAt = nowMillis()
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
 
             is OrderSellEvent -> Order(
@@ -92,7 +94,8 @@ class ForwardOrderReducer(
                 direction = OrderDirection.SELL,
                 makePrice = null,
                 takePrice = null,
-                states = emptyList()
+                states = emptyList(),
+                dbUpdatedAt = nowMillis()
             ).let { order -> priceNormalizer.withUpdatedMakeAndTakePrice(order) }
 
             is OrderCancelEvent -> entity.copy(

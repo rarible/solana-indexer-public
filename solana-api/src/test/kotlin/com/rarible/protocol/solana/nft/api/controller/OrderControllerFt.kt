@@ -7,10 +7,13 @@ import com.rarible.protocol.solana.common.model.AuctionHouse
 import com.rarible.protocol.solana.common.model.TokenFtAssetType
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.repository.OrderRepository
+import com.rarible.protocol.solana.dto.OrderDto
 import com.rarible.protocol.solana.dto.OrderIdsDto
 import com.rarible.protocol.solana.dto.OrderStatusDto
 import com.rarible.protocol.solana.dto.SolanaFtAssetTypeDto
+import com.rarible.protocol.solana.dto.SyncSortDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
+import com.rarible.protocol.solana.test.createAuctionHouse
 import com.rarible.protocol.solana.test.randomAsset
 import com.rarible.protocol.solana.test.randomBuyOrder
 import com.rarible.protocol.solana.test.randomMint
@@ -28,6 +31,88 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Autowired
     lateinit var orderRepository: OrderRepository
+
+
+    @Test
+    fun `order controller sync test`() = runBlocking<Unit>  {
+        val orderQuantity = 20
+
+        repeat(orderQuantity) {
+            val order =
+                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
+            auctionHouseRepository.save(createAuctionHouse(order))
+        }
+
+        val result = orderControllerApi.getOrdersSync(null, orderQuantity, SyncSortDto.DB_UPDATE_ASC).awaitFirst()
+
+        assertThat(result.orders).hasSize(orderQuantity)
+        assertThat(result.orders).isSortedAccordingTo { o1, o2 ->
+            compareValues(
+                o1.dbUpdatedAt,
+                o2.dbUpdatedAt
+            )
+        }
+    }
+
+    @Test
+    fun `order controller sync pagination asc test `() = runBlocking<Unit> {
+        val orderQuantity = 95
+        val chunkSize = 20
+        val sort = SyncSortDto.DB_UPDATE_ASC
+        val compare = Comparator<OrderDto> {  o1, o2 -> compareValues(o1.dbUpdatedAt, o2.dbUpdatedAt)  }
+
+        repeat(orderQuantity) {
+            val order =
+                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
+            auctionHouseRepository.save(createAuctionHouse(order))
+        }
+
+        var continuation: String? = null
+        val activities = mutableListOf<OrderDto>()
+        var totalPages = 0
+
+        do {
+            val result =
+                orderControllerApi.getOrdersSync(continuation, chunkSize, sort).awaitFirst()
+            activities.addAll(result.orders)
+            continuation = result.continuation
+            totalPages += 1
+        } while (continuation != null)
+
+        assertThat(totalPages).isEqualTo(orderQuantity / chunkSize + 1)
+        assertThat(activities).hasSize(orderQuantity)
+        assertThat(activities).isSortedAccordingTo(compare)
+    }
+
+    @Test
+    fun `order controller sync pagination des test `() = runBlocking<Unit> {
+        val orderQuantity = 60
+        val chunkSize = 20
+        val sort = SyncSortDto.DB_UPDATE_DESC
+        val compare = Comparator<OrderDto> {  o1, o2 -> compareValues(o2.dbUpdatedAt, o1.dbUpdatedAt)  }
+
+        repeat(orderQuantity) {
+            val order =
+                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
+            auctionHouseRepository.save(createAuctionHouse(order))
+        }
+
+        var continuation: String? = null
+        val activities = mutableListOf<OrderDto>()
+        var totalPages = 0
+
+        do {
+            val result =
+                orderControllerApi.getOrdersSync(continuation, chunkSize, sort).awaitFirst()
+            activities.addAll(result.orders)
+            continuation = result.continuation
+            totalPages += 1
+        } while (continuation != null)
+
+        assertThat(totalPages).isEqualTo(orderQuantity / chunkSize + 1)
+        assertThat(activities).hasSize(orderQuantity)
+        assertThat(activities).isSortedAccordingTo(compare)
+    }
 
     @Test
     fun `get by id`() = runBlocking<Unit> {
