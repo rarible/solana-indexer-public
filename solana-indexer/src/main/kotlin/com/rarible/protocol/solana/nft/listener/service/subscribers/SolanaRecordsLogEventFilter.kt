@@ -1,6 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.framework.data.LogEvent
+import com.rarible.blockchain.scanner.framework.data.NewBlockEvent
+import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
@@ -16,6 +18,7 @@ import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.util.AccountGraph
+import com.rarible.protocol.solana.nft.listener.util.hasCreateMetaplexMeta
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
@@ -44,12 +47,14 @@ class SolanaRecordsLogEventFilter(
             return emptyList()
         }
 
+        addNewTokensWithoutMetaToBlacklist(events)
+
         val knownInMemoryAccountMappings = getKnownInMemoryAccountToMintMapping(events)
 
         // Retrieving mapping for ALL found non-currency accounts to know what we really need to update in DB
         // TODO here we can query only accounts without known mint if we sure all mapping from init records already in DB
         // TODO If we are not starting to index from the 1st block, we MUST query mints for all accounts here
-        val nonCurrencyAccounts = filterCurrencyBalances(knownInMemoryAccountMappings)
+        val nonCurrencyAccounts = filterAcceptableAccounts(knownInMemoryAccountMappings)
         val existMapping = accountToMintAssociationService.getMintsByAccounts(nonCurrencyAccounts)
 
         // Set mint for groups - since reference of AccountGroup is the same for all mapped accounts,
@@ -84,7 +89,33 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun filter(
+    /**
+     * Processes InitializeMint records for the new tokens. Checks if those new tokens are NFTs
+     * by presence of "Create Metaplex Metadata" instruction in the same block.
+     * If metadata is not available, add the tokens to the blacklist.
+     */
+    private suspend fun addNewTokensWithoutMetaToBlacklist(events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>) {
+        val blacklistedTokens = hashSetOf<String>()
+        for (event in events) {
+            val solanaBlock = (event.blockEvent as? NewBlockEvent)?.block as? SolanaBlockchainBlock ?: continue
+            for (logRecord in event.logRecordsToInsert) {
+                if (logRecord is SolanaTokenRecord.InitializeMintRecord) {
+                    val hasMetaplexMeta = solanaBlock.hasCreateMetaplexMeta(
+                        transactionHash = logRecord.log.transactionHash,
+                        matcher = { it.mint == logRecord.mint }
+                    )
+                    if (!hasMetaplexMeta) {
+                        logger.info("Token ${logRecord.mint} is created without associated Metaplex meta")
+                        blacklistedTokens += logRecord.mint
+                    }
+                }
+            }
+        }
+        val reason = "Metaplex meta was not created"
+        tokenFilter.addToBlacklist(blacklistedTokens, reason)
+    }
+
+    private suspend fun filter(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
         accountToMints: Map<String, String>,
     ): List<LogEvent<SolanaLogRecord, SolanaDescriptor>> =
@@ -103,7 +134,7 @@ class SolanaRecordsLogEventFilter(
             event.copy(logRecordsToInsert = filteredRecords)
         }
 
-    private fun getKnownInMemoryAccountToMintMapping(
+    private suspend fun getKnownInMemoryAccountToMintMapping(
         events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>,
     ): Map<String, AccountGraph.AccountGroup> {
         val accountToMintMapping = HashMap<String, String>()
@@ -166,7 +197,7 @@ class SolanaRecordsLogEventFilter(
         return accountGroups
     }
 
-    private fun filterRecord(
+    private suspend fun filterRecord(
         record: SolanaBaseLogRecord,
         accountToMintMapping: Map<String, String>,
     ): SolanaBaseLogRecord? = when (record) {
@@ -178,14 +209,14 @@ class SolanaRecordsLogEventFilter(
         is SolanaEscrowRecord -> record
     }
 
-    private fun filterTokenRecord(record: SolanaTokenRecord) =
+    private suspend fun filterTokenRecord(record: SolanaTokenRecord) =
         if (tokenFilter.isAcceptableToken(record.mint)) {
             record
         } else {
             null
         }
 
-    private fun filterBalanceRecord(
+    private suspend fun filterBalanceRecord(
         record: SolanaBalanceRecord,
         accountToMintMapping: Map<String, String>
     ) = keepRecordIfNft(
@@ -205,7 +236,7 @@ class SolanaRecordsLogEventFilter(
         }
     )
 
-    private fun filterMetaRecord(
+    private suspend fun filterMetaRecord(
         record: SolanaMetaRecord,
         accountToMintMapping: Map<String, String>
     ) = keepRecordIfNft(
@@ -280,7 +311,7 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun keepRecordIfNft(
+    private suspend fun keepRecordIfNft(
         record: SolanaBaseLogRecord,
         account: String,
         currentMint: String?,
@@ -303,7 +334,7 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun filterCurrencyBalances(groups: Map<String, AccountGraph.AccountGroup>): Set<String> {
+    private suspend fun filterAcceptableAccounts(groups: Map<String, AccountGraph.AccountGroup>): Set<String> {
         return groups.mapNotNull {
             val account = it.key
             val mint = it.value.mint

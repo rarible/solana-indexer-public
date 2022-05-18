@@ -4,10 +4,13 @@ import com.rarible.protocol.solana.common.converter.PackageConverters
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
-import com.rarible.protocol.solana.common.filter.token.SolanaBlackListTokenFilter
+import com.rarible.protocol.solana.common.filter.token.InMemoryCachingSolanaTokenFilter
+import com.rarible.protocol.solana.common.filter.token.StaticSolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
+import com.rarible.protocol.solana.common.filter.token.dynamic.DynamicBlacklistSolanaTokenFilter
+import com.rarible.protocol.solana.common.repository.DynamicBlacklistedTokenRepository
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -41,13 +44,17 @@ class CommonConfiguration(
     }
 
     @Bean
-    fun tokenFilter(featureFlags: FeatureFlags): SolanaTokenFilter {
-        val currencyMints = CurrencyTokenReader().readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
-        val nonCurrencySolanaTokenFilter = SolanaBlackListTokenFilter(currencyMints)
-        val additionalTokenFilter = when (featureFlags.tokenFilter) {
+    fun tokenFilter(
+        featureFlags: FeatureFlags,
+        dynamicBlacklistedTokenRepository: DynamicBlacklistedTokenRepository,
+        solanaIndexerProperties: SolanaIndexerProperties
+    ): SolanaTokenFilter {
+        return when (featureFlags.tokenFilter) {
             TokenFilterType.NONE -> {
                 object : SolanaTokenFilter {
-                    override fun isAcceptableToken(mint: String): Boolean = true
+                    override suspend fun isAcceptableToken(mint: String): Boolean = true
+
+                    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) = Unit
                 }
             }
             TokenFilterType.WHITELIST -> {
@@ -59,11 +66,23 @@ class CommonConfiguration(
                 SolanaWhiteListTokenFilter(tokens)
             }
             TokenFilterType.BLACKLIST -> {
-                val tokens = TokenListFileReader("/blacklist").readTokens(BLACKLIST_FILES) + featureFlags.blacklistTokens
-                SolanaBlackListTokenFilter(tokens)
+                val blacklistTokens = featureFlags.blacklistTokens
+                val coinTokens = CurrencyTokenReader().readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
+                InMemoryCachingSolanaTokenFilter(
+                    delegate = CompositeSolanaTokenFilter(
+                        listOf(
+                            StaticSolanaBlackListTokenFilter(
+                                blacklistedTokens = blacklistTokens + coinTokens
+                            ),
+                            DynamicBlacklistSolanaTokenFilter(
+                                dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository
+                            )
+                        )
+                    ),
+                    cacheMaxSize = solanaIndexerProperties.featureFlags.tokenFilterInMemoryCacheSize
+                )
             }
         }
-        return CompositeSolanaTokenFilter(listOf(nonCurrencySolanaTokenFilter, additionalTokenFilter))
     }
 
     @Bean

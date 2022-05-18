@@ -1,13 +1,11 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
-import com.rarible.blockchain.scanner.framework.data.BlockEvent
 import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
-import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
-import com.rarible.protocol.solana.common.filter.token.SolanaBlackListTokenFilter
+import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
@@ -28,20 +26,10 @@ import org.junit.jupiter.api.Test
 class SolanaLogEventFilterTest {
 
     private val accountToMintAssociationService: AccountToMintAssociationService = mockk()
-    private val blockEvent: BlockEvent<*> = mockk()
 
-    private val descriptor: SolanaDescriptor = object : SolanaDescriptor(
-        programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
-        id = "test_descriptor",
-        groupId = SubscriberGroup.TOKEN.id,
-        entityType = SolanaTokenRecord.InitializeMintRecord::class.java,
-        collection = SubscriberGroup.TOKEN.collectionName
-    ) {}
-
-    private val blackListedToken = randomMint()
-
-    private val nonCurrencyTokenFilter = mockk<SolanaBlackListTokenFilter>()
     private val auctionHouseFilter = mockk<SolanaAuctionHouseFilter>()
+
+    private val tokenFilter = mockk<SolanaTokenFilter>()
 
     private val filter = SolanaRecordsLogEventFilter(
         accountToMintAssociationService = accountToMintAssociationService,
@@ -49,19 +37,15 @@ class SolanaLogEventFilterTest {
             kafkaReplicaSet = "kafka",
             metricRootPath = "metricRootPath"
         ),
-        tokenFilter = CompositeSolanaTokenFilter(
-            listOf(
-                nonCurrencyTokenFilter,
-                SolanaBlackListTokenFilter(setOf(blackListedToken))
-            )
-        ),
+        tokenFilter = tokenFilter,
         auctionHouseFilter = auctionHouseFilter
     )
 
     @BeforeEach
     fun beforeEach() {
         clearMocks(accountToMintAssociationService)
-        clearMocks(nonCurrencyTokenFilter)
+        clearMocks(tokenFilter)
+        clearMocks(auctionHouseFilter)
     }
 
     @Test
@@ -116,8 +100,8 @@ class SolanaLogEventFilterTest {
         } returns Unit
 
         // Event with currency token should be ignored
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(initMint) } returns false
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(mappedMint) } returns true
+        coEvery { tokenFilter.isAcceptableToken(initMint) } returns false
+        coEvery { tokenFilter.isAcceptableToken(mappedMint) } returns true
 
         val event = randomLogEvent(init, transferWithInitMint, transferWithMapping, transferWithoutMapping)
         val result = filter.filter(listOf(event))
@@ -158,8 +142,8 @@ class SolanaLogEventFilterTest {
         } returns Unit
 
         // Events with currency token should be ignored
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(incomeMint) } returns false
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(outcomeMint) } returns true
+        coEvery { tokenFilter.isAcceptableToken(incomeMint) } returns false
+        coEvery { tokenFilter.isAcceptableToken(outcomeMint) } returns true
 
         val event = randomLogEvent(incomeTransfer, outcomeTransfer)
         val result = filter.filter(listOf(event))
@@ -171,6 +155,7 @@ class SolanaLogEventFilterTest {
 
     @Test
     fun `transfer with blacklisted mint`() = runBlocking<Unit> {
+        val blackListedToken = randomMint()
         val incomeTransfer = BalanceRecordDataFactory.randomIncomeRecord().copy(mint = "").copy(
             mint = blackListedToken
         )
@@ -183,7 +168,7 @@ class SolanaLogEventFilterTest {
             accountToMintAssociationService.saveMintsByAccounts(mapOf())
         } returns Unit
 
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(blackListedToken) } returns true
+        coEvery { tokenFilter.isAcceptableToken(blackListedToken) } returns false
 
         val event = randomLogEvent(incomeTransfer)
         val result = filter.filter(listOf(event))
@@ -203,7 +188,7 @@ class SolanaLogEventFilterTest {
 
         coEvery { accountToMintAssociationService.getMintsByAccounts(any()) } returns mapOf()
         coEvery { accountToMintAssociationService.saveMintsByAccounts(mapOf()) } returns Unit
-        coEvery { nonCurrencyTokenFilter.isAcceptableToken(any()) } returns true
+        coEvery { tokenFilter.isAcceptableToken(any()) } returns true
         coEvery { auctionHouseFilter.isAcceptableAuctionHouse(whiteListedAuctionHouse) } returns true
         coEvery { auctionHouseFilter.isAcceptableAuctionHouse(ignoredAuctionHouse) } returns false
 
@@ -218,14 +203,19 @@ class SolanaLogEventFilterTest {
 
     private fun randomLogEvent(vararg records: SolanaLogRecord): LogEvent<SolanaLogRecord, SolanaDescriptor> {
         return LogEvent(
-            blockEvent = blockEvent,
-            descriptor = descriptor,
+            blockEvent = mockk(),
+            descriptor = object : SolanaDescriptor(
+                programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
+                id = "test_descriptor",
+                groupId = SubscriberGroup.TOKEN.id,
+                entityType = SolanaTokenRecord.InitializeMintRecord::class.java,
+                collection = SubscriberGroup.TOKEN.collectionName
+            ) {},
             logRecordsToInsert = records.toList(),
             logRecordsToRemove = emptyList()
         )
     }
 
-    private fun getRecords(logEvents: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>): List<SolanaLogRecord> {
-        return logEvents.map { it.logRecordsToInsert }.flatten()
-    }
+    private fun getRecords(logEvents: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>): List<SolanaLogRecord> =
+        logEvents.flatMap { it.logRecordsToInsert }
 }
