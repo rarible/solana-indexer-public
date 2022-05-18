@@ -170,23 +170,28 @@ class SolanaRecordsLogEventFilter(
         record: SolanaBaseLogRecord,
         accountToMintMapping: Map<String, String>,
     ): SolanaBaseLogRecord? = when (record) {
-        is SolanaBalanceRecord -> filterBalanceRecord(record, accountToMintMapping)
         is SolanaTokenRecord -> filterTokenRecord(record)
-        is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
+        is SolanaBalanceRecord -> filterBalanceRecord(record, accountToMintMapping)
         is SolanaMetaRecord -> filterMetaRecord(record, accountToMintMapping)
+        is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
         is SolanaAuctionHouseOrderRecord -> filterAuctionHouseOrderRecord(record, accountToMintMapping)
         is SolanaEscrowRecord -> record
     }
 
-    private fun filterTokenRecord(
-        record: SolanaTokenRecord
-    ) = keepIfNft(record, record.mint)
+    private fun filterTokenRecord(record: SolanaTokenRecord) =
+        if (tokenFilter.isAcceptableToken(record.mint)) {
+            record
+        } else {
+            null
+        }
 
     private fun filterBalanceRecord(
         record: SolanaBalanceRecord,
         accountToMintMapping: Map<String, String>
-    ) = keepBalanceRecordIfNft(
+    ) = keepRecordIfNft(
         record = record,
+        account = record.account,
+        currentMint = record.mint,
         accountToMints = accountToMintMapping,
         updateMint = { mint ->
             when (record) {
@@ -200,15 +205,13 @@ class SolanaRecordsLogEventFilter(
         }
     )
 
-    private fun filterAuctionHouseRecord(
-        record: SolanaAuctionHouseRecord
-    ): SolanaBaseLogRecord? = record.takeIf { auctionHouseFilter.isAcceptableAuctionHouse(it.auctionHouse) }
-
     private fun filterMetaRecord(
         record: SolanaMetaRecord,
         accountToMintMapping: Map<String, String>
-    ): SolanaBaseLogRecord? = keepMetaRecordIfNft(
+    ) = keepRecordIfNft(
         record = record,
+        account = record.metaAccount,
+        currentMint = record.mint,
         accountToMints = accountToMintMapping,
         updateMint = { mint ->
             when (record) {
@@ -221,6 +224,10 @@ class SolanaRecordsLogEventFilter(
             }
         }
     )
+
+    private fun filterAuctionHouseRecord(
+        record: SolanaAuctionHouseRecord
+    ): SolanaBaseLogRecord? = record.takeIf { auctionHouseFilter.isAcceptableAuctionHouse(it.auctionHouse) }
 
     private fun filterAuctionHouseOrderRecord(
         record: SolanaAuctionHouseOrderRecord,
@@ -273,42 +280,15 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun keepIfNft(record: SolanaBaseLogRecord, mint: String): SolanaBaseLogRecord? {
-        return if (tokenFilter.isAcceptableToken(mint)) {
-            record
-        } else {
-            null
-        }
-    }
-
-    private fun keepMetaRecordIfNft(
-        record: SolanaMetaRecord,
+    private fun keepRecordIfNft(
+        record: SolanaBaseLogRecord,
+        account: String,
+        currentMint: String?,
         accountToMints: Map<String, String>,
-        updateMint: (String) -> SolanaMetaRecord
+        updateMint: (String) -> SolanaBaseLogRecord,
     ): SolanaBaseLogRecord? {
-        val knownMint = record.mint.takeIf { it != null && it.isNotEmpty() }
-        val mint = knownMint ?: accountToMints[record.metaAccount]
-        // Skip records with unknown mint. We must have seen the account<->mint association before.
-        ?: return null
-
-        if (!tokenFilter.isAcceptableToken(mint)) {
-            return null
-        }
-
-        return if (knownMint == null) {
-            updateMint(mint)
-        } else {
-            record
-        }
-    }
-
-    private fun keepBalanceRecordIfNft(
-        record: SolanaBalanceRecord,
-        accountToMints: Map<String, String>,
-        updateMint: (String) -> SolanaBalanceRecord,
-    ): SolanaBalanceRecord? {
-        val knownMint = record.mint.takeIf { it.isNotEmpty() }
-        val mint = knownMint ?: accountToMints[record.account]
+        val knownMint = currentMint?.takeIf { it.isNotEmpty() }
+        val mint = knownMint ?: accountToMints[account]
         // Skip records with unknown mint. We must have seen the account<->mint association before.
         ?: return null
 
