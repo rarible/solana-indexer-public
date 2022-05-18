@@ -112,13 +112,6 @@ class SolanaRecordsLogEventFilter(
         events.asSequence().flatMap { it.logRecordsToInsert }.forEach { r ->
             @Suppress("UNUSED_VARIABLE")
             val exhaustiveWhen = when (val record = r as? SolanaBaseLogRecord) {
-                is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> {
-                    accounts.addRib(record.metaAccount, record.metaAccount)
-                }
-                is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> {
-                    accounts.addRib(record.metaAccount, record.metaAccount)
-                    accountToMintMapping[record.metaAccount] = record.mint
-                }
                 // In-memory account mapping
                 is SolanaBalanceRecord.InitializeBalanceAccountRecord -> {
                     // Artificial reference for init-record
@@ -135,6 +128,9 @@ class SolanaRecordsLogEventFilter(
                 }
                 is SolanaBalanceRecord.BurnRecord -> Unit
                 is SolanaBalanceRecord.MintToRecord -> Unit
+                is SolanaBalanceRecord.ChangeOwnerRecord -> {
+                    accounts.addRib(record.account, record.account)
+                }
                 is SolanaAuctionHouseOrderRecord -> when (record) {
                     is SolanaAuctionHouseOrderRecord.BuyRecord -> {
                         accounts.addRib(record.tokenAccount, record.tokenAccount)
@@ -146,11 +142,17 @@ class SolanaRecordsLogEventFilter(
                     is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> Unit
                     is SolanaAuctionHouseOrderRecord.InternalOrderUpdateRecord -> Unit
                 }
-                is SolanaBalanceRecord.ChangeOwnerRecord -> {
-                    accounts.addRib(record.account, record.account)
+                is SolanaAuctionHouseRecord -> Unit
+                is SolanaMetaRecord -> {
+                    accounts.addRib(record.metaAccount, record.metaAccount)
+                    if (record is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord) {
+                        accountToMintMapping[record.metaAccount] = record.mint
+                    }
+                    Unit
                 }
+                is SolanaTokenRecord -> Unit
+                is SolanaEscrowRecord -> Unit
                 null -> Unit
-                else -> Unit
             }
         }
 
