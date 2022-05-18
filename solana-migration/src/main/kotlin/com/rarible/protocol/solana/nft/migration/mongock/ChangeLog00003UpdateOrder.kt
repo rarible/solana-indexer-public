@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.query.Query
 class ChangeLog00003UpdateOrder {
 
     @ChangeSet(
-        id = "ChangeLog00002ChangeLog00003UpdateOrder.markOutcomeActivities",
+        id = "ChangeLog00003UpdateOrder.updateOrderDbUpdateField",
         order = "00001",
         author = "protocol"
     )
