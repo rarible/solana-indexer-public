@@ -66,6 +66,7 @@ private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record)
     is SolanaBalanceRecord.MintToRecord -> Unit
     is SolanaBalanceRecord.TransferIncomeRecord -> Unit
     is SolanaBalanceRecord.TransferOutcomeRecord -> Unit
+    is SolanaBalanceRecord.ChangeOwnerRecord -> Unit
     is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> Unit
     is SolanaMetaRecord.MetaplexSignMetadataRecord -> Unit
     is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> Unit
@@ -75,7 +76,6 @@ private fun compilationChecker(record: SolanaBaseLogRecord): Unit = when(record)
     is SolanaTokenRecord.BurnRecord -> Unit
     is SolanaTokenRecord.InitializeMintRecord -> Unit
     is SolanaTokenRecord.MintToRecord -> Unit
-    is SolanaBalanceRecord.ChangeOwnerRecord -> Unit
     is SolanaEscrowRecord.BuyRecord -> Unit
     is SolanaEscrowRecord.DepositRecord -> Unit
     is SolanaEscrowRecord.ExecuteSaleRecord -> Unit
