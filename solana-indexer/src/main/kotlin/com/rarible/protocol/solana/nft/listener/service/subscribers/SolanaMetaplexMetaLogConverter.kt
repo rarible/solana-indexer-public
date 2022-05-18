@@ -35,7 +35,7 @@ object SolanaMetaplexMetaLogConverter {
         dateSeconds: Long
     ): MetaplexUpdateMetadataRecord = MetaplexUpdateMetadataRecord(
         metaAccount = log.instruction.accounts[0],
-        mint = "",
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
         updatedMeta = instruction.updateArgs.metadata?.convertMetaplexMetaFields(),
         updatedMutable = instruction.updateArgs.mutable,
         updateAuthority = instruction.updateArgs.updateAuthority,
@@ -48,6 +48,7 @@ object SolanaMetaplexMetaLogConverter {
         log: SolanaBlockchainLog,
         dateSeconds: Long
     ): MetaplexVerifyCollectionRecord = MetaplexVerifyCollectionRecord(
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
         metaAccount = log.instruction.accounts[0],
         collectionAccount = log.instruction.accounts[4],
         log = log.log,
@@ -59,6 +60,7 @@ object SolanaMetaplexMetaLogConverter {
         dateSeconds: Long
     ): MetaplexUnVerifyCollectionRecord = MetaplexUnVerifyCollectionRecord(
         metaAccount = log.instruction.accounts[0],
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
         unVerifyCollectionAccount = log.instruction.accounts[4],
         log = log.log,
         timestamp = Instant.ofEpochSecond(dateSeconds)
@@ -70,6 +72,7 @@ object SolanaMetaplexMetaLogConverter {
     ): MetaplexSignMetadataRecord = MetaplexSignMetadataRecord(
         metaAccount = log.instruction.accounts[0],
         creatorAddress = log.instruction.accounts[1],
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
         log = log.log,
         timestamp = Instant.ofEpochSecond(dateSeconds)
     )
@@ -79,7 +82,8 @@ object SolanaMetaplexMetaLogConverter {
         dateSeconds: Long
     ) : SetAndVerifyMetadataRecord = SetAndVerifyMetadataRecord(
         metaAccount = log.instruction.accounts[0],
-        mint = log.instruction.accounts[4],
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
+        collectionMint = log.instruction.accounts[4],
         log = log.log,
         timestamp = Instant.ofEpochSecond(dateSeconds)
     )

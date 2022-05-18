@@ -62,7 +62,7 @@ class ForwardMetaplexMetaReducer : Reducer<MetaplexMetaEvent, MetaplexMeta> {
             is MetaplexSetAndVerifyCollectionEvent -> entity.copy(
                 metaFields = entity.metaFields.copy(
                     collection = MetaplexMetaFields.Collection(
-                        address = event.mint,
+                        address = event.collection,
                         verified = true
                     )
                 )

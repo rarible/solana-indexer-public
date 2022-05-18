@@ -183,26 +183,20 @@ class SolanaRecordsLogEventFilter(
     private fun filterBalanceRecord(
         record: SolanaBalanceRecord,
         accountToMintMapping: Map<String, String>
-    ) = when (record) {
-        is SolanaBalanceRecord.MintToRecord -> keepIfNft(record, record.mint)
-        is SolanaBalanceRecord.BurnRecord -> keepIfNft(record, record.mint)
-        is SolanaBalanceRecord.TransferOutcomeRecord -> keepBalanceRecordIfNft(
-            record = record,
-            accountToMints = accountToMintMapping,
-            updateMint = { record.copy(mint = it) }
-        )
-        is SolanaBalanceRecord.TransferIncomeRecord -> keepBalanceRecordIfNft(
-            record = record,
-            accountToMints = accountToMintMapping,
-            updateMint = { record.copy(mint = it) }
-        )
-        is SolanaBalanceRecord.InitializeBalanceAccountRecord -> keepIfNft(record, record.mint)
-        is SolanaBalanceRecord.ChangeOwnerRecord -> keepBalanceRecordIfNft(
-            record = record,
-            accountToMints = accountToMintMapping,
-            updateMint = { record.copy(mint = it) }
-        )
-    }
+    ) = keepBalanceRecordIfNft(
+        record = record,
+        accountToMints = accountToMintMapping,
+        updateMint = { mint ->
+            when (record) {
+                is SolanaBalanceRecord.BurnRecord -> record.copy(mint = mint)
+                is SolanaBalanceRecord.ChangeOwnerRecord -> record.copy(mint = mint)
+                is SolanaBalanceRecord.InitializeBalanceAccountRecord -> record.copy(mint = mint)
+                is SolanaBalanceRecord.MintToRecord -> record.copy(mint = mint)
+                is SolanaBalanceRecord.TransferIncomeRecord -> record.copy(mint = mint)
+                is SolanaBalanceRecord.TransferOutcomeRecord -> record.copy(mint = mint)
+            }
+        }
+    )
 
     private fun filterAuctionHouseRecord(
         record: SolanaAuctionHouseRecord
@@ -211,20 +205,20 @@ class SolanaRecordsLogEventFilter(
     private fun filterMetaRecord(
         record: SolanaMetaRecord,
         accountToMintMapping: Map<String, String>
-    ): SolanaBaseLogRecord? = when (record) {
-        is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> keepIfNft(record, record.mint)
-        is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> keepUpdateMetaIfNft(
-            record = record,
-            accountToMints = accountToMintMapping,
-            updateMint = { record.copy(mint = it) }
-        )
-
-        // TODO: for these we can't determine 'mint' easily, so just keep them. Reducers will ignore them.
-        is SolanaMetaRecord.MetaplexSignMetadataRecord -> record
-        is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> record
-        is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> record
-        is SolanaMetaRecord.SetAndVerifyMetadataRecord -> record
-    }
+    ): SolanaBaseLogRecord? = keepMetaRecordIfNft(
+        record = record,
+        accountToMints = accountToMintMapping,
+        updateMint = { mint ->
+            when (record) {
+                is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord -> record.copy(mint = mint)
+                is SolanaMetaRecord.MetaplexSignMetadataRecord -> record.copy(mint = mint)
+                is SolanaMetaRecord.MetaplexUnVerifyCollectionRecord -> record.copy(mint = mint)
+                is SolanaMetaRecord.MetaplexUpdateMetadataRecord -> record.copy(mint = mint)
+                is SolanaMetaRecord.MetaplexVerifyCollectionRecord -> record.copy(mint = mint)
+                is SolanaMetaRecord.SetAndVerifyMetadataRecord -> record.copy(mint = mint)
+            }
+        }
+    )
 
     private fun filterAuctionHouseOrderRecord(
         record: SolanaAuctionHouseOrderRecord,
@@ -285,12 +279,12 @@ class SolanaRecordsLogEventFilter(
         }
     }
 
-    private fun keepUpdateMetaIfNft(
-        record: SolanaMetaRecord.MetaplexUpdateMetadataRecord,
+    private fun keepMetaRecordIfNft(
+        record: SolanaMetaRecord,
         accountToMints: Map<String, String>,
-        updateMint: (String) -> SolanaMetaRecord.MetaplexUpdateMetadataRecord
+        updateMint: (String) -> SolanaMetaRecord
     ): SolanaBaseLogRecord? {
-        val knownMint = record.mint.takeIf { it.isNotEmpty() }
+        val knownMint = record.mint.takeIf { it != null && it.isNotEmpty() }
         val mint = knownMint ?: accountToMints[record.metaAccount]
         // Skip records with unknown mint. We must have seen the account<->mint association before.
         ?: return null

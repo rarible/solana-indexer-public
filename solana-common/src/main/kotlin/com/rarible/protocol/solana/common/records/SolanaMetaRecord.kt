@@ -6,11 +6,12 @@ import java.time.Instant
 
 sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
     abstract val metaAccount: String
+    abstract val mint: String? // TODO: nullable for legacy support with database. New records' "mint" are not null.
 
     override fun getKey(): String = metaAccount
 
     data class MetaplexCreateMetadataAccountRecord(
-        val mint: String,
+        override val mint: String,
         val meta: MetaplexMetaFields,
         val mutable: Boolean,
         override val metaAccount: String,
@@ -19,7 +20,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
     ) : SolanaMetaRecord()
 
     data class MetaplexUpdateMetadataRecord(
-        val mint: String,
+        override val mint: String,
         val updatedMeta: MetaplexMetaFields?,
         val updatedMutable: Boolean?,
         val updateAuthority: String?,
@@ -31,6 +32,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexVerifyCollectionRecord(
         val collectionAccount: String,
+        override val mint: String,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -38,6 +40,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexUnVerifyCollectionRecord(
         val unVerifyCollectionAccount: String,
+        override val mint: String,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -45,13 +48,15 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexSignMetadataRecord(
         val creatorAddress: String,
+        override val mint: String,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
     ) : SolanaMetaRecord()
 
     data class SetAndVerifyMetadataRecord(
-        val mint: String,
+        val collectionMint: String?,
+        override val mint: String,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant

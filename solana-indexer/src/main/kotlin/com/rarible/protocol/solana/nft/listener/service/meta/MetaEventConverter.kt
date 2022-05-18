@@ -64,8 +64,10 @@ class MetaEventConverter {
         )
         is SolanaMetaRecord.SetAndVerifyMetadataRecord -> listOf(
             MetaplexSetAndVerifyCollectionEvent(
-                mint = record.mint,
-                collection = record.metaAccount,
+                // Legacy support: previously we had only "SetAndVerifyMetadataRecord.mint" and it was actually the "collection mint"
+                //  Some old records in the database did not have "collectionMint" but only the "mint".
+                //  Now the "mint" means the NFT mint to which the metadata belongs.
+                collection = record.collectionMint ?: record.mint,
                 metaAddress = record.metaAccount,
                 log = record.log,
                 reversed = reversed,

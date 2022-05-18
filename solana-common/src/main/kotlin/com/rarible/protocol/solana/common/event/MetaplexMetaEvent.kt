@@ -29,7 +29,6 @@ data class MetaplexUpdateMetadataEvent(
 ) : MetaplexMetaEvent()
 
 data class MetaplexSetAndVerifyCollectionEvent(
-    val mint: String,
     val collection: String,
     override val log: SolanaLog,
     override val reversed: Boolean,
