@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.model.SolanaCollection
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.update.CollectionEventListener
 import com.rarible.protocol.solana.dto.CollectionDto
 import com.rarible.protocol.solana.dto.CollectionsDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController
 class CollectionController(
     private val collectionService: CollectionService,
     private val tokenApiService: TokenApiService,
-    private val collectionConverter: CollectionConverter
+    private val collectionConverter: CollectionConverter,
+    private val collectionEventListener: CollectionEventListener
 ) : CollectionControllerApi {
 
     override suspend fun getAllCollections(continuation: String?, size: Int?): ResponseEntity<CollectionsDto> {
@@ -49,12 +51,18 @@ class CollectionController(
             null
         }?.takeIf { it.hasMeta } ?: throw EntityNotFoundApiException("Collection", collection)
 
-        return ResponseEntity.ok(
-            collectionConverter.convertV2(
-                collection = SolanaCollectionV2(tokenAsCollection.token.id),
-                tokenMeta = tokenAsCollection.tokenMeta!!
-            )
+        val collectionDto = collectionConverter.convertV2(
+            collection = SolanaCollectionV2(tokenAsCollection.token.id),
+            tokenMeta = tokenAsCollection.tokenMeta!!
         )
+
+        val updatedCollectionV2 = collectionService.updateCollectionV2(tokenAsCollection.token.mint)
+        if (updatedCollectionV2 != null) {
+            // Also, we must notify the clients about the new empty collection.
+            collectionEventListener.onCollectionChanged(collectionDto)
+        }
+
+        return ResponseEntity.ok(collectionDto)
     }
 
     override suspend fun getCollectionsByOwner(

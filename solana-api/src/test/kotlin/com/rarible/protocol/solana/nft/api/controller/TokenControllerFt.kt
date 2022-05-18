@@ -4,11 +4,7 @@ import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.common.converter.TokenMetaConverter
 import com.rarible.protocol.solana.common.converter.TokenWithMetaConverter
 import com.rarible.protocol.solana.common.meta.TokenMetaParser
-import com.rarible.protocol.solana.common.model.MetaplexMetaFields
-import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
-import com.rarible.protocol.solana.common.model.TokenWithMeta
-import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.dto.RoyaltyDto
 import com.rarible.protocol.solana.dto.TokensDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
@@ -17,19 +13,14 @@ import com.rarible.protocol.solana.test.createRandomMetaplexMetaFieldsCollection
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMetaFields
 import com.rarible.protocol.solana.test.createRandomToken
-import com.rarible.protocol.solana.test.randomMint
 import io.mockk.coEvery
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 
 class TokenControllerFt : AbstractControllerTest() {
-
-    @Autowired
-    private lateinit var tokenRepository: TokenRepository
 
     @Test
     fun `find token by address`() = runBlocking<Unit> {
@@ -192,25 +183,6 @@ class TokenControllerFt : AbstractControllerTest() {
 
         assertThat(tokenControllerApi.getTokenMetaByAddress(token.mint).awaitFirst())
             .isEqualTo(TokenMetaConverter.convert(expected))
-    }
-
-    private suspend fun saveTokenWithMeta(
-        mint: String = randomMint(),
-        updatedAt: Instant = nowMillis(),
-        onCollection: MetaplexMetaFields.Collection? = null,
-        offCollection: MetaplexOffChainMetaFields.Collection? = null
-    ): TokenWithMeta {
-        val token = tokenRepository.save(createRandomToken(mint).copy(updatedAt = updatedAt))
-        val tokenMeta = saveRandomMetaplexOnChainAndOffChainMeta(
-            tokenAddress = token.mint,
-            metaplexMetaCustomizer = {
-                onCollection?.let { this.copy(metaFields = this.metaFields.copy(collection = onCollection)) } ?: this
-            },
-            metaplexOffChainMetaCustomizer = {
-                offCollection?.let { this.copy(metaFields = this.metaFields.copy(collection = offCollection)) } ?: this
-            }
-        )
-        return TokenWithMeta(token, tokenMeta)
     }
 
     private suspend fun getAllTokens(

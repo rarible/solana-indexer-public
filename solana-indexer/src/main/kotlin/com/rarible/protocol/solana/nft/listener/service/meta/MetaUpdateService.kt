@@ -9,7 +9,6 @@ import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.update.CollectionEventListener
-import com.rarible.protocol.solana.nft.listener.service.order.OrderUpdateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -43,7 +42,8 @@ class MetaUpdateService(
     }
 
     private suspend fun updateCollection(entity: MetaplexMeta) {
-        val collection = collectionService.updateCollectionV2(entity) ?: return
+        val collectionAddress = entity.metaFields.collection?.address ?: return
+        val collection = collectionService.updateCollectionV2(collectionAddress) ?: return
         val dto = collectionConverter.toDto(collection)
         collectionEventListener.onCollectionChanged(dto)
     }

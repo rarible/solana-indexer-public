@@ -88,7 +88,7 @@ class CollectionServiceIt : AbstractIntegrationTest() {
 
         val expected = SolanaCollectionV2(collectionAddress)
 
-        collectionService.updateCollectionV2(meta)
+        collectionService.updateCollectionV2(collectionAddress)
         val saved = collectionService.findById(collectionAddress)
 
         assertThat(saved).isEqualTo(expected)

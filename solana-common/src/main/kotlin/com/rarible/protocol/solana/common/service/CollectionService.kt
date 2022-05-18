@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.service
 
-import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.SolanaCollection
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
@@ -38,7 +37,7 @@ class CollectionService(
             return null
         }
 
-        logger.info("Saved SolanaCollection: {}", collection)
+        logger.info("Saved SolanaCollection V1: {}", collection)
         return save(
             SolanaCollectionV1(
                 id = collection.hash,
@@ -48,12 +47,12 @@ class CollectionService(
         ) as SolanaCollectionV1
     }
 
-    suspend fun updateCollectionV2(meta: MetaplexMeta): SolanaCollection? {
-        val collectionAddress = meta.metaFields.collection?.address ?: return null
+    suspend fun updateCollectionV2(collectionAddress: String): SolanaCollectionV2? {
         val exist = findById(collectionAddress)
         if (exist != null) {
             return null
         }
-        return save(SolanaCollectionV2(collectionAddress))
+        logger.info("Saved SolanaCollection V2: {}", collectionAddress)
+        return save(SolanaCollectionV2(collectionAddress)) as SolanaCollectionV2
     }
 }
