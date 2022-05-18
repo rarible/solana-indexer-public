@@ -37,7 +37,7 @@ class OrderRepository(
     }
 
     suspend fun save(order: Order): Order =
-        mongo.save(order).awaitFirst()
+        mongo.save(order.withDbUpdated()).awaitFirst()
 
     fun query(query: Query): Flow<Order> =
         mongo.query<Order>()
@@ -148,6 +148,11 @@ class OrderRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        val BY_DB_UPDATED_AT_AND_ID_DEFINITION = Index()
+            .on(Order::dbUpdatedAt.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         val ALL_INDEXES = listOf(
             BY_UPDATED_AT_AND_ID_DEFINITION,
             ALL_BY_STATUS_DEFINITION,
@@ -156,7 +161,8 @@ class OrderRepository(
             SELL_BUY_ORDERS_BY_MAKER_DEFINITION,
             SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION,
             SELL_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION,
-            BUY_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION
+            BUY_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION,
+            BY_DB_UPDATED_AT_AND_ID_DEFINITION
         )
     }
 }

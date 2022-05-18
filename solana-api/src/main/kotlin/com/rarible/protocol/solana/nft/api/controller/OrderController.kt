@@ -20,6 +20,7 @@ import com.rarible.protocol.solana.dto.OrderIdsDto
 import com.rarible.protocol.solana.dto.OrderSortDto
 import com.rarible.protocol.solana.dto.OrderStatusDto
 import com.rarible.protocol.solana.dto.OrdersDto
+import com.rarible.protocol.solana.dto.SyncSortDto
 import com.rarible.protocol.solana.nft.api.service.OrderApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import kotlinx.coroutines.flow.toList
@@ -49,6 +50,22 @@ class OrderController(
             .map { orderConverter.convert(it.key, it.value) }
 
         return ResponseEntity.ok(OrdersDto(null, orders))
+    }
+
+    override suspend fun getOrdersSync(
+        continuation: String?,
+        size: Int?,
+        sort: SyncSortDto?
+    ): ResponseEntity<OrdersDto> {
+        val safeSize = PageSize.ORDER.limit(size)
+        val safeSort = sort?.fromDto() ?: OrderFilterSort.DB_UPDATE_ASC
+        val orderFilter = OrderFilter.SyncAll(
+            sort = safeSort,
+            continuation = DateIdContinuation.parse(continuation)
+        )
+
+        val orders = orderApiService.getOrders(orderFilter, safeSize)
+        return ResponseEntity.ok(toSlice(orders, safeSort, safeSize))
     }
 
     override suspend fun getOrdersAll(
@@ -214,6 +231,8 @@ class OrderController(
         val continuationFactory = when (sort) {
             OrderFilterSort.LAST_UPDATE_ASC -> OrderContinuation.ByLastUpdatedAndIdAsc
             OrderFilterSort.LAST_UPDATE_DESC -> OrderContinuation.ByLastUpdatedAndIdDesc
+            OrderFilterSort.DB_UPDATE_DESC -> OrderContinuation.ByDbUpdatedAndIdDesc
+            OrderFilterSort.DB_UPDATE_ASC -> OrderContinuation.ByDbUpdatedAndIdAsc
         }
         return toSlice(orders, continuationFactory, size)
     }
@@ -241,6 +260,11 @@ class OrderController(
     private fun OrderSortDto.fromDto(): OrderFilterSort = when (this) {
         OrderSortDto.LAST_UPDATE_ASC -> OrderFilterSort.LAST_UPDATE_ASC
         OrderSortDto.LAST_UPDATE_DESC -> OrderFilterSort.LAST_UPDATE_DESC
+    }
+
+    private fun SyncSortDto.fromDto(): OrderFilterSort = when (this) {
+        SyncSortDto.DB_UPDATE_ASC -> OrderFilterSort.DB_UPDATE_ASC
+        SyncSortDto.DB_UPDATE_DESC -> OrderFilterSort.DB_UPDATE_DESC
     }
 
     private suspend fun List<Order>.associateWithAuctionHouse(): Map<Order, AuctionHouse> {

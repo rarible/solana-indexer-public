@@ -12,6 +12,7 @@ import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.AssetType
+import com.rarible.protocol.solana.common.model.AuctionHouse
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -241,7 +242,8 @@ fun randomSellOrder(
         updatedAt = nowMillis(),
         direction = OrderDirection.SELL,
         revertableEvents = emptyList(),
-        states = emptyList()
+        states = emptyList(),
+        dbUpdatedAt = nowMillis()
     )
 }
 
@@ -264,7 +266,8 @@ fun randomBuyOrder(
         updatedAt = nowMillis(),
         direction = OrderDirection.BUY,
         revertableEvents = emptyList(),
-        states = emptyList()
+        states = emptyList(),
+        dbUpdatedAt = nowMillis()
     )
 }
 
@@ -284,6 +287,17 @@ fun randomAssetTypeNft(): AssetType {
 fun randomAssetTypeFt(): AssetType {
     return TokenFtAssetType(
         tokenAddress = randomMint()
+    )
+}
+
+fun createAuctionHouse(order: Order): AuctionHouse {
+    return AuctionHouse(
+        order.auctionHouse,
+        100,
+        true,
+        emptyList(),
+        Instant.EPOCH,
+        Instant.EPOCH
     )
 }
 

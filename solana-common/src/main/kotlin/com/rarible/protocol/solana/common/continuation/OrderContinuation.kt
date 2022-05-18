@@ -18,6 +18,20 @@ object OrderContinuation {
         }
     }
 
+    object ByDbUpdatedAndIdAsc : ContinuationFactory<OrderDto, DateIdContinuation> {
+
+        override fun getContinuation(entity: OrderDto): DateIdContinuation {
+            return DateIdContinuation(entity.dbUpdatedAt ?: entity.updatedAt, entity.hash, true)
+        }
+    }
+
+    object ByDbUpdatedAndIdDesc : ContinuationFactory<OrderDto, DateIdContinuation> {
+
+        override fun getContinuation(entity: OrderDto): DateIdContinuation {
+            return DateIdContinuation(entity.dbUpdatedAt?:entity.updatedAt, entity.hash, false)
+        }
+    }
+
     object BySellPriceAndIdAsc : ContinuationFactory<OrderDto, PriceIdContinuation> {
 
         override fun getContinuation(entity: OrderDto): PriceIdContinuation {
