@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.balance
 
 import com.rarible.core.entity.reducer.service.EntityService
+import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import com.rarible.protocol.solana.common.model.isEmpty
@@ -15,7 +16,8 @@ import java.math.BigInteger
 class BalanceUpdateService(
     private val balanceRepository: BalanceRepository,
     private val balanceUpdateListener: BalanceUpdateListener,
-    private val orderMakeStockBalanceUpdateService: OrderMakeStockBalanceUpdateService
+    private val orderMakeStockBalanceUpdateService: OrderMakeStockBalanceUpdateService,
+    private val tokenFilter: SolanaTokenFilter
 ) : EntityService<BalanceId, Balance> {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -26,6 +28,10 @@ class BalanceUpdateService(
     override suspend fun update(entity: Balance): Balance {
         if (entity.isEmpty) {
             logger.info("Balance without Initialize record, skipping it: {}", entity)
+            return entity
+        }
+        if (!tokenFilter.isAcceptableToken(entity.mint)) {
+            logger.info("Balance update is ignored because mint ${entity.mint} is filtered out")
             return entity
         }
         val exist = balanceRepository.findByAccount(entity.account)

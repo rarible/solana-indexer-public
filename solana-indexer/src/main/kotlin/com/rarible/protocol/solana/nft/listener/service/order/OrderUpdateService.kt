@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.core.entity.reducer.service.EntityService
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.model.OrderStatus
@@ -9,7 +10,6 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.update.OrderUpdateListener
-import kotlinx.coroutines.flow.firstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -19,6 +19,7 @@ class OrderUpdateService(
     private val balanceRepository: BalanceRepository,
     private val orderRepository: OrderRepository,
     private val orderUpdateListener: OrderUpdateListener,
+    private val auctionHouseFilter: SolanaAuctionHouseFilter
 ) : EntityService<OrderId, Order> {
 
     override suspend fun get(id: OrderId): Order? =
@@ -27,6 +28,10 @@ class OrderUpdateService(
     override suspend fun update(entity: Order): Order {
         if (entity.isEmpty) {
             logger.info("Order in empty state: ${entity.id}")
+            return entity
+        }
+        if (!auctionHouseFilter.isAcceptableAuctionHouse(entity.auctionHouse)) {
+            logger.info("Order update is ignored because auction house ${entity.auctionHouse} is filtered out")
             return entity
         }
 

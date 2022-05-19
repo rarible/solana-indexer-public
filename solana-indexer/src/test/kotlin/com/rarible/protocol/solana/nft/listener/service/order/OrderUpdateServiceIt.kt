@@ -1,5 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
+import com.ninjasquad.springmockk.clear
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
@@ -13,6 +15,7 @@ import com.rarible.protocol.solana.test.randomSellOrder
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -28,15 +31,24 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     private val orderUpdateListener: OrderUpdateListener = mockk()
 
+    private val auctionHouseFilter = mockk<SolanaAuctionHouseFilter>()
+
     @BeforeEach
     fun beforeEach() {
         clearMocks(orderUpdateListener)
         coEvery { orderUpdateListener.onOrderChanged(any()) } returns Unit
         orderUpdateService = OrderUpdateService(
-            balanceRepository,
-            orderRepository,
-            orderUpdateListener
+            balanceRepository = balanceRepository,
+            orderRepository = orderRepository,
+            orderUpdateListener = orderUpdateListener,
+            auctionHouseFilter = auctionHouseFilter
         )
+    }
+
+    @BeforeEach
+    fun cleanup() {
+        clearMocks(auctionHouseFilter)
+        every { auctionHouseFilter.isAcceptableAuctionHouse(any()) } returns true
     }
 
     @Test
@@ -58,6 +70,17 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         // Order saved, event sent
         val saved = orderRepository.findById(order.id)!!
         coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+    }
+
+    @Test
+    fun `ignored auction house`() = runBlocking<Unit> {
+        val order = randomSellOrder()
+
+        every { auctionHouseFilter.isAcceptableAuctionHouse(order.auctionHouse) } returns false
+        orderUpdateService.update(order)
+
+        assertThat(orderRepository.findById(order.id)).isNull()
+        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(any()) }
     }
 
     @Test

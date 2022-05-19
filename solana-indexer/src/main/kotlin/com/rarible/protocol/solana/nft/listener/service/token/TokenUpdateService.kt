@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.token
 
 import com.rarible.core.entity.reducer.service.EntityService
+import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.isEmpty
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component
 class TokenUpdateService(
     private val tokenRepository: TokenRepository,
     private val tokenUpdateListener: TokenUpdateListener,
+    private val tokenFilter: SolanaTokenFilter
 ) : EntityService<TokenId, Token> {
 
     override suspend fun get(id: TokenId): Token? =
@@ -21,6 +23,10 @@ class TokenUpdateService(
     override suspend fun update(entity: Token): Token {
         if (entity.isEmpty) {
             logger.info("Token without Initialize record, skipping it: {}", entity.mint)
+            return entity
+        }
+        if (!tokenFilter.isAcceptableToken(entity.mint)) {
+            logger.info("Token update is ignored because mint ${entity.mint} is filtered out")
             return entity
         }
         val token = tokenRepository.save(entity)

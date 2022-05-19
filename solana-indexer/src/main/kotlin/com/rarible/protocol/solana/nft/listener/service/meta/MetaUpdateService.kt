@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.meta
 
 import com.rarible.core.entity.reducer.service.EntityService
+import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -18,7 +19,8 @@ class MetaUpdateService(
     private val tokenMetaService: TokenMetaService,
     private val collectionService: CollectionService,
     private val collectionConverter: CollectionConverter,
-    private val collectionEventListener: CollectionEventListener
+    private val collectionEventListener: CollectionEventListener,
+    private val tokenFilter: SolanaTokenFilter
 ) : EntityService<MetaId, MetaplexMeta> {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -29,6 +31,10 @@ class MetaUpdateService(
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
         if (entity.isEmpty) {
             logger.info("Meta in empty state: ${entity.id}")
+            return entity
+        }
+        if (!tokenFilter.isAcceptableToken(entity.tokenAddress)) {
+            logger.info("MetaplexMeta update is ignored because mint ${entity.tokenAddress} is filtered out")
             return entity
         }
         // We need to update collection before item, otherwise there could be situation item belongs to collection
