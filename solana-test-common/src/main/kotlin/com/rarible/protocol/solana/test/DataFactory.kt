@@ -292,12 +292,13 @@ fun randomAssetTypeFt(): AssetType {
 
 fun createAuctionHouse(order: Order): AuctionHouse {
     return AuctionHouse(
-        order.auctionHouse,
-        100,
-        true,
-        emptyList(),
-        Instant.EPOCH,
-        Instant.EPOCH
+        account = order.auctionHouse,
+        sellerFeeBasisPoints = 100,
+        requiresSignOff = true,
+        states = emptyList(),
+        revertableEvents = emptyList(),
+        createdAt = Instant.EPOCH,
+        updatedAt = Instant.EPOCH
     )
 }
 
