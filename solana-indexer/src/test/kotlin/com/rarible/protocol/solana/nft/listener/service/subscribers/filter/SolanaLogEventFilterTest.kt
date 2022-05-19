@@ -1,8 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
-import com.rarible.blockchain.scanner.framework.data.BlockEvent
 import com.rarible.blockchain.scanner.framework.data.LogEvent
-import com.rarible.blockchain.scanner.framework.data.NewBlockEvent
 import com.rarible.blockchain.scanner.framework.data.NewStableBlockEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
@@ -14,7 +12,8 @@ import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
-import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
+import com.rarible.protocol.solana.nft.listener.service.filter.SolanaRecordsLogEventFilter
+import com.rarible.protocol.solana.nft.listener.service.filter.SolanaRecordsLogEventFilterNewTokenProcessor
 import com.rarible.protocol.solana.nft.listener.test.data.randomSolanaBlockchainBlock
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import com.rarible.protocol.solana.test.MetaplexMetaRecordDataFactory
@@ -41,6 +40,8 @@ class SolanaLogEventFilterTest {
 
     private val tokenFilter = mockk<SolanaTokenFilter>()
 
+    private val solanaRecordsLogEventFilterNewTokenProcessor = mockk<SolanaRecordsLogEventFilterNewTokenProcessor>()
+
     private val filter = SolanaRecordsLogEventFilter(
         accountToMintAssociationService = accountToMintAssociationService,
         solanaIndexerProperties = SolanaIndexerProperties(
@@ -48,7 +49,8 @@ class SolanaLogEventFilterTest {
             metricRootPath = "metricRootPath"
         ),
         tokenFilter = tokenFilter,
-        auctionHouseFilter = auctionHouseFilter
+        auctionHouseFilter = auctionHouseFilter,
+        solanaRecordsLogEventFilterNewTokenProcessor = solanaRecordsLogEventFilterNewTokenProcessor
     )
 
     @BeforeEach
@@ -56,7 +58,9 @@ class SolanaLogEventFilterTest {
         clearMocks(accountToMintAssociationService)
         clearMocks(tokenFilter)
         clearMocks(auctionHouseFilter)
+        clearMocks(solanaRecordsLogEventFilterNewTokenProcessor)
         coJustRun { tokenFilter.addToBlacklist(any(), any()) }
+        coJustRun { solanaRecordsLogEventFilterNewTokenProcessor.addNewTokensWithoutMetaToBlacklist(any()) }
     }
 
     @Test
@@ -99,12 +103,7 @@ class SolanaLogEventFilterTest {
         val result = filter.filter(listOf(logEvent))
         val records = getRecords(result)
         assertThat(records).isEqualTo(listOf(tokenWithMetaInitRecord, tokenWithMetaCreateMetaRecord))
-        coVerify(exactly = 1) {
-            tokenFilter.addToBlacklist(
-                setOf(noMetaTokenInitRecord.mint),
-                SolanaRecordsLogEventFilter.TOKEN_WITHOUT_META_BLACKLIST_REASON
-            )
-        }
+        coVerify(exactly = 1) { solanaRecordsLogEventFilterNewTokenProcessor.addNewTokensWithoutMetaToBlacklist(any()) }
     }
 
     @Test
