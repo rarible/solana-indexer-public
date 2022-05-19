@@ -13,6 +13,7 @@ data class AuctionHouse(
     val account: AuctionHouseId,
     val sellerFeeBasisPoints: Int,
     val requiresSignOff: Boolean,
+    val states: List<AuctionHouse>,
     override val revertableEvents: List<AuctionHouseEvent>,
     override val createdAt: Instant,
     override val updatedAt: Instant
@@ -33,6 +34,7 @@ data class AuctionHouse(
             account = auctionHouse,
             sellerFeeBasisPoints = 0,
             requiresSignOff = false,
+            states = emptyList(),
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH

@@ -201,26 +201,24 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
         val house = createAuctionHouse(keypair)
 
         Wait.waitAssert(timeout) {
-            val records = findRecordByType(
+            val record = findRecordByType(
                 collection = SubscriberGroup.AUCTION_HOUSE.collectionName,
                 type = SolanaAuctionHouseRecord.CreateAuctionHouseRecord::class.java
-            ).toList()
+            ).single()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(record).usingRecursiveComparison().ignoringFields(
                 SolanaAuctionHouseRecord.CreateAuctionHouseRecord::log.name,
                 SolanaAuctionHouseRecord.CreateAuctionHouseRecord::timestamp.name
             ).isEqualTo(
-                listOf(
-                    SolanaAuctionHouseRecord.CreateAuctionHouseRecord(
-                        sellerFeeBasisPoints = 1000,
-                        requiresSignOff = false,
-                        treasuryMint = WrappedSolAssetType.SOL,
-                        feeWithdrawalDestination = wallet,
-                        treasuryWithdrawalDestination = wallet,
-                        auctionHouse = house.id,
-                        log = EMPTY_SOLANA_LOG,
-                        timestamp = Instant.EPOCH
-                    )
+                SolanaAuctionHouseRecord.CreateAuctionHouseRecord(
+                    sellerFeeBasisPoints = 1000,
+                    requiresSignOff = false,
+                    treasuryMint = WrappedSolAssetType.SOL,
+                    feeWithdrawalDestination = wallet,
+                    treasuryWithdrawalDestination = wallet,
+                    auctionHouse = house.id,
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH
                 )
             )
 
@@ -235,6 +233,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         requiresSignOff = false,
                         sellerFeeBasisPoints = 1000,
                         account = house.id,
+                        states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH
@@ -249,6 +248,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     AuctionHouse::createdAt.name,
                     AuctionHouse::updatedAt.name,
+                    AuctionHouse::states.name,
                     AuctionHouse::revertableEvents.name
                 )
                 .isEqualTo(
@@ -256,6 +256,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         requiresSignOff = true,
                         sellerFeeBasisPoints = 500,
                         account = house.id,
+                        states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH
@@ -270,6 +271,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 .ignoringFields(
                     AuctionHouse::createdAt.name,
                     AuctionHouse::updatedAt.name,
+                    AuctionHouse::states.name,
                     AuctionHouse::revertableEvents.name
                 )
                 .isEqualTo(
@@ -277,6 +279,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         requiresSignOff = true,
                         sellerFeeBasisPoints = 300,
                         account = house.id,
+                        states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
                         updatedAt = Instant.EPOCH

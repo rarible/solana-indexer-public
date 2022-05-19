@@ -38,6 +38,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -60,6 +61,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -70,6 +72,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
@@ -120,6 +123,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -130,6 +134,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
@@ -166,6 +171,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -176,6 +182,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
@@ -209,6 +216,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -219,6 +227,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
@@ -275,6 +284,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -285,6 +295,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
@@ -324,6 +335,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 100,
                 true,
                 emptyList(),
+                emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH
             )
@@ -334,6 +346,7 @@ class OrderControllerFt : AbstractControllerTest() {
                 order2.auctionHouse,
                 300,
                 false,
+                emptyList(),
                 emptyList(),
                 Instant.EPOCH,
                 Instant.EPOCH

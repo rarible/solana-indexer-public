@@ -15,6 +15,8 @@ class ForwardValueAuctionHouseReducer : Reducer<AuctionHouseEvent, AuctionHouse>
             return entity
         }
 
+        val states = if (entity.isEmpty) emptyList() else entity.states + entity.copy(states = emptyList())
+
         return when (event) {
             is CreateAuctionHouseEvent -> entity.copy(
                 createdAt = event.timestamp,
@@ -25,6 +27,6 @@ class ForwardValueAuctionHouseReducer : Reducer<AuctionHouseEvent, AuctionHouse>
                 requiresSignOff = event.requiresSignOff ?: entity.requiresSignOff,
                 sellerFeeBasisPoints = event.sellerFeeBasisPoints ?: entity.sellerFeeBasisPoints
             )
-        }.copy(updatedAt = event.timestamp)
+        }.copy(updatedAt = event.timestamp, states = states)
     }
 }
