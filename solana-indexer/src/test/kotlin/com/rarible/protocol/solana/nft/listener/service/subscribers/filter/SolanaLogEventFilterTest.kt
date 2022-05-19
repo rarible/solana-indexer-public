@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 import com.rarible.blockchain.scanner.framework.data.LogEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
+import com.rarible.core.test.data.randomString
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
@@ -12,11 +13,16 @@ import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
+import com.rarible.protocol.solana.test.MetaplexMetaRecordDataFactory
 import com.rarible.protocol.solana.test.OrderRecordDataFactory
+import com.rarible.protocol.solana.test.TokenRecordDataFactory
 import com.rarible.protocol.solana.test.randomAccount
 import com.rarible.protocol.solana.test.randomMint
+import com.rarible.protocol.solana.test.randomSolanaLog
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coJustRun
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -46,6 +52,7 @@ class SolanaLogEventFilterTest {
         clearMocks(accountToMintAssociationService)
         clearMocks(tokenFilter)
         clearMocks(auctionHouseFilter)
+        coJustRun { tokenFilter.addToBlacklist(any(), any()) }
     }
 
     @Test
@@ -63,6 +70,37 @@ class SolanaLogEventFilterTest {
         val records = getRecords(result)
         assertThat(records).hasSize(1)
         assertThat(records[0]).isEqualTo(record)
+    }
+
+    @Test
+    fun `add to blacklist a token without meta`() = runBlocking<Unit> {
+        val solanaLog = randomSolanaLog()
+        val noMetaTokenInitRecord = TokenRecordDataFactory.randomTokenInitRecord()
+        val tokenWithMetaInitRecord = TokenRecordDataFactory.randomTokenInitRecord(
+            log = solanaLog.copy(transactionHash = randomString())
+        )
+        val tokenWithMetaCreateMetaRecord = MetaplexMetaRecordDataFactory.randomCreateMetadataAccountRecord(
+            log = solanaLog.copy(transactionHash = randomString()),
+            mint = tokenWithMetaInitRecord.mint
+        )
+        val logEvent = randomLogEvent(noMetaTokenInitRecord, tokenWithMetaInitRecord, tokenWithMetaCreateMetaRecord)
+        coEvery {
+            accountToMintAssociationService.getMintsByAccounts(
+                setOf(tokenWithMetaCreateMetaRecord.metaAccount)
+            )
+        } returns mapOf(tokenWithMetaCreateMetaRecord.metaAccount to tokenWithMetaCreateMetaRecord.mint)
+        coJustRun { accountToMintAssociationService.saveMintsByAccounts(emptyMap()) }
+        coEvery { tokenFilter.isAcceptableToken(tokenWithMetaInitRecord.mint) } returns true
+        coEvery { tokenFilter.isAcceptableToken(noMetaTokenInitRecord.mint) } returns false
+        val result = filter.filter(listOf(logEvent))
+        val records = getRecords(result)
+        assertThat(records).isEqualTo(listOf(tokenWithMetaInitRecord, tokenWithMetaCreateMetaRecord))
+        coVerify(exactly = 1) {
+            tokenFilter.addToBlacklist(
+                setOf(noMetaTokenInitRecord.mint),
+                SolanaRecordsLogEventFilter.TOKEN_WITHOUT_META_BLACKLIST_REASON
+            )
+        }
     }
 
     @Test

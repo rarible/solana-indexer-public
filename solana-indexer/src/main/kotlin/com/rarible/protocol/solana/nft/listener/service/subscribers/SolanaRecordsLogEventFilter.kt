@@ -1,8 +1,6 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.framework.data.LogEvent
-import com.rarible.blockchain.scanner.framework.data.NewBlockEvent
-import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
@@ -18,7 +16,6 @@ import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.util.AccountGraph
-import com.rarible.protocol.solana.nft.listener.util.hasCreateMetaplexMeta
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
@@ -97,13 +94,12 @@ class SolanaRecordsLogEventFilter(
     private suspend fun addNewTokensWithoutMetaToBlacklist(events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>) {
         val blacklistedTokens = hashSetOf<String>()
         for (event in events) {
-            val solanaBlock = (event.blockEvent as? NewBlockEvent)?.block as? SolanaBlockchainBlock ?: continue
             for (logRecord in event.logRecordsToInsert) {
                 if (logRecord is SolanaTokenRecord.InitializeMintRecord) {
-                    val hasMetaplexMeta = solanaBlock.hasCreateMetaplexMeta(
-                        transactionHash = logRecord.log.transactionHash,
-                        matcher = { it.mint == logRecord.mint }
-                    )
+                    val hasMetaplexMeta = event.logRecordsToInsert.any {
+                        it is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord
+                                && it.mint == logRecord.mint
+                    }
                     if (!hasMetaplexMeta) {
                         logger.info("Token ${logRecord.mint} is created without associated Metaplex meta")
                         blacklistedTokens += logRecord.mint
@@ -111,8 +107,9 @@ class SolanaRecordsLogEventFilter(
                 }
             }
         }
-        val reason = "Metaplex meta was not created"
-        tokenFilter.addToBlacklist(blacklistedTokens, reason)
+        if (blacklistedTokens.isNotEmpty()) {
+            tokenFilter.addToBlacklist(blacklistedTokens, TOKEN_WITHOUT_META_BLACKLIST_REASON)
+        }
     }
 
     private suspend fun filter(
@@ -346,4 +343,7 @@ class SolanaRecordsLogEventFilter(
         }.toMutableSet()
     }
 
+    companion object {
+        const val TOKEN_WITHOUT_META_BLACKLIST_REASON = "Metaplex meta was not created"
+    }
 }
