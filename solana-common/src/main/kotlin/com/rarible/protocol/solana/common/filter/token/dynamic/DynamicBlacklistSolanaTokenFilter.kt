@@ -9,7 +9,7 @@ class DynamicBlacklistSolanaTokenFilter(
 ) : SolanaTokenFilter {
 
     override suspend fun isAcceptableToken(mint: String): Boolean =
-        dynamicBlacklistedTokenRepository.findAll(listOf(mint)).isNotEmpty()
+        dynamicBlacklistedTokenRepository.findAll(listOf(mint)).isEmpty()
 
     override suspend fun addToBlacklist(mints: Collection<String>, reason: String) {
         dynamicBlacklistedTokenRepository.saveAll(mints, reason)
