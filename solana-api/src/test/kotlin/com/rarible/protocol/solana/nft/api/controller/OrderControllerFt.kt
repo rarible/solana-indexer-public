@@ -56,41 +56,34 @@ class OrderControllerFt : AbstractControllerTest() {
 
     @Test
     fun `order controller sync pagination asc test `() = runBlocking<Unit> {
-        val orderQuantity = 95
-        val chunkSize = 20
-        val sort = SyncSortDto.DB_UPDATE_ASC
-        val compare = Comparator<OrderDto> {  o1, o2 -> compareValues(o1.dbUpdatedAt, o2.dbUpdatedAt)  }
+        val comparator = Comparator<OrderDto> { o1, o2 -> compareValues(o1.dbUpdatedAt, o2.dbUpdatedAt) }
 
-        repeat(orderQuantity) {
-            val order =
-                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
-            auctionHouseRepository.save(createAuctionHouse(order))
-        }
-
-        var continuation: String? = null
-        val activities = mutableListOf<OrderDto>()
-        var totalPages = 0
-
-        do {
-            val result =
-                orderControllerApi.getOrdersSync(continuation, chunkSize, sort).awaitFirst()
-            activities.addAll(result.orders)
-            continuation = result.continuation
-            totalPages += 1
-        } while (continuation != null)
-
-        assertThat(totalPages).isEqualTo(orderQuantity / chunkSize + 1)
-        assertThat(activities).hasSize(orderQuantity)
-        assertThat(activities).isSortedAccordingTo(compare)
+        testGetOrderSyncPagination(
+            orderQuantity = 95,
+            chunkSize = 20,
+            sort = SyncSortDto.DB_UPDATE_ASC,
+            comparator
+        )
     }
 
     @Test
     fun `order controller sync pagination des test `() = runBlocking<Unit> {
-        val orderQuantity = 60
-        val chunkSize = 20
-        val sort = SyncSortDto.DB_UPDATE_DESC
-        val compare = Comparator<OrderDto> {  o1, o2 -> compareValues(o2.dbUpdatedAt, o1.dbUpdatedAt)  }
+        val comparator = Comparator<OrderDto> {  o1, o2 -> compareValues(o2.dbUpdatedAt, o1.dbUpdatedAt)  }
 
+        testGetOrderSyncPagination(
+            orderQuantity = 60,
+            chunkSize = 20,
+            sort = SyncSortDto.DB_UPDATE_DESC,
+            comparator
+        )
+    }
+
+    private suspend fun testGetOrderSyncPagination(
+        orderQuantity: Int,
+        chunkSize: Int,
+        sort: SyncSortDto,
+        comparator: Comparator<OrderDto>
+    ) {
         repeat(orderQuantity) {
             val order =
                 orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
@@ -111,7 +104,7 @@ class OrderControllerFt : AbstractControllerTest() {
 
         assertThat(totalPages).isEqualTo(orderQuantity / chunkSize + 1)
         assertThat(activities).hasSize(orderQuantity)
-        assertThat(activities).isSortedAccordingTo(compare)
+        assertThat(activities).isSortedAccordingTo(comparator)
     }
 
     @Test
