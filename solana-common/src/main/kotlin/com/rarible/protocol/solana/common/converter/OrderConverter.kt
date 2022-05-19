@@ -30,7 +30,7 @@ class OrderConverter(
             },
             makePrice = order.makePrice,
             takePrice = order.takePrice,
-            makeStock = order.makeStock.toBigDecimal(),
+            makeStock = priceNormalizer.normalize(order.make.type, order.makeStock),
             start = null,
             end = null,
             createdAt = order.createdAt,
