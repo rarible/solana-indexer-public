@@ -24,9 +24,9 @@ class OrderMakeStockBalanceUpdateService(
     private val logger = LoggerFactory.getLogger(OrderMakeStockBalanceUpdateService::class.java)
 
     suspend fun updateMakeStockOfSellOrders(balance: Balance) {
-        val orders = orderRepository.findSellOrdersByMintAndMaker(
-            mint = balance.mint,
-            maker = balance.owner,
+        // TODO[tests]: implement a test for invalidating a sell order when sell account balance gets 0 or the owner of it changes.
+        val orders = orderRepository.findSellOrdersByMakerAccount(
+            makerAccount = balance.account,
             statuses = listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE)
         ).toList()
         if (orders.isEmpty()) {

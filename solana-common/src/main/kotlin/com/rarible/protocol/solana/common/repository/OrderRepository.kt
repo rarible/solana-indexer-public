@@ -71,11 +71,10 @@ class OrderRepository(
         ).asFlow()
     }
 
-    fun findSellOrdersByMintAndMaker(mint: String, maker: String, statuses: List<OrderStatus>): Flow<Order> {
+    fun findSellOrdersByMakerAccount(makerAccount: String, statuses: List<OrderStatus>): Flow<Order> {
         val criteria = Criteria().andOperator(
             Order::direction isEqualTo OrderDirection.SELL,
-            Order::maker isEqualTo maker,
-            Order::make / Asset::type / AssetType::tokenAddress isEqualTo mint,
+            Order::makerAccount isEqualTo makerAccount,
             Order::status inValues statuses
         )
         val query = Query(criteria)
@@ -92,31 +91,37 @@ class OrderRepository(
 
     private object OrderIndexes {
 
-        val BY_UPDATED_AT_AND_ID_DEFINITION = Index()
+        val BY_UPDATED_AT_AND_ID_DEFINITION: Index = Index()
             .on(Order::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .background()
 
-        val ALL_BY_STATUS_DEFINITION = Index()
+        val ALL_BY_STATUS_DEFINITION: Index = Index()
             .on(Order::status.name, Sort.Direction.ASC)
             .on(Order::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .background()
 
-        val SELL_BUY_ORDERS_DEFINITION = Index()
+        val SELL_BUY_ORDERS_DEFINITION: Index = Index()
             .on(Order::direction.name, Sort.Direction.ASC)
             .on(Order::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .background()
 
-        val SELL_BUY_ORDERS_BY_MAKER_DEFINITION = Index()
+        val SELL_BUY_ORDERS_BY_MAKER_ACCOUNT: Index = Index()
+            .on(Order::direction.name, Sort.Direction.ASC)
+            .on(Order::makerAccount.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
+        val SELL_BUY_ORDERS_BY_MAKER_DEFINITION: Index = Index()
             .on(Order::maker.name, Sort.Direction.ASC)
             .on(Order::direction.name, Sort.Direction.ASC)
             .on(Order::updatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
             .background()
 
-        val SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION = Index()
+        val SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION: Index = Index()
             .on(Order::maker.name, Sort.Direction.ASC)
             .on("${Order::make.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
             .on(Order::direction.name, Sort.Direction.ASC)
@@ -124,7 +129,8 @@ class OrderRepository(
             .background()
 
         // Best sell order by status
-        val SELL_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION = Index()
+        @Suppress("DuplicatedCode")
+        val SELL_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION: Index = Index()
             .on("${Order::make.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
             .on("${Order::take.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
             .on(Order::status.name, Sort.Direction.ASC)
@@ -133,7 +139,8 @@ class OrderRepository(
             .background()
 
         // Best bid order by status
-        val BUY_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION = Index()
+        @Suppress("DuplicatedCode")
+        val BUY_ORDERS_BY_ITEM_CURRENCY_STATUS_SORT_BY_PRICE_DEFINITION: Index = Index()
             .on("${Order::take.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
             .on("${Order::make.name}.${Asset::type.name}.${AssetType::tokenAddress.name}", Sort.Direction.ASC)
             .on(Order::status.name, Sort.Direction.ASC)
@@ -144,6 +151,7 @@ class OrderRepository(
         val ALL_INDEXES = listOf(
             BY_UPDATED_AT_AND_ID_DEFINITION,
             ALL_BY_STATUS_DEFINITION,
+            SELL_BUY_ORDERS_BY_MAKER_ACCOUNT,
             SELL_BUY_ORDERS_DEFINITION,
             SELL_BUY_ORDERS_BY_MAKER_DEFINITION,
             SELL_BUY_ORDERS_BY_MAKER_AND_MINT_AND_STATUS_DEFINITION,
