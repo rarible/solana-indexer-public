@@ -1,6 +1,9 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers.filter
 
+import com.rarible.blockchain.scanner.framework.data.BlockEvent
 import com.rarible.blockchain.scanner.framework.data.LogEvent
+import com.rarible.blockchain.scanner.framework.data.NewBlockEvent
+import com.rarible.blockchain.scanner.framework.data.NewStableBlockEvent
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.core.test.data.randomString
@@ -12,6 +15,7 @@ import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.service.subscribers.SolanaRecordsLogEventFilter
+import com.rarible.protocol.solana.nft.listener.test.data.randomSolanaBlockchainBlock
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
 import com.rarible.protocol.solana.test.MetaplexMetaRecordDataFactory
 import com.rarible.protocol.solana.test.OrderRecordDataFactory
@@ -240,8 +244,14 @@ class SolanaLogEventFilterTest {
     }
 
     private fun randomLogEvent(vararg records: SolanaLogRecord): LogEvent<SolanaLogRecord, SolanaDescriptor> {
+        val blockEvent = NewStableBlockEvent(
+            randomSolanaBlockchainBlock(
+                // TODO: complete the test.
+                logs = emptyList()
+            )
+        )
         return LogEvent(
-            blockEvent = mockk(),
+            blockEvent = blockEvent,
             descriptor = object : SolanaDescriptor(
                 programId = SolanaProgramId.SPL_TOKEN_PROGRAM,
                 id = "test_descriptor",

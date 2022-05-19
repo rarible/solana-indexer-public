@@ -13,6 +13,7 @@ import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.nft.listener.util.transactionLogs
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 
@@ -189,8 +190,3 @@ private fun SolanaBlockchainBlock.hasBuy(
     }
     return false
 }
-
-private fun SolanaBlockchainBlock.transactionLogs(
-    transactionHash: String,
-    programId: String
-) = logs.filter { it.log.transactionHash == transactionHash && it.instruction.programId == programId }

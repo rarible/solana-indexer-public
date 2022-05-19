@@ -1,6 +1,8 @@
 package com.rarible.protocol.solana.nft.listener.service.subscribers
 
 import com.rarible.blockchain.scanner.framework.data.LogEvent
+import com.rarible.blockchain.scanner.framework.data.NewBlockEvent
+import com.rarible.blockchain.scanner.solana.client.SolanaBlockchainBlock
 import com.rarible.blockchain.scanner.solana.model.SolanaDescriptor
 import com.rarible.blockchain.scanner.solana.model.SolanaLogRecord
 import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventFilter
@@ -16,6 +18,7 @@ import com.rarible.protocol.solana.common.records.SolanaMetaRecord
 import com.rarible.protocol.solana.common.records.SolanaTokenRecord
 import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociationService
 import com.rarible.protocol.solana.nft.listener.util.AccountGraph
+import com.rarible.protocol.solana.nft.listener.util.hasCreateMetaplexMeta
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
@@ -96,12 +99,12 @@ class SolanaRecordsLogEventFilter(
         for (event in events) {
             for (logRecord in event.logRecordsToInsert) {
                 if (logRecord is SolanaTokenRecord.InitializeMintRecord) {
-                    val hasMetaplexMeta = events.asSequence()
-                        .filter { it.blockEvent.hash == logRecord.log.blockHash }
-                        .flatMap { it.logRecordsToInsert.asSequence() }
-                        .any {
-                            it is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord && it.mint == logRecord.mint
-                        }
+                    val solanaBlockchainBlock = (event.blockEvent as? NewBlockEvent)?.block as? SolanaBlockchainBlock
+                    solanaBlockchainBlock ?: continue
+                    val hasMetaplexMeta = solanaBlockchainBlock.hasCreateMetaplexMeta(
+                        transactionHash = logRecord.log.transactionHash,
+                        matcher = { it.mint == logRecord.mint }
+                    )
                     if (!hasMetaplexMeta) {
                         logger.info("Token ${logRecord.mint} is created without associated Metaplex meta")
                         blacklistedTokens += logRecord.mint
