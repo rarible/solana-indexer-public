@@ -9,4 +9,10 @@ object ActivityContinuation {
             IdContinuation(entity.id, asc)
     }
 
+    class ByDbUpdatedAndId(val asc: Boolean) : ContinuationFactory<ActivityDto, DateIdContinuation> {
+        override fun getContinuation(entity: ActivityDto): DateIdContinuation {
+            return DateIdContinuation(entity.dbUpdatedAt ?: entity.date, entity.id, asc)
+        }
+    }
+
 }

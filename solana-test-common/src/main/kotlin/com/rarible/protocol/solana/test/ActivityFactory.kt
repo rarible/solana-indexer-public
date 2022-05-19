@@ -71,7 +71,13 @@ fun randomBurn(
     value: BigInteger = randomBigInt(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = BurnActivityDto(
-    id, date, reverted, owner, tokenAddress, value, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    owner = owner,
+    tokenAddress = tokenAddress,
+    value = value,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomTransfer(
@@ -85,7 +91,15 @@ fun randomTransfer(
     purchase: Boolean = randomBoolean(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = TransferActivityDto(
-    id, date, reverted, from, owner, tokenAddress, value, purchase, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    from = from,
+    owner = owner,
+    tokenAddress = tokenAddress,
+    value = value,
+    purchase = purchase,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomAssetSol(
@@ -109,7 +123,15 @@ fun randomList(
     price: BigDecimal = randomBigDecimal(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = OrderListActivityDto(
-    id, date, reverted, hash, maker, make, take, price, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    hash = hash,
+    maker = maker,
+    make = make,
+    take = take,
+    price = price,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomCancelList(
@@ -122,7 +144,14 @@ fun randomCancelList(
     take: AssetTypeDto = SolanaSolAssetTypeDto(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = OrderCancelListActivityDto(
-    id, date, reverted, hash, maker, make, take, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    hash = hash,
+    maker = maker,
+    make = make,
+    take = take,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomBid(
@@ -136,7 +165,15 @@ fun randomBid(
     price: BigDecimal = randomBigDecimal(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = OrderBidActivityDto(
-    id, date, reverted, hash, maker, make, take, price, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    hash = hash,
+    maker = maker,
+    make = make,
+    take = take,
+    price = price,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomCancelBid(
@@ -149,7 +186,14 @@ fun randomCancelBid(
     take: AssetTypeDto = SolanaSolAssetTypeDto(),
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
 ) = OrderCancelBidActivityDto(
-    id, date, reverted, hash, maker, make, take, blockchainInfo
+    id = id,
+    date = date,
+    reverted = reverted,
+    hash = hash,
+    maker = maker,
+    make = make,
+    take = take,
+    blockchainInfo = blockchainInfo
 )
 
 fun randomSell(
@@ -166,7 +210,18 @@ fun randomSell(
     blockchainInfo: ActivityBlockchainInfoDto = randomBlockchainInfo(),
     type: OrderMatchActivityDto.Type = OrderMatchActivityDto.Type.SELL,
 ) = OrderMatchActivityDto(
-    id, date, reverted, nft, payment, buyer, seller, buyerOrderHash, sellerOrderHash, price, blockchainInfo, type
+    id = id,
+    date = date,
+    reverted = reverted,
+    nft = nft,
+    payment = payment,
+    buyer = buyer,
+    seller = seller,
+    buyerOrderHash = buyerOrderHash,
+    sellerOrderHash = sellerOrderHash,
+    price = price,
+    blockchainInfo = blockchainInfo,
+    type = type
 )
 
 fun randomTimestamp() = Instant

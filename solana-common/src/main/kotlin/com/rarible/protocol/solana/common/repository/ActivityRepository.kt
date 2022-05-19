@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.repository
 
 import com.rarible.core.apm.CaptureSpan
 import com.rarible.core.apm.SpanType
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.model.ActivityRecord
 import com.rarible.protocol.solana.common.model.asRecord
@@ -28,7 +29,8 @@ class ActivityRepository(
 ) {
 
     suspend fun save(activity: ActivityDto): ActivityRecord =
-        mongo.save(activity.asRecord(), COLLECTION).awaitFirst()
+        mongo.save(activity.asRecord().withDbUpdatedAt(), COLLECTION).awaitFirst()
+
 
     suspend fun removeById(id: String): Boolean {
         val record = mongo.findById(id, ActivityRecord::class.java, COLLECTION)
@@ -41,6 +43,20 @@ class ActivityRepository(
     fun findByIds(ids:List<String>): Flow<ActivityDto> {
         val criteria = Criteria.where("_id").`in`(ids)
         return mongo.find(Query(criteria), ActivityRecord::class.java, COLLECTION)
+            .map { it.toDto() }.asFlow()
+    }
+
+    fun findAllActivitiesSync(
+        continuation: DateIdContinuation?,
+        size: Int,
+        sortAscending: Boolean,
+    ): Flow<ActivityDto> {
+        val criteria = Criteria()
+            .addSyncContinuation(continuation, sortAscending)
+        val query = Query(criteria)
+            .with(Sort.by(ActivityRecord::dbUpdatedAt.name).direction(sortAscending))
+            .limit(size)
+        return mongo.find(query, ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
     }
 
@@ -88,6 +104,24 @@ class ActivityRepository(
         }
     }
 
+    private fun Criteria.addSyncContinuation(
+        continuation: DateIdContinuation?,
+        sortAscending: Boolean
+    ) = continuation?.let {
+        if (sortAscending) {
+            orOperator(
+                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").gt(continuation.id),
+                Criteria(ActivityRecord::dbUpdatedAt.name).gt(continuation.date)
+            )
+        } else {
+            orOperator(
+                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+                Criteria(ActivityRecord::dbUpdatedAt.name).lt(continuation.date)
+            )
+
+        }
+    } ?: this
+
     private fun Sort.direction(asc: Boolean) =
         if (asc) ascending() else descending()
 
@@ -108,8 +142,14 @@ class ActivityRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        private val DB_UPDATED_AT_AND_ID = Index()
+            .on(ActivityRecord::dbUpdatedAt.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         val ALL_INDEXES = listOf(
             TYPE_AND_MINT_AND_ID,
+            DB_UPDATED_AT_AND_ID
         )
     }
 }
