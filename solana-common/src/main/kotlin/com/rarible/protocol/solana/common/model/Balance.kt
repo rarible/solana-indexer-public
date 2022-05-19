@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.common.model
 
-import com.rarible.core.entity.reducer.model.Entity
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document

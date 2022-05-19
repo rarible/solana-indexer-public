@@ -76,6 +76,14 @@ class OrderUpdateService(
         // Considering the order is active. When the balance changes, the status will become INACTIVE.
             ?: return this.copy(status = OrderStatus.ACTIVE)
 
+        if (balance.owner != maker) {
+            logger.info("Inactivate the SELL order $id because the owner of the sell account was changed from $maker to ${balance.owner}")
+            return this.copy(
+                status = OrderStatus.INACTIVE,
+                makeStock = BigInteger.ZERO
+            )
+        }
+
         val notFilledValue = maxOf(make.amount - fill, BigInteger.ZERO)
         val makeStock = minOf(notFilledValue, balance.value)
 
