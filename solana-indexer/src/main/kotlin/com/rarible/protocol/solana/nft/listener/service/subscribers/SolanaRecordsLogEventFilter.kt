@@ -96,10 +96,12 @@ class SolanaRecordsLogEventFilter(
         for (event in events) {
             for (logRecord in event.logRecordsToInsert) {
                 if (logRecord is SolanaTokenRecord.InitializeMintRecord) {
-                    val hasMetaplexMeta = event.logRecordsToInsert.any {
-                        it is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord
-                                && it.mint == logRecord.mint
-                    }
+                    val hasMetaplexMeta = events.asSequence()
+                        .filter { it.blockEvent.hash == logRecord.log.blockHash }
+                        .flatMap { it.logRecordsToInsert.asSequence() }
+                        .any {
+                            it is SolanaMetaRecord.MetaplexCreateMetadataAccountRecord && it.mint == logRecord.mint
+                        }
                     if (!hasMetaplexMeta) {
                         logger.info("Token ${logRecord.mint} is created without associated Metaplex meta")
                         blacklistedTokens += logRecord.mint
