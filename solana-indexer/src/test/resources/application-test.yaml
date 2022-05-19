@@ -1,5 +1,7 @@
 common:
   kafka-replica-set: ${kafka.hosts}
+  featureFlags:
+    tokenFilter: NONE
 
 solana:
   protocol:
