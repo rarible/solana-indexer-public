@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class CollectionEventListener(
+class CollectionUpdateListener(
     private val publisher: RaribleKafkaProducer<CollectionEventDto>
 ) {
 

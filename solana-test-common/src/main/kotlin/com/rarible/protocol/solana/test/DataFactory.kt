@@ -59,8 +59,10 @@ fun createRandomMetaplexMeta(
     updatedAt = nowMillis()
 )
 
-fun createRandomMetaplexOffChainMeta(): MetaplexOffChainMeta = MetaplexOffChainMeta(
-    tokenAddress = randomMint(),
+fun createRandomMetaplexOffChainMeta(
+    mint: String = randomMint()
+): MetaplexOffChainMeta = MetaplexOffChainMeta(
+    tokenAddress = mint,
     metaFields = createRandomMetaplexOffChainMetaFields(),
     loadedAt = nowMillis()
 )

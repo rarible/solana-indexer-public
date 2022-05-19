@@ -11,10 +11,13 @@ import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenWithMeta
+import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.dto.BalanceDeleteEventDto
 import com.rarible.protocol.solana.dto.BalanceDto
 import com.rarible.protocol.solana.dto.BalanceEventDto
 import com.rarible.protocol.solana.dto.BalanceUpdateEventDto
+import com.rarible.protocol.solana.dto.CollectionEventDto
+import com.rarible.protocol.solana.dto.CollectionUpdateEventDto
 import com.rarible.protocol.solana.dto.TokenDto
 import com.rarible.protocol.solana.dto.TokenEventDto
 import com.rarible.protocol.solana.dto.TokenUpdateEventDto
@@ -37,9 +40,13 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
     private lateinit var tokenEventConsumer: RaribleKafkaConsumer<TokenEventDto>
 
     @Autowired
+    private lateinit var collectionEventConsumer: RaribleKafkaConsumer<CollectionEventDto>
+
+    @Autowired
     private lateinit var balanceEventConsumer: RaribleKafkaConsumer<BalanceEventDto>
 
     protected val tokenEvents = CopyOnWriteArrayList<TokenEventDto>()
+    protected val collectionEvents = CopyOnWriteArrayList<CollectionEventDto>()
     protected val balanceEvents = CopyOnWriteArrayList<BalanceEventDto>()
 
     private val eventsConsumingScope = CoroutineScope(
@@ -51,6 +58,9 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
     fun setUpEventConsumers() {
         eventsConsumingScope.launch {
             tokenEventConsumer.receiveAutoAck().collect { tokenEvents += it.value }
+        }
+        eventsConsumingScope.launch {
+            collectionEventConsumer.receiveAutoAck().collect { collectionEvents += it.value }
         }
         eventsConsumingScope.launch {
             balanceEventConsumer.receiveAutoAck().collect { balanceEvents += it.value }
@@ -67,6 +77,17 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
             Assertions.assertThat(event).isInstanceOfSatisfying(TokenUpdateEventDto::class.java) {
                 Assertions.assertThat(it.address).isEqualTo(token.mint)
                 assertTokenDtoEqual(it.token, TokenWithMetaConverter.convert(TokenWithMeta(token, tokenMeta)))
+            }
+        }
+    }
+
+    protected fun assertUpdateCollectionEvent(collectionMint: String, collectionTokenMeta: TokenMeta) {
+        Assertions.assertThat(collectionEvents).anySatisfy { event ->
+            Assertions.assertThat(event).isInstanceOfSatisfying(CollectionUpdateEventDto::class.java) {
+                Assertions.assertThat(it.collectionId).isEqualTo(collectionMint)
+                Assertions.assertThat(it.collection.meta).isEqualTo(
+                    CollectionConverter.convertCollectionMeta(collectionTokenMeta)
+                )
             }
         }
     }

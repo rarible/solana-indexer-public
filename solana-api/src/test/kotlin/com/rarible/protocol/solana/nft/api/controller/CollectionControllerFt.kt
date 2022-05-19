@@ -1,7 +1,6 @@
 package com.rarible.protocol.solana.nft.api.controller
 
 import com.rarible.core.test.data.randomString
-import com.rarible.protocol.solana.common.meta.TokenMetaParser
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.common.repository.CollectionRepository
@@ -9,6 +8,7 @@ import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
+import com.rarible.protocol.solana.test.randomMint
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -28,34 +28,22 @@ class CollectionControllerFt : AbstractControllerTest() {
         val collectionV1 = SolanaCollectionV1(randomString(), randomString(), randomString())
         collectionRepository.save(collectionV1)
         val result = collectionControllerApi.getCollectionById(collectionV1.id).awaitFirst()
-        assertThat(result).isEqualTo(collectionConverter.convertV1(collectionV1))
+        assertThat(result).isEqualTo(collectionConverter.toDto(collectionV1))
     }
 
     @Test
     fun `collection v2`() = runBlocking<Unit> {
-        val collectionNft = createRandomMetaplexMeta()
-        val metaOffChain = createRandomMetaplexOffChainMeta().copy(tokenAddress = collectionNft.tokenAddress)
-        val collectionV2 = SolanaCollectionV2(collectionNft.tokenAddress)
+        val collectionMint = randomMint()
+        val collectionNft = createRandomMetaplexMeta(mint = collectionMint)
+        val metaOffChain = createRandomMetaplexOffChainMeta(mint = collectionMint)
+        val collectionV2 = SolanaCollectionV2(collectionMint)
 
         metaplexMetaRepository.save(collectionNft)
         metaplexOffChainMetaRepository.save(metaOffChain)
-
-        val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(collectionNft.metaFields, metaOffChain.metaFields)
-        val expected = collectionConverter.convertV2(collectionV2, tokenMeta)
-
         collectionRepository.save(collectionV2)
+
+        val expected = collectionConverter.toDto(SolanaCollectionV2(collectionMint))
         val result = collectionControllerApi.getCollectionById(collectionV2.id).awaitFirst()
         assertThat(result).isEqualTo(expected)
-    }
-
-    @Test
-    fun `collectionV2 as token`() = runBlocking<Unit> {
-        val tokenWithMeta = saveTokenWithMeta()
-        val tokenMeta = tokenWithMeta.tokenMeta!!
-
-        val result = collectionControllerApi.getCollectionById(tokenWithMeta.token.mint).awaitFirst()
-        val collectionDto = collectionConverter.convertV2(SolanaCollectionV2(tokenWithMeta.token.mint), tokenMeta)
-
-        assertThat(result).isEqualTo(collectionDto)
     }
 }

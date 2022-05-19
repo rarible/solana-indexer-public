@@ -104,7 +104,7 @@ class MetaplexOffChainMetaLoaderTest {
             loadedAt = Instant.EPOCH
         )
 
-        coEvery { collectionService.updateCollectionV1(expected) } returns null
+        coEvery { collectionService.saveCollectionV1(expected) } returns null
 
         val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
             tokenAddress = tokenAddress,

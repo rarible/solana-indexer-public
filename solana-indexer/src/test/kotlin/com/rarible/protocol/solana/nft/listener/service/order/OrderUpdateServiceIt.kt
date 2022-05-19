@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
-import com.ninjasquad.springmockk.clear
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.OrderStatus

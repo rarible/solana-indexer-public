@@ -7,9 +7,7 @@ import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
-import com.rarible.protocol.solana.common.service.CollectionConverter
-import com.rarible.protocol.solana.common.service.CollectionService
-import com.rarible.protocol.solana.common.update.CollectionEventListener
+import com.rarible.protocol.solana.common.service.CollectionUpdateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -17,9 +15,7 @@ import org.springframework.stereotype.Component
 class MetaUpdateService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val tokenMetaService: TokenMetaService,
-    private val collectionService: CollectionService,
-    private val collectionConverter: CollectionConverter,
-    private val collectionEventListener: CollectionEventListener,
+    private val collectionUpdateService: CollectionUpdateService,
     private val tokenFilter: SolanaTokenFilter
 ) : EntityService<MetaId, MetaplexMeta> {
 
@@ -49,9 +45,7 @@ class MetaUpdateService(
 
     private suspend fun updateCollection(entity: MetaplexMeta) {
         val collectionAddress = entity.metaFields.collection?.address ?: return
-        val collection = collectionService.updateCollectionV2(collectionAddress) ?: return
-        val dto = collectionConverter.toDto(collection)
-        collectionEventListener.onCollectionChanged(dto)
+        collectionUpdateService.updateCollectionV2AndSendUpdate(collectionAddress)
     }
 
 }

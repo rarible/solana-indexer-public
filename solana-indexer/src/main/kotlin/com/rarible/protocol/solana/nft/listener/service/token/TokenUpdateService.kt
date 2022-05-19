@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.service.CollectionUpdateService
 import com.rarible.protocol.solana.common.update.TokenUpdateListener
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component
 class TokenUpdateService(
     private val tokenRepository: TokenRepository,
     private val tokenUpdateListener: TokenUpdateListener,
+    private val collectionUpdateService: CollectionUpdateService,
     private val tokenFilter: SolanaTokenFilter
 ) : EntityService<TokenId, Token> {
 
@@ -31,6 +33,7 @@ class TokenUpdateService(
         }
         val token = tokenRepository.save(entity)
         tokenUpdateListener.onTokenChanged(token)
+        collectionUpdateService.onTokenChanged(token)
         logger.info("Updated token: $entity")
         return token
     }

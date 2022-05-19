@@ -22,5 +22,14 @@ data class PublicKey(private val pubKey: ByteArray) {
 
     companion object {
         const val PUBLIC_KEY_LENGTH = 32
+
+        fun isPubKey(maybePubKey: String): Boolean {
+            // TODO: Also add verification according to https://docs.solana.com/integrations/exchange#valid-ed25519-pubkey-check
+            return try {
+                Base58.decode(maybePubKey).size == PUBLIC_KEY_LENGTH
+            } catch (e: Exception) {
+                return false
+            }
+        }
     }
 }

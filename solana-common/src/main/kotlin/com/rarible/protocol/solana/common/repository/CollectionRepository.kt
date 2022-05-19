@@ -28,12 +28,11 @@ class CollectionRepository(
             .awaitFirstOrNull()
     }
 
-    fun findAll(fromId: String?, limit: Int): Flow<SolanaCollection> {
+    fun findAll(fromId: String?): Flow<SolanaCollection> {
         val criteria = fromId?.let { Criteria("_id").gt(it) }
             ?: Criteria()
 
         val query = Query(criteria)
-        query.limit(limit)
         query.with(Sort.by(Sort.Direction.ASC, "_id"))
 
         return mongo.find(query, SolanaCollection::class.java, collection).asFlow()

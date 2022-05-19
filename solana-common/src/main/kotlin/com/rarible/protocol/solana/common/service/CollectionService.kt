@@ -5,7 +5,7 @@ import com.rarible.protocol.solana.common.model.SolanaCollection
 import com.rarible.protocol.solana.common.model.SolanaCollectionV1
 import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.common.repository.CollectionRepository
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.Flow
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -24,11 +24,11 @@ class CollectionService(
         return collectionRepository.findById(id)
     }
 
-    suspend fun findAll(fromId: String?, limit: Int): List<SolanaCollection> {
-        return collectionRepository.findAll(fromId, limit).toList()
+    suspend fun findAll(fromId: String?): Flow<SolanaCollection> {
+        return collectionRepository.findAll(fromId)
     }
 
-    suspend fun updateCollectionV1(
+    suspend fun saveCollectionV1(
         offChainMeta: MetaplexOffChainMeta
     ): SolanaCollectionV1? {
         val collection = offChainMeta.metaFields.collection ?: return null
@@ -47,7 +47,7 @@ class CollectionService(
         ) as SolanaCollectionV1
     }
 
-    suspend fun updateCollectionV2(collectionAddress: String): SolanaCollectionV2? {
+    suspend fun saveCollectionV2(collectionAddress: String): SolanaCollectionV2? {
         val exist = findById(collectionAddress)
         if (exist != null) {
             return null

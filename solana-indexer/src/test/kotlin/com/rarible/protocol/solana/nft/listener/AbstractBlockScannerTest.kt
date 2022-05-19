@@ -21,6 +21,7 @@ import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.service.CollectionService
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coJustRun
@@ -95,6 +96,9 @@ abstract class AbstractBlockScannerTest {
 
     @Autowired
     protected lateinit var tokenRepository: TokenRepository
+
+    @Autowired
+    protected lateinit var collectionService: CollectionService
 
     @Autowired
     protected lateinit var balanceRepository: BalanceRepository

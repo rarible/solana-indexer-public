@@ -7,6 +7,7 @@ import com.rarible.protocol.solana.common.model.SolanaCollectionV2
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.createRandomMetaplexOffChainMeta
 import com.rarible.protocol.solana.test.randomMint
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -34,16 +35,8 @@ class CollectionServiceIt : AbstractIntegrationTest() {
         val c3 = collectionService.save(SolanaCollectionV1("3", randomString(), randomString()))
         val c2 = collectionService.save(SolanaCollectionV2("2"))
         val c1 = collectionService.save(SolanaCollectionV2("1"))
-
-        val page1 = collectionService.findAll(null, 1)
-        val page2 = collectionService.findAll("111", 2)
-
-        assertThat(page1).hasSize(1)
-        assertThat(page2).hasSize(2)
-
-        assertThat(page1[0]).isEqualTo(c1)
-        assertThat(page2[0]).isEqualTo(c2)
-        assertThat(page2[1]).isEqualTo(c3)
+        assertThat(collectionService.findAll(null).toList()).isEqualTo(listOf(c1, c2, c3))
+        assertThat(collectionService.findAll("111").toList()).isEqualTo(listOf(c2, c3))
     }
 
     @Test
@@ -58,7 +51,7 @@ class CollectionServiceIt : AbstractIntegrationTest() {
             family = collection.family,
         )
 
-        collectionService.updateCollectionV1(meta)
+        collectionService.saveCollectionV1(meta)
         val saved = collectionService.findById(collection.hash)
 
         assertThat(saved).isEqualTo(expected)
@@ -73,7 +66,7 @@ class CollectionServiceIt : AbstractIntegrationTest() {
         val exists = SolanaCollectionV1(collection.hash, randomString(), randomString())
         collectionService.save(exists)
 
-        collectionService.updateCollectionV1(meta)
+        collectionService.saveCollectionV1(meta)
         val saved = collectionService.findById(collection.hash)
 
         // Should not be updated
@@ -88,7 +81,7 @@ class CollectionServiceIt : AbstractIntegrationTest() {
 
         val expected = SolanaCollectionV2(collectionAddress)
 
-        collectionService.updateCollectionV2(collectionAddress)
+        collectionService.saveCollectionV2(collectionAddress)
         val saved = collectionService.findById(collectionAddress)
 
         assertThat(saved).isEqualTo(expected)

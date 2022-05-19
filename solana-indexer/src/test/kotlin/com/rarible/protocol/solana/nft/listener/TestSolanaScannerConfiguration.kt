@@ -5,6 +5,7 @@ import com.rarible.core.kafka.RaribleKafkaConsumer
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
 import com.rarible.protocol.solana.dto.BalanceEventDto
+import com.rarible.protocol.solana.dto.CollectionEventDto
 import com.rarible.protocol.solana.dto.TokenEventDto
 import com.rarible.protocol.solana.subscriber.SolanaEventsConsumerFactory
 import io.micrometer.core.instrument.MeterRegistry
@@ -33,6 +34,10 @@ class TestSolanaScannerConfiguration {
     @Bean
     fun tokenEventConsumer(solanaEventsConsumerFactory: SolanaEventsConsumerFactory): RaribleKafkaConsumer<TokenEventDto> =
         solanaEventsConsumerFactory.createTokenEventConsumer("test")
+
+    @Bean
+    fun collectionEventConsumer(solanaEventsConsumerFactory: SolanaEventsConsumerFactory): RaribleKafkaConsumer<CollectionEventDto> =
+        solanaEventsConsumerFactory.createCollectionEventConsumer("test")
 
     @Bean
     fun balanceEventConsumer(solanaEventsConsumerFactory: SolanaEventsConsumerFactory): RaribleKafkaConsumer<BalanceEventDto> =
