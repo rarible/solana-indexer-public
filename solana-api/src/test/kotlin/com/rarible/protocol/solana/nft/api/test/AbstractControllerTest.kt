@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.api.test
 
 import com.rarible.core.common.nowMillis
+import com.rarible.protocol.solana.api.client.ActivityControllerApi
 import com.rarible.protocol.solana.api.client.BalanceControllerApi
 import com.rarible.protocol.solana.api.client.CollectionControllerApi
 import com.rarible.protocol.solana.api.client.FixedSolanaApiServiceUriProvider
@@ -57,6 +58,8 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
 
     protected lateinit var orderControllerApi: OrderControllerApi
 
+    protected lateinit var activityControllerApi: ActivityControllerApi
+
     @PostConstruct
     fun setup() {
         val urlProvider = FixedSolanaApiServiceUriProvider(URI.create("http://127.0.0.1:$port"))
@@ -65,6 +68,7 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
         collectionControllerApi = clientFactory.createCollectionControllerApiClient()
         balanceControllerApi = clientFactory.createBalanceControllerApiClient()
         orderControllerApi = clientFactory.createOrderControllerApiClient()
+        activityControllerApi = clientFactory.createActivityControllerApiClient()
     }
 
     suspend fun saveRandomMetaplexOnChainAndOffChainMeta(

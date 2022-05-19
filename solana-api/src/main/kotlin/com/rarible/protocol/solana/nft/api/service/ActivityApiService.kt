@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.nft.api.service
 
+import com.rarible.protocol.solana.common.continuation.DateIdContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -18,6 +19,15 @@ import org.springframework.stereotype.Service
 class ActivityApiService(
     private val activityRepository: ActivityRepository,
 ) {
+
+    suspend fun getAllActivitiesSync(
+        continuation: DateIdContinuation?,
+        size: Int,
+        sortAscending: Boolean,
+    ): List<ActivityDto> {
+        return activityRepository.findAllActivitiesSync(continuation, size, sortAscending)
+            .take(size).toList()
+    }
 
     suspend fun getAllActivities(
         filter: ActivityFilterAllDto,

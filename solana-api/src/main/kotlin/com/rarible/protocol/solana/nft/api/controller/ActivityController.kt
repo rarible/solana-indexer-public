@@ -14,6 +14,7 @@ import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityFilterDto
 import com.rarible.protocol.solana.dto.ActivitySortDto
+import com.rarible.protocol.solana.dto.SyncSortDto
 import com.rarible.protocol.solana.nft.api.service.ActivityApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
@@ -23,6 +24,25 @@ import org.springframework.web.bind.annotation.RestController
 class ActivityController(
     private val activityApiService: ActivityApiService
 ) : ActivityControllerApi {
+
+    override suspend fun getActivitiesSync(
+        continuation: String?,
+        size: Int?,
+        sort: SyncSortDto?
+    ): ResponseEntity<ActivitiesDto> {
+        val dateIdContinuation = continuation?.let { DateIdContinuation.parse(it) }
+        val safeSize = PageSize.ACTIVITY.limit(size)
+        val sortAscending = sort != SyncSortDto.DB_UPDATE_DESC
+
+        val result = activityApiService.getAllActivitiesSync(
+            continuation = dateIdContinuation,
+            size = safeSize,
+            sortAscending = sortAscending
+        )
+
+        val dto = toSyncSlice(result, sortAscending, safeSize)
+        return ResponseEntity.ok(dto)
+    }
 
     override suspend fun searchActivities(
         activityFilterDto: ActivityFilterDto,
@@ -76,6 +96,12 @@ class ActivityController(
 
     private fun toSlice(result: List<ActivityDto>, asc: Boolean, size: Int): ActivitiesDto {
         val continuationFactory = ActivityContinuation.ById(asc)
+        val slice = Paging(continuationFactory, result).getSlice(size)
+        return ActivitiesDto(slice.continuation, slice.entities)
+    }
+
+    private fun toSyncSlice(result: List<ActivityDto>, asc: Boolean, size: Int): ActivitiesDto {
+        val continuationFactory = ActivityContinuation.ByDbUpdatedAndId(asc)
         val slice = Paging(continuationFactory, result).getSlice(size)
         return ActivitiesDto(slice.continuation, slice.entities)
     }
