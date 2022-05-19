@@ -39,7 +39,7 @@ class OrderControllerFt : AbstractControllerTest() {
 
         repeat(orderQuantity) {
             val order =
-                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
+                orderRepository.save(randomSellOrder())
             auctionHouseRepository.save(createAuctionHouse(order))
         }
 
@@ -86,7 +86,7 @@ class OrderControllerFt : AbstractControllerTest() {
     ) {
         repeat(orderQuantity) {
             val order =
-                orderRepository.save(randomSellOrder().copy(dbUpdatedAt = Instant.ofEpochMilli((0..Long.MAX_VALUE).random())))
+                orderRepository.save(randomSellOrder())
             auctionHouseRepository.save(createAuctionHouse(order))
         }
 
