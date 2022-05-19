@@ -1,5 +1,4 @@
 val ktorVersion: String by project
-val logbackVersion: String by project
 val solanaScannerVersion: String by project
 
 plugins {
