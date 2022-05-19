@@ -50,13 +50,6 @@ class CommonConfiguration(
         solanaIndexerProperties: SolanaIndexerProperties
     ): SolanaTokenFilter {
         return when (featureFlags.tokenFilter) {
-            TokenFilterType.NONE -> {
-                object : SolanaTokenFilter {
-                    override suspend fun isAcceptableToken(mint: String): Boolean = true
-
-                    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) = Unit
-                }
-            }
             TokenFilterType.WHITELIST -> {
                 val tokens = TokenListFileReader("/whitelist").readTokens(WHITELIST_FILES)
                 SolanaWhiteListTokenFilter(tokens)

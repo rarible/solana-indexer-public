@@ -18,7 +18,7 @@ data class SolanaIndexerProperties(
 
 data class FeatureFlags(
     val enableCacheApi: Boolean = false,
-    val tokenFilter: TokenFilterType = TokenFilterType.NONE,
+    val tokenFilter: TokenFilterType = TokenFilterType.BLACKLIST,
     val blacklistTokens: Set<String> = emptySet(),
     val auctionHouses: Set<String> = emptySet(),
     /**
@@ -35,6 +35,5 @@ data class FeatureFlags(
 enum class TokenFilterType {
     WHITELIST,
     WHITELIST_V2,
-    BLACKLIST,
-    NONE
+    BLACKLIST
 }
