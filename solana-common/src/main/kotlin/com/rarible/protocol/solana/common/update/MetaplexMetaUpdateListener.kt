@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
+import com.rarible.protocol.solana.common.service.CollectionUpdateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -14,7 +15,8 @@ class MetaplexMetaUpdateListener(
     private val tokenRepository: TokenRepository,
     private val balanceRepository: BalanceRepository,
     private val tokenUpdateListener: TokenUpdateListener,
-    private val balanceUpdateListener: BalanceUpdateListener
+    private val balanceUpdateListener: BalanceUpdateListener,
+    private val collectionUpdateService: CollectionUpdateService
 ) {
 
     private val logger = LoggerFactory.getLogger(MetaplexMetaUpdateListener::class.java)
@@ -24,6 +26,7 @@ class MetaplexMetaUpdateListener(
         val token = tokenRepository.findByMint(tokenAddress)
         if (token != null) {
             tokenUpdateListener.onTokenChanged(TokenWithMeta(token, tokenMeta))
+            collectionUpdateService.onTokenChanged(token)
         }
 
         balanceRepository.findByMint(
