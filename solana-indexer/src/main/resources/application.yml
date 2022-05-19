@@ -27,7 +27,7 @@ common:
   featureFlags:
     skipTransfersWithUnknownMint: false
     enableAccountToMintAssociationCache: true # Use redis for caching
-    tokenFilter: NONE
+    tokenFilter: BLACKLIST
 
 rarible:
   core:
