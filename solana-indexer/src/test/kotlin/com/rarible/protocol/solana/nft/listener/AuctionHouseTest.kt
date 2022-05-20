@@ -120,6 +120,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 SolanaEscrowRecord.ExecuteSaleRecord::timestamp.name
             ).isEqualTo(
                 SolanaEscrowRecord.ExecuteSaleRecord(
+                    mint = token,
                     auctionHouse = house.id,
                     escrow = escrow,
                     wallet = buyerWallet,
@@ -561,6 +562,39 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         dbUpdatedAt = Instant.EPOCH
                     )
                 )
+        }
+    }
+
+    @Test
+    fun orderStatusTest() = runBlocking {
+        val keypair = createKeypair(randomString())
+        val wallet = getWallet(keypair)
+        airdrop(10, wallet)
+        val house = createAuctionHouse(keypair)
+        val token = mintNft(baseKeypair)
+        airdrop(10, house.feePayerAcct)
+        buy(house.id, keypair, 1, token, 1)
+        withdraw(house.id, keypair, 1UL)
+
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findBuyOrders(
+                maker = getWallet(keypair),
+                statuses = listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE),
+                auctionHouse = house.id
+            ).single()
+
+            assertThat(order.status).isEqualTo(OrderStatus.INACTIVE)
+        }
+
+        deposit(house.id, keypair, 1UL)
+        Wait.waitAssert(timeout) {
+            val order = orderRepository.findBuyOrders(
+                maker = getWallet(keypair),
+                statuses = listOf(OrderStatus.ACTIVE, OrderStatus.INACTIVE),
+                auctionHouse = house.id
+            ).single()
+
+            assertThat(order.status).isEqualTo(OrderStatus.ACTIVE)
         }
     }
 

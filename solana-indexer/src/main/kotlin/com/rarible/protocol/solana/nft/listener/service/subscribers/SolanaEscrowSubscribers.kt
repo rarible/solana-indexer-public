@@ -132,6 +132,7 @@ class EscrowExecuteSaleSubscriber : SolanaLogEventSubscriber {
 
         return listOf(
             ExecuteSaleRecord(
+                mint = log.instruction.accounts[3],
                 escrow = log.instruction.accounts[6],
                 wallet = log.instruction.accounts[0],
                 buyPrice = instruction.buyerPrice.toBigInteger(),

@@ -16,6 +16,7 @@ data class Escrow(
     val auctionHouse: AuctionHouseId,
     val value: BigInteger,
     val states: List<Escrow>,
+    val lastEvent: EscrowEvent?,
     override val revertableEvents: List<EscrowEvent>,
     override val createdAt: Instant?,
     override val updatedAt: Instant
@@ -38,6 +39,7 @@ data class Escrow(
             account = "",
             wallet = "",
             auctionHouse = "",
+            lastEvent = null,
             value = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,

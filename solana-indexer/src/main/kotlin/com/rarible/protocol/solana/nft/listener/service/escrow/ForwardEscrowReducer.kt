@@ -48,6 +48,6 @@ class ForwardEscrowReducer : Reducer<EscrowEvent, Escrow> {
             is EscrowWithdrawEvent -> entity.copy(
                 value = entity.value - event.amount
             )
-        }.copy(updatedAt = event.timestamp, states = states)
+        }.copy(updatedAt = event.timestamp, states = states, lastEvent = event)
     }
 }

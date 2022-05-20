@@ -81,6 +81,21 @@ class OrderRepository(
         return mongo.query<Order>().matching(query).all().asFlow()
     }
 
+    fun findBuyOrders(
+        maker: String,
+        statuses: List<OrderStatus>,
+        auctionHouse: String
+    ): Flow<Order> {
+        val criteria = Criteria().andOperator(
+            Order::direction isEqualTo OrderDirection.BUY,
+            Order::maker isEqualTo maker,
+            Order::auctionHouse isEqualTo auctionHouse,
+            Order::status inValues statuses
+        )
+        val query = Query(criteria)
+        return mongo.query<Order>().matching(query).all().asFlow()
+    }
+
     suspend fun createIndexes() {
         val logger = LoggerFactory.getLogger(OrderRepository::class.java)
         logger.info("Ensuring indexes on ${Order.COLLECTION}")

@@ -5,12 +5,14 @@ import com.rarible.protocol.solana.common.model.Escrow
 import com.rarible.protocol.solana.common.model.EscrowId
 import com.rarible.protocol.solana.common.model.isEmpty
 import com.rarible.protocol.solana.common.repository.EscrowRepository
+import com.rarible.protocol.solana.nft.listener.service.order.OrderStatusEscrowUpdateService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class EscrowUpdateService(
-    private val escrowRepository: EscrowRepository
+    private val escrowRepository: EscrowRepository,
+    private val orderStatusEscrowUpdateService: OrderStatusEscrowUpdateService
 ) : EntityService<EscrowId, Escrow> {
     override suspend fun get(id: EscrowId): Escrow? {
         return escrowRepository.findByAccount(id)
@@ -22,6 +24,8 @@ class EscrowUpdateService(
             return entity
         }
         val escrow = escrowRepository.save(entity)
+
+        orderStatusEscrowUpdateService.updateStatusOfBuyOrders(escrow)
 
         logger.info("Updated escrow: $entity")
         return escrow

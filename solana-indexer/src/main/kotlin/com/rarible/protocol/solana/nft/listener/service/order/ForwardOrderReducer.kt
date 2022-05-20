@@ -107,6 +107,7 @@ class ForwardOrderReducer(
                 when (event.instruction) {
                     // We do not need to execute any updates here, balance will be checked in UpdateService
                     is SolanaOrderUpdateInstruction.BalanceUpdate -> entity.copy(updatedAt = event.timestamp)
+                    is SolanaOrderUpdateInstruction.EscrowUpdate -> entity.copy(updatedAt = event.timestamp)
                 }
             }
         }.copy(states = states)

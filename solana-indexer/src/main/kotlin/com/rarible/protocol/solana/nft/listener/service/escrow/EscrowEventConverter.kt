@@ -49,6 +49,7 @@ class EscrowEventConverter {
         )
         is SolanaEscrowRecord.ExecuteSaleRecord -> listOf(
                 EscrowExecuteSaleEvent(
+                    mint = record.mint,
                     account = record.escrow,
                     auctionHouse = record.auctionHouse,
                     wallet = record.wallet,

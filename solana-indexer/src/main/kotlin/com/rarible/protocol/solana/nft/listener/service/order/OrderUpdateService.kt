@@ -6,8 +6,11 @@ import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.isEmpty
+import com.rarible.protocol.solana.common.pubkey.ProgramDerivedAddressCalc
+import com.rarible.protocol.solana.common.pubkey.PublicKey
 import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.repository.BalanceRepository
+import com.rarible.protocol.solana.common.repository.EscrowRepository
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.update.OrderUpdateListener
 import org.slf4j.LoggerFactory
@@ -19,7 +22,8 @@ class OrderUpdateService(
     private val balanceRepository: BalanceRepository,
     private val orderRepository: OrderRepository,
     private val orderUpdateListener: OrderUpdateListener,
-    private val auctionHouseFilter: SolanaAuctionHouseFilter
+    private val auctionHouseFilter: SolanaAuctionHouseFilter,
+    private val escrowRepository: EscrowRepository
 ) : EntityService<OrderId, Order> {
 
     override suspend fun get(id: OrderId): Order? =
@@ -56,19 +60,27 @@ class OrderUpdateService(
     }
 
     private suspend fun Order.updateMakeStock(): Order {
-        if (direction == OrderDirection.BUY) {
-            // TODO[bids]: we don't fully support the bids yet (we don't have a currency reducer),
-            //  so we consider the makeStock is always enough (equal to make.amount) if the order is active.
-            val makeStock = when (status) {
-                OrderStatus.ACTIVE -> make.amount
-                OrderStatus.INACTIVE -> BigInteger.ZERO
-                OrderStatus.CANCELLED -> BigInteger.ZERO
-                OrderStatus.FILLED -> BigInteger.ZERO
-            }
-            return this.copy(makeStock = makeStock)
-        }
         if (status == OrderStatus.CANCELLED || status == OrderStatus.FILLED) {
             return this.copy(makeStock = BigInteger.ZERO)
+        }
+
+        if (direction == OrderDirection.BUY) {
+            val escrowAccount = ProgramDerivedAddressCalc.getEscrowPaymentAccount(
+                PublicKey(maker),
+                PublicKey(auctionHouse)
+            ).address.toBase58()
+            // if escrow not reduced atm, we consider that makeStock = make.amount
+            val escrow = escrowRepository.findByAccount(escrowAccount)?.value ?: make.amount
+
+            val makeStock =  if (escrow >= make.amount) make.amount else BigInteger.ZERO
+            val updatedStatus = if (status == OrderStatus.ACTIVE && makeStock == BigInteger.ZERO) {
+                OrderStatus.INACTIVE
+            } else if (status == OrderStatus.INACTIVE && makeStock == make.amount) {
+                OrderStatus.ACTIVE
+            } else {
+                status
+            }
+            return this.copy(makeStock = makeStock, status = updatedStatus)
         }
 
         val balance = makerAccount?.let { balanceRepository.findByAccount(it) }

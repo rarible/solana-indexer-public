@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 // Fake log-record instructions for internal updates, caused by indexer logic, not blockchain events
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(
-    JsonSubTypes.Type(name = "BALANCE_UPDATE", value = SolanaOrderUpdateInstruction.BalanceUpdate::class)
+    JsonSubTypes.Type(name = "BALANCE_UPDATE", value = SolanaOrderUpdateInstruction.BalanceUpdate::class),
+    JsonSubTypes.Type(name = "ESCROW_UPDATE", value = SolanaOrderUpdateInstruction.EscrowUpdate::class)
 )
 sealed class SolanaOrderUpdateInstruction {
 
@@ -14,4 +15,5 @@ sealed class SolanaOrderUpdateInstruction {
         val account: String // Originally not needed, but data class requires at least 1 field
     ) : SolanaOrderUpdateInstruction()
 
+    object EscrowUpdate : SolanaOrderUpdateInstruction()
 }

@@ -19,6 +19,7 @@ sealed class SolanaEscrowRecord: SolanaBaseLogRecord() {
     }
 
     data class ExecuteSaleRecord(
+        val mint: String,
         val escrow: String,
         val wallet: String,
         val buyPrice: BigInteger,

@@ -41,7 +41,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
             balanceRepository = balanceRepository,
             orderRepository = orderRepository,
             orderUpdateListener = orderUpdateListener,
-            auctionHouseFilter = auctionHouseFilter
+            auctionHouseFilter = auctionHouseFilter,
+            escrowRepository = escrowRepository
         )
     }
 
