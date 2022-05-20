@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.update.OrderUpdateListener
@@ -68,7 +69,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Order saved, event sent
         val saved = orderRepository.findById(order.id)!!
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertListenerWasCalled(saved)
     }
 
     @Test
@@ -91,7 +92,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order)
+        assertOrdersEqual(order, saved)
         coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
     }
 
@@ -105,7 +106,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
         val orderWithMakeStock = order.copy(makeStock = order.make.amount)
-        assertThat(saved).isEqualTo(orderWithMakeStock)
+        assertOrdersEqual(orderWithMakeStock, saved)
         coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(order) }
     }
 
@@ -119,7 +120,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order)
+        assertOrdersEqual(order, saved)
         coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
     }
 
@@ -138,7 +139,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Update skipped, order not changed
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order)
+        assertOrdersEqual(order, saved)
         coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(saved) }
     }
 
@@ -152,7 +153,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         // Order updated, event sent
         val saved = orderRepository.findById(order.id)!!
         assertThat(saved.takePrice).isEqualTo(updated.takePrice)
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertListenerWasCalled(saved)
     }
 
     @Test
@@ -183,8 +184,11 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Order status should be changed from ACTIVE to INACTIVE
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.INACTIVE, makeStock = BigInteger.ZERO))
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertOrdersEqual(
+            expected = order.copy(status = OrderStatus.INACTIVE, makeStock = BigInteger.ZERO),
+            actual = saved
+        )
+        assertListenerWasCalled(saved)
     }
 
     @Test
@@ -215,8 +219,11 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Order should stay active, but make stock should be changed to 1
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.ACTIVE, makeStock = BigInteger.ONE))
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertOrdersEqual(
+            expected = order.copy(status = OrderStatus.ACTIVE, makeStock = BigInteger.ONE),
+            actual = saved
+        )
+        assertListenerWasCalled(saved)
     }
 
     @Test
@@ -238,8 +245,25 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
         // Order status should be changed from INACTIVE to ACTIVE
         val saved = orderRepository.findById(order.id)!!
-        assertThat(saved).isEqualTo(order.copy(status = OrderStatus.ACTIVE))
-        coVerify(exactly = 1) { orderUpdateListener.onOrderChanged(saved) }
+        assertOrdersEqual(
+            expected = order.copy(status = OrderStatus.ACTIVE),
+            actual = saved
+        )
+        assertListenerWasCalled(saved)
+    }
+
+    private fun assertOrdersEqual(expected: Order, actual: Order) {
+        assertThat(expected)
+            .usingRecursiveComparison().ignoringFields(Order::dbUpdatedAt.name)
+            .isEqualTo(actual)
+    }
+
+    private fun assertListenerWasCalled(expectedOrder: Order) {
+        coVerify(exactly = 1) {
+            orderUpdateListener.onOrderChanged(withArg {
+                assertOrdersEqual(expectedOrder, it)
+            })
+        }
     }
 
 }
