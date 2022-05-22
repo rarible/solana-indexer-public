@@ -20,6 +20,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 class SolanaCacheApi(
     private val repository: BlockCacheRepository,
@@ -173,4 +174,16 @@ class SolanaCacheApi(
     }
 }
 
-private fun ByteArray.isCorrect() = size > 2
+/**
+ * Some cached blocks contains such data:
+ * ```{"jsonrpc":"2.0","result":null,"id":1}```
+ *
+ * This is probably a temporary response by Solana RPC Nodes until the block is indexed by the node.
+ * We need to ignore such cached blocks and reload them.
+ */
+private val emptyBlock = Base64.getDecoder().decode("eyJqc29ucnBjIjoiMi4wIiwicmVzdWx0IjpudWxsLCJpZCI6MX0K")
+
+private fun ByteArray.isCorrect(): Boolean {
+    if (size <= 2) return false
+    return !this.contentEquals(emptyBlock)
+}
