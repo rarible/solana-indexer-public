@@ -32,6 +32,7 @@ fun Application.configureRouting() {
                     if (response.error != null) {
                         call.respond(
                             ApiResponse(
+                                id = response.id,
                                 result = null,
                                 error = ApiResponse.Error(
                                     "",
