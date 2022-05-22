@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.block.cache
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rarible.blockchain.scanner.solana.client.SolanaApi
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
@@ -23,10 +24,13 @@ import java.time.Instant
 class SolanaCacheApi(
     private val repository: BlockCacheRepository,
     private val httpApi: SolanaHttpRpcApi,
-    private val mapper: ObjectMapper,
     private val properties: BlockCacheProperties,
     meterRegistry: MeterRegistry
 ) : SolanaApi {
+
+    private val mapper = jacksonMapperBuilder()
+        .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+        .build()
 
     private val blockCacheFetchTimer = Timer
         .builder(BLOCK_CACHE_TIMER)

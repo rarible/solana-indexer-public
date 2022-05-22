@@ -36,7 +36,8 @@ fun Application.configureRouting() {
                                 error = ApiResponse.Error(
                                     "",
                                     response.error!!.code
-                                )
+                                ),
+                                jsonrpc = response.jsonrpc
                             )
                         )
                     } else {

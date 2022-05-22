@@ -61,14 +61,12 @@ class BlockchainScannerConfiguration(
     fun solanaApi(
         repository: BlockCacheRepository,
         properties: SolanaBlockchainScannerProperties,
-        mapper: ObjectMapper,
         meterRegistry: MeterRegistry
     ) = if (solanaIndexerProperties.featureFlags.enableCacheApi) {
         logger.info("Using SolanaCacheApi")
         SolanaCacheApi(
             repository,
             SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
-            mapper,
             blockCacheProperties,
             meterRegistry
         )

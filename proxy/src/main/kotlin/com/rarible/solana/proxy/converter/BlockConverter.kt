@@ -55,6 +55,10 @@ object BlockConverter {
             )
         }
 
-        return ApiResponse(block.copy(transactions = newTransactions), response.error)
+        return ApiResponse(
+            result = block.copy(transactions = newTransactions),
+            error = response.error,
+            jsonrpc = response.jsonrpc
+        )
     }
 }
