@@ -29,7 +29,7 @@ class SolanaCacheApi(
 ) : SolanaApi {
 
     private val mapper = jacksonMapperBuilder()
-        .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .build()
 
     private val blockCacheFetchTimer = Timer
