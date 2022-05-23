@@ -28,7 +28,11 @@ class DynamicBlacklistedTokenRepository(
     }
 
     suspend fun saveAll(mints: Collection<String>, reason: String) {
-        val entries = mints.map { DynamicBlacklistedTokenEntry(it, reason) }
+        saveAll(mints.map { it to reason }.toMap())
+    }
+
+    suspend fun saveAll(mintAndReasons: Map<String, String>) {
+        val entries = mintAndReasons.map { DynamicBlacklistedTokenEntry(it.key, it.value) }
         saveAll(entries)
     }
 

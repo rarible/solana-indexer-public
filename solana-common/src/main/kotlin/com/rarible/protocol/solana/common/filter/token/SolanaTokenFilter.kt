@@ -4,6 +4,6 @@ interface SolanaTokenFilter {
 
     suspend fun isAcceptableToken(mint: String): Boolean
 
-    suspend fun addToBlacklist(mints: Collection<String>, reason: String)
+    suspend fun addToBlacklist(mintsAndReasons: Map<String, String>)
 
 }

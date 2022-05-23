@@ -21,7 +21,7 @@ class DynamicBlacklistSolanaTokenFilter(
         }
     }
 
-    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) {
-        dynamicBlacklistedTokenRepository.saveAll(mints, reason)
+    override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) {
+        dynamicBlacklistedTokenRepository.saveAll(mintsAndReasons)
     }
 }

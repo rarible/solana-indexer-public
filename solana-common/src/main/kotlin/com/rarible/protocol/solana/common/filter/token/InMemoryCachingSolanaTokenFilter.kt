@@ -23,9 +23,9 @@ class InMemoryCachingSolanaTokenFilter(
         return isAcceptable
     }
 
-    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) {
-        delegate.addToBlacklist(mints, reason)
-        for (mint in mints) {
+    override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) {
+        delegate.addToBlacklist(mintsAndReasons)
+        for (mint in mintsAndReasons.keys) {
             acceptableCache.put(mint, false)
         }
     }

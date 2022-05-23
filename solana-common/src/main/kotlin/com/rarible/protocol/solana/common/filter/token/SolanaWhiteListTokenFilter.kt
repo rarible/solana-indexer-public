@@ -6,5 +6,5 @@ class SolanaWhiteListTokenFilter(
 
     override suspend fun isAcceptableToken(mint: String): Boolean = mint in tokens
 
-    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) = Unit
+    override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
 }

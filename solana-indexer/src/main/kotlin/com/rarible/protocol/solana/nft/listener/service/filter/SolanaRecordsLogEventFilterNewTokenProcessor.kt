@@ -43,9 +43,7 @@ class SolanaRecordsLogEventFilterNewTokenProcessor(
                 }
             }
         }
-        for ((mint, reason) in blacklistedTokens) {
-            tokenFilter.addToBlacklist(listOf(mint), reason)
-        }
+        tokenFilter.addToBlacklist(blacklistedTokens)
     }
 
 

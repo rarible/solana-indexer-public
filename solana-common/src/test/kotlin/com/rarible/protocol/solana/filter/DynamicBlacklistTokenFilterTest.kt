@@ -45,7 +45,7 @@ class DynamicBlacklistTokenFilterTest : AbstractIntegrationTest() {
 
         val mint = randomString()
         assertThat(filter.isAcceptableToken(mint)).isTrue
-        filter.addToBlacklist(listOf(mint), "test")
+        filter.addToBlacklist(mapOf(mint to "test"))
         assertThat(filter.isAcceptableToken(mint)).isFalse
     }
 

@@ -59,7 +59,7 @@ class SolanaLogEventFilterTest {
         clearMocks(tokenFilter)
         clearMocks(auctionHouseFilter)
         clearMocks(solanaRecordsLogEventFilterNewTokenProcessor)
-        coJustRun { tokenFilter.addToBlacklist(any(), any()) }
+        coJustRun { tokenFilter.addToBlacklist(any()) }
         coJustRun { solanaRecordsLogEventFilterNewTokenProcessor.addNewTokensWithoutMetaToBlacklist(any()) }
     }
 

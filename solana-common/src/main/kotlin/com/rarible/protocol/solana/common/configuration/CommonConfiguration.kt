@@ -54,7 +54,7 @@ class CommonConfiguration(
                 object : SolanaTokenFilter {
                     override suspend fun isAcceptableToken(mint: String): Boolean = true
 
-                    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) = Unit
+                    override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
                 }
             }
             TokenFilterType.WHITELIST -> {

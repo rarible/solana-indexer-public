@@ -6,7 +6,7 @@ class CompositeSolanaTokenFilter(
     override suspend fun isAcceptableToken(mint: String): Boolean =
         filters.all { it.isAcceptableToken(mint) }
 
-    override suspend fun addToBlacklist(mints: Collection<String>, reason: String) {
-        filters.forEach { it.addToBlacklist(mints, reason) }
+    override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) {
+        filters.forEach { it.addToBlacklist(mintsAndReasons) }
     }
 }
