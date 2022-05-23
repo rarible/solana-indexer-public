@@ -75,7 +75,8 @@ class CommonConfiguration(
                         ),
                         InMemoryCachingSolanaTokenFilter(
                             delegate = DynamicBlacklistSolanaTokenFilter(
-                                dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository
+                                dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository,
+                                featureFlagEnableDynamicFiltering = solanaIndexerProperties.featureFlags.tokenFilterEnableDynamicBlacklist
                             ),
                             cacheMaxSize = solanaIndexerProperties.featureFlags.tokenFilterInMemoryCacheSize
                         )
