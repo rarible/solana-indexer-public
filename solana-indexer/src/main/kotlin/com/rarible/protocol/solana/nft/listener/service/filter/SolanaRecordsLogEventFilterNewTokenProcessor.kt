@@ -24,7 +24,7 @@ class SolanaRecordsLogEventFilterNewTokenProcessor(
      * If metadata is not available, add the tokens to the blacklist.
      */
     suspend fun addNewTokensWithoutMetaToBlacklist(events: List<LogEvent<SolanaLogRecord, SolanaDescriptor>>) {
-        val blacklistedTokens = hashSetOf<String>()
+        val blacklistedTokens = hashMapOf<String, String>()
         for (event in events) {
             for (logRecord in event.logRecordsToInsert) {
                 if (logRecord is SolanaTokenRecord.InitializeMintRecord) {
@@ -36,16 +36,15 @@ class SolanaRecordsLogEventFilterNewTokenProcessor(
                     )
                     if (!hasMetaplexMeta) {
                         logger.info("Token ${logRecord.mint} is created without associated Metaplex meta")
-                        blacklistedTokens += logRecord.mint
+                        blacklistedTokens[logRecord.mint] = "MetaplexMeta was not created " +
+                                "for mint ${logRecord.mint} in the block ${solanaBlockchainBlock.slot} " +
+                                "and instruction ${logRecord.log}"
                     }
                 }
             }
         }
-        if (blacklistedTokens.isNotEmpty()) {
-            tokenFilter.addToBlacklist(
-                blacklistedTokens,
-                SolanaRecordsLogEventFilter.TOKEN_WITHOUT_META_BLACKLIST_REASON
-            )
+        for ((mint, reason) in blacklistedTokens) {
+            tokenFilter.addToBlacklist(listOf(mint), reason)
         }
     }
 

@@ -318,7 +318,4 @@ class SolanaRecordsLogEventFilter(
         }.toMutableSet()
     }
 
-    companion object {
-        const val TOKEN_WITHOUT_META_BLACKLIST_REASON = "Metaplex meta was not created"
-    }
 }
