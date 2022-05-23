@@ -25,8 +25,12 @@ class SolanaBlockCompressingApi(
             httpApi.getBlock(slot, details)
         } else {
             val result = httpApi.getBlock(slot, details)
-            logger.info("Solana API: compressed block #$slot")
-            blockCompressor.compress(result)
+            if (result.result != null) {
+                logger.info("Solana API: compressed block #$slot")
+                blockCompressor.compress(result)
+            } else {
+                result
+            }
         }
     }
 
