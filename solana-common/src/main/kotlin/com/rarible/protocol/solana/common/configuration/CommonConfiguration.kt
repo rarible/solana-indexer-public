@@ -5,9 +5,9 @@ import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouse
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
 import com.rarible.protocol.solana.common.filter.token.InMemoryCachingSolanaTokenFilter
-import com.rarible.protocol.solana.common.filter.token.StaticSolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
+import com.rarible.protocol.solana.common.filter.token.StaticSolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
 import com.rarible.protocol.solana.common.filter.token.dynamic.DynamicBlacklistSolanaTokenFilter
 import com.rarible.protocol.solana.common.repository.DynamicBlacklistedTokenRepository
@@ -68,18 +68,18 @@ class CommonConfiguration(
             TokenFilterType.BLACKLIST -> {
                 val blacklistTokens = featureFlags.blacklistTokens
                 val coinTokens = CurrencyTokenReader().readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
-                InMemoryCachingSolanaTokenFilter(
-                    delegate = CompositeSolanaTokenFilter(
-                        listOf(
-                            StaticSolanaBlackListTokenFilter(
-                                blacklistedTokens = blacklistTokens + coinTokens
-                            ),
-                            DynamicBlacklistSolanaTokenFilter(
+                CompositeSolanaTokenFilter(
+                    listOf(
+                        StaticSolanaBlackListTokenFilter(
+                            blacklistedTokens = blacklistTokens + coinTokens
+                        ),
+                        InMemoryCachingSolanaTokenFilter(
+                            delegate = DynamicBlacklistSolanaTokenFilter(
                                 dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository
-                            )
+                            ),
+                            cacheMaxSize = solanaIndexerProperties.featureFlags.tokenFilterInMemoryCacheSize
                         )
-                    ),
-                    cacheMaxSize = solanaIndexerProperties.featureFlags.tokenFilterInMemoryCacheSize
+                    )
                 )
             }
         }

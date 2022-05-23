@@ -42,7 +42,8 @@ class SolanaRecordsLogEventFilterNewTokenProcessor(
             }
         }
         if (blacklistedTokens.isNotEmpty()) {
-            tokenFilter.addToBlacklist(blacklistedTokens,
+            tokenFilter.addToBlacklist(
+                blacklistedTokens,
                 SolanaRecordsLogEventFilter.TOKEN_WITHOUT_META_BLACKLIST_REASON
             )
         }
