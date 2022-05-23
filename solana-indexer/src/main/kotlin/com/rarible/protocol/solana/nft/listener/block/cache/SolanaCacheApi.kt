@@ -176,14 +176,18 @@ class SolanaCacheApi(
 
 /**
  * Some cached blocks contains such data:
+ * ```{"jsonrpc":"2.0","id":1}```
  * ```{"jsonrpc":"2.0","result":null,"id":1}```
  *
  * This is probably a temporary response by Solana RPC Nodes until the block is indexed by the node.
  * We need to ignore such cached blocks and reload them.
  */
-private val emptyBlock = Base64.getDecoder().decode("eyJqc29ucnBjIjoiMi4wIiwicmVzdWx0IjpudWxsLCJpZCI6MX0K")
+private val emptyBlocks = listOf(
+    "eyJqc29ucnBjIjoiMi4wIiwiaWQiOjF9",
+    "eyJqc29ucnBjIjoiMi4wIiwicmVzdWx0IjpudWxsLCJpZCI6MX0K"
+).map { Base64.getDecoder().decode(it) }
 
 private fun ByteArray.isCorrect(): Boolean {
     if (size <= 2) return false
-    return !this.contentEquals(emptyBlock)
+    return emptyBlocks.none { this.contentEquals(it) }
 }
