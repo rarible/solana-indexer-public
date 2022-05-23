@@ -1,23 +1,17 @@
 package com.rarible.solana.proxy.plugins
 
-import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
-import com.rarible.solana.proxy.converter.BlockConverter
+import com.rarible.solana.block.SolanaBlockCompressingApi
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.configureRouting() {
-    val solanaClient = SolanaHttpRpcApi(
-        listOf(
-            "https://white-damp-rain.solana-mainnet.quiknode.pro/728e275a5bf349a7384fcc8e72d463df65b24a8c/",
-            "https://holy-proud-wave.solana-mainnet.quiknode.pro/790699a8dbe2e4f3b6b5593a366664d78646cf95/"
-        ),
-        timeoutMillis = 20_000
-    )
+fun Application.configureRouting(
+    solanaBlockCompressingApi: SolanaBlockCompressingApi
+) {
 
     routing {
         post("/") {
@@ -27,7 +21,10 @@ fun Application.configureRouting() {
                 "getBlock" -> {
                     val params = request["params"] as List<*>
                     val slot = params[0] as Int
-                    val response = solanaClient.getBlock(slot.toLong(), GetBlockRequest.TransactionDetails.Full)
+                    val response = solanaBlockCompressingApi.getBlock(
+                        slot = slot.toLong(),
+                        details = GetBlockRequest.TransactionDetails.Full
+                    )
 
                     if (response.error != null) {
                         call.respond(
@@ -42,16 +39,16 @@ fun Application.configureRouting() {
                             )
                         )
                     } else {
-                        call.respond(BlockConverter.convert(response))
+                        call.respond(response)
                     }
                 }
                 "getSlot" -> {
-                    val response = solanaClient.getLatestSlot()
+                    val response = solanaBlockCompressingApi.getLatestSlot()
 
                     call.respond(response)
                 }
                 "getFirstAvailableBlock" -> {
-                    val response = solanaClient.getFirstAvailableBlock()
+                    val response = solanaBlockCompressingApi.getFirstAvailableBlock()
 
                     call.respond(response)
                 }

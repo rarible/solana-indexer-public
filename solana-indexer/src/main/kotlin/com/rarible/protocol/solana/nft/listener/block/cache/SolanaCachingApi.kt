@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rarible.blockchain.scanner.solana.client.SolanaApi
-import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
@@ -22,10 +21,10 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class SolanaCacheApi(
+class SolanaCachingApi(
+    private val delegate: SolanaApi,
     private val repository: BlockCacheRepository,
-    private val httpApi: SolanaHttpRpcApi,
-    private val properties: BlockCacheProperties,
+    private val enableBatchedGetBlocks: Boolean,
     meterRegistry: MeterRegistry
 ) : SolanaApi {
 
@@ -33,25 +32,11 @@ class SolanaCacheApi(
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .build()
 
-    private val blockCacheFetchTimer = Timer
-        .builder(BLOCK_CACHE_TIMER)
-        .register(meterRegistry)
-
-    private val blockCacheBatchFetchTimer = Timer
-        .builder(BLOCK_CACHE_BATCH_TIMER)
-        .register(meterRegistry)
-
-    private val blockCacheLoadedSize = Counter
-        .builder(BLOCK_CACHE_LOADED_SIZE)
-        .register(meterRegistry)
-
-    private val blockCacheHits = Counter
-        .builder(BLOCK_CACHE_HITS)
-        .register(meterRegistry)
-
-    private val blockCacheMisses = Counter
-        .builder(BLOCK_CACHE_MISSES)
-        .register(meterRegistry)
+    private val metricBlockCacheFetchTimer = Timer.builder(BLOCK_CACHE_TIMER).register(meterRegistry)
+    private val metricBlockCacheBatchFetchTimer = Timer.builder(BLOCK_CACHE_BATCH_TIMER).register(meterRegistry)
+    private val metricBlockCacheLoadedSize = Counter.builder(BLOCK_CACHE_LOADED_SIZE).register(meterRegistry)
+    private val metricBlockCacheHits = Counter.builder(BLOCK_CACHE_HITS).register(meterRegistry)
+    private val metricBlockCacheMisses = Counter.builder(BLOCK_CACHE_MISSES).register(meterRegistry)
 
     private var lastKnownBlock: Long = 0
     private var lastKnownBlockUpdated: Instant = Instant.EPOCH
@@ -61,12 +46,12 @@ class SolanaCacheApi(
         details: GetBlockRequest.TransactionDetails
     ): ApiResponse<SolanaBlockDto> {
         return if (details == GetBlockRequest.TransactionDetails.None) {
-            httpApi.getBlock(slot, details)
+            delegate.getBlock(slot, details)
         } else {
             val fetchStart = Timer.start()
             val fromCache = getFromCache(slot)
 
-            fetchStart.stop(blockCacheFetchTimer)
+            fetchStart.stop(metricBlockCacheFetchTimer)
             parseBlock(slot, fromCache, details)
         }
     }
@@ -77,12 +62,12 @@ class SolanaCacheApi(
         details: GetBlockRequest.TransactionDetails
     ): ApiResponse<SolanaBlockDto> {
         return if (block != null) {
-            blockCacheHits.increment()
-            blockCacheLoadedSize.increment(block.size.toDouble())
+            metricBlockCacheHits.increment()
+            metricBlockCacheLoadedSize.increment(block.size.toDouble())
             mapper.readValue(block)
         } else {
-            blockCacheMisses.increment()
-            val result = httpApi.getBlock(slot, details)
+            metricBlockCacheMisses.increment()
+            val result = delegate.getBlock(slot, details)
             if (shouldSaveBlockToCache(slot)) {
                 val bytes = mapper.writeValueAsBytes(result)
                 repository.save(slot, bytes)
@@ -102,13 +87,13 @@ class SolanaCacheApi(
         slots: List<Long>,
         details: GetBlockRequest.TransactionDetails
     ): Map<Long, ApiResponse<SolanaBlockDto>> {
-        return if (properties.enableBatch) {
+        return if (enableBatchedGetBlocks) {
             return if (details == GetBlockRequest.TransactionDetails.None) {
-                slots.associateWith { httpApi.getBlock(it, details) }
+                slots.associateWith { delegate.getBlock(it, details) }
             } else {
                 val fetchStart = Timer.start()
                 val slotToBlock = getFromCache(slots)
-                fetchStart.stop(blockCacheBatchFetchTimer)
+                fetchStart.stop(metricBlockCacheBatchFetchTimer)
 
                 coroutineScope {
                     slots.map { slot ->
@@ -145,49 +130,51 @@ class SolanaCacheApi(
     }
 
     private suspend fun getFromCache(slots: List<Long>): Map<Long, ByteArray?> {
-        return repository.findAll(slots).mapValues { it.value.takeIf(ByteArray::isCorrect) }
+        return repository.findAll(slots).mapValues { it.value.takeIf { bytes -> isCorrectCachedBlock(bytes) } }
     }
 
     private suspend fun getFromCache(slot: Long): ByteArray? {
         val fromCache = repository.find(slot) ?: return null
-        if (!fromCache.isCorrect()) {
+        if (!isCorrectCachedBlock(fromCache)) {
             logger.info("block cache {} was incorrect. reloading", slot)
             return null
         }
         return fromCache
     }
 
-    override suspend fun getFirstAvailableBlock(): ApiResponse<Long> = httpApi.getFirstAvailableBlock()
+    override suspend fun getFirstAvailableBlock(): ApiResponse<Long> =
+        delegate.getFirstAvailableBlock()
 
-    override suspend fun getLatestSlot(): ApiResponse<Long> = httpApi.getLatestSlot()
+    override suspend fun getLatestSlot(): ApiResponse<Long> =
+        delegate.getLatestSlot()
 
     override suspend fun getTransaction(signature: String): ApiResponse<SolanaTransactionDto> =
-        httpApi.getTransaction(signature)
+        delegate.getTransaction(signature)
+
+    /**
+     * Some cached blocks contains such data:
+     * ```{"jsonrpc":"2.0","id":1}```
+     * ```{"jsonrpc":"2.0","result":null,"id":1}```
+     *
+     * This is probably a temporary response by Solana RPC Nodes until the block is indexed by the node.
+     * We need to ignore such cached blocks and reload them.
+     */
+    private val emptyBlocks = listOf(
+        "eyJqc29ucnBjIjoiMi4wIiwiaWQiOjF9",
+        "eyJqc29ucnBjIjoiMi4wIiwicmVzdWx0IjpudWxsLCJpZCI6MX0K"
+    ).map { Base64.getDecoder().decode(it) }
+
+    private fun isCorrectCachedBlock(bytes: ByteArray): Boolean {
+        if (bytes.size <= 2) return false
+        return emptyBlocks.none { bytes.contentEquals(it) }
+    }
 
     private companion object {
-        val logger: Logger = LoggerFactory.getLogger(SolanaCacheApi::class.java)
+        val logger: Logger = LoggerFactory.getLogger(SolanaCachingApi::class.java)
         const val BLOCK_CACHE_BATCH_TIMER = "block_cache_batch_fetch_timer"
         const val BLOCK_CACHE_TIMER = "block_cache_fetch_timer"
         const val BLOCK_CACHE_LOADED_SIZE = "block_cache_loaded_size"
         const val BLOCK_CACHE_HITS = "block_cache_hits"
         const val BLOCK_CACHE_MISSES = "block_cache_misses"
     }
-}
-
-/**
- * Some cached blocks contains such data:
- * ```{"jsonrpc":"2.0","id":1}```
- * ```{"jsonrpc":"2.0","result":null,"id":1}```
- *
- * This is probably a temporary response by Solana RPC Nodes until the block is indexed by the node.
- * We need to ignore such cached blocks and reload them.
- */
-private val emptyBlocks = listOf(
-    "eyJqc29ucnBjIjoiMi4wIiwiaWQiOjF9",
-    "eyJqc29ucnBjIjoiMi4wIiwicmVzdWx0IjpudWxsLCJpZCI6MX0K"
-).map { Base64.getDecoder().decode(it) }
-
-private fun ByteArray.isCorrect(): Boolean {
-    if (size <= 2) return false
-    return emptyBlocks.none { this.contentEquals(it) }
 }

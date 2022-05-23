@@ -18,6 +18,7 @@ data class SolanaIndexerProperties(
 
 data class FeatureFlags(
     val enableCacheApi: Boolean = false,
+    val blockCompressorProgramIdsToKeep: Set<String> = emptySet(),
     val tokenFilter: TokenFilterType = TokenFilterType.BLACKLIST,
     val blacklistTokens: Set<String> = emptySet(),
     val auctionHouses: Set<String> = emptySet(),

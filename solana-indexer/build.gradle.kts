@@ -6,6 +6,7 @@ val mongockVersion: String by project
 
 dependencies {
     implementation(project(":solana-common"))
+    implementation(project(":solana-block-compressor"))
     implementation("com.rarible.core:rarible-core-apm-starter:$raribleCommonVersion")
     implementation("com.rarible.core:rarible-core-lock-redis:$raribleCommonVersion")
     implementation("com.github.cloudyrock.mongock:mongock-spring-v5:$mongockVersion")

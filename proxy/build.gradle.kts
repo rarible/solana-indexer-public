@@ -10,7 +10,7 @@ application {
 }
 
 dependencies {
-    implementation("com.rarible.blockchain.scanner:rarible-blockchain-scanner-solana:$solanaScannerVersion")
+    implementation(project(":solana-block-compressor"))
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-compression:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")

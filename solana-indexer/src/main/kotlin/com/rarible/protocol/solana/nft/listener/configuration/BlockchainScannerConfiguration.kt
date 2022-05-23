@@ -1,10 +1,10 @@
 package com.rarible.protocol.solana.nft.listener.configuration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.cloudyrock.spring.v5.EnableMongock
 import com.rarible.blockchain.scanner.configuration.KafkaProperties
 import com.rarible.blockchain.scanner.publisher.LogRecordEventPublisher
 import com.rarible.blockchain.scanner.solana.EnableSolanaScanner
+import com.rarible.blockchain.scanner.solana.client.SolanaApi
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.core.application.ApplicationEnvironmentInfo
@@ -13,7 +13,7 @@ import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.records.SubscriberGroup
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheProperties
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
-import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCacheApi
+import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCachingApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseIdService
@@ -40,10 +40,13 @@ import com.rarible.protocol.solana.nft.listener.task.AuctionHouseStreamFullReduc
 import com.rarible.protocol.solana.nft.listener.task.BalanceStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.MetaplexMetaStreamFullReduceService
 import com.rarible.protocol.solana.nft.listener.task.TokenStreamFullReduceService
+import com.rarible.solana.block.BlockCompressor
+import com.rarible.solana.block.SolanaBlockCompressingApi
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -57,22 +60,46 @@ class BlockchainScannerConfiguration(
     private val blockCacheProperties: BlockCacheProperties
 ) {
 
+    @Bean("solanaHttpRpcApi")
+    fun solanaHttpRpcApi(properties: SolanaBlockchainScannerProperties): SolanaHttpRpcApi {
+        logger.info("Solana HTTP RPC API settings: URLs = ${properties.rpcApiUrls}, timeout = ${properties.rpcApiTimeout}")
+        return SolanaHttpRpcApi(
+            urls = properties.rpcApiUrls,
+            timeoutMillis = properties.rpcApiTimeout
+        )
+    }
+
+    @Bean("solanaBlockCompressingApi")
+    fun solanaBlockCompressingApi(
+        @Qualifier("solanaHttpRpcApi") solanaHttpRpcApi: SolanaHttpRpcApi
+    ): SolanaBlockCompressingApi {
+        val solanaProgramIdsToKeep = solanaIndexerProperties.featureFlags.blockCompressorProgramIdsToKeep
+            .takeIf { it.isNotEmpty() } ?: BlockCompressor.DEFAULT_COMPRESSOR_PROGRAM_IDS
+        logger.info("Solana blocks will be compressed by keeping only the following programs: $solanaProgramIdsToKeep")
+        return SolanaBlockCompressingApi(
+            httpApi = solanaHttpRpcApi,
+            blockCompressor = BlockCompressor(solanaProgramIdsToKeep)
+        )
+    }
+
     @Bean
     fun solanaApi(
+        @Qualifier("solanaBlockCompressingApi") solanaBlockCompressingApi: SolanaBlockCompressingApi,
         repository: BlockCacheRepository,
         properties: SolanaBlockchainScannerProperties,
         meterRegistry: MeterRegistry
-    ) = if (solanaIndexerProperties.featureFlags.enableCacheApi) {
-        logger.info("Using SolanaCacheApi")
-        SolanaCacheApi(
-            repository,
-            SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout),
-            blockCacheProperties,
-            meterRegistry
-        )
-    } else {
-        logger.info("Using SolanaHttpRpcApi")
-        SolanaHttpRpcApi(properties.rpcApiUrls, properties.rpcApiTimeout)
+    ): SolanaApi {
+        return if (solanaIndexerProperties.featureFlags.enableCacheApi) {
+            logger.info("Solana caching client is enabled")
+            SolanaCachingApi(
+                repository = repository,
+                enableBatchedGetBlocks = blockCacheProperties.enableBatch,
+                meterRegistry = meterRegistry,
+                delegate = solanaBlockCompressingApi
+            )
+        } else {
+            solanaBlockCompressingApi
+        }
     }
 
     @Bean

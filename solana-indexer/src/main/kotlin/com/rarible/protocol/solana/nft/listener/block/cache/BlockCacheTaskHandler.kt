@@ -48,7 +48,7 @@ class BlockCacheTaskHandler(
                 async {
                     if (!repository.isPresent(it)) {
                         logger.info("loading block $it")
-                        val result = client.getBlock(it, GetBlockRequest.TransactionDetails.Full)
+                        val result = client.getBlockBytesToCache(it, GetBlockRequest.TransactionDetails.Full)
                         it to result
                     } else {
                         logger.info("block cache already exists: $it")

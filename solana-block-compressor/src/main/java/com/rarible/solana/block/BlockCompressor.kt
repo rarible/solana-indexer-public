@@ -1,27 +1,29 @@
-package com.rarible.solana.proxy.converter
+package com.rarible.solana.block
 
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaTransactionDto
 
-object SolanaProgramId {
-    const val SPL_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-    const val TOKEN_METADATA_PROGRAM = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
-    const val AUCTION_HOUSE_PROGRAM = "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk"
-
-    val programs = listOf(SPL_TOKEN_PROGRAM, TOKEN_METADATA_PROGRAM, AUCTION_HOUSE_PROGRAM)
-}
-
-object BlockConverter {
+/**
+ * Compresses full Solana JSON RPC block by dropping all non-interesting programs and instructions.
+ * Preserves 100% JSON compatibility with the official Solana JSON RPC.
+ *
+ * Original blocks size in JSON format is around 3-5Mb. After compression, they become 10-30Kb.
+ */
+class BlockCompressor(
+    private val solanaProgramIdsToKeep: Set<String> = DEFAULT_COMPRESSOR_PROGRAM_IDS
+) {
     private fun SolanaTransactionDto.Instruction?.isOk(programId: String): SolanaTransactionDto.Instruction? {
-        return takeIf { programId in SolanaProgramId.programs }
+        return takeIf { solanaProgramIdsToKeep.isEmpty() || programId in solanaProgramIdsToKeep }
     }
 
-    fun convert(response: ApiResponse<SolanaBlockDto>) : ApiResponse<SolanaBlockDto>{
+    fun compress(response: ApiResponse<SolanaBlockDto>): ApiResponse<SolanaBlockDto> {
         val block = response.result!!
         val newTransactions = block.transactions.map { transactionDto ->
             val accountKeys = transactionDto.transaction!!.message.accountKeys
-            val newInstructions = transactionDto.transaction!!.message.instructions.map { it.isOk(accountKeys[it!!.programIdIndex]) }
+            val newInstructions = transactionDto.transaction!!.message.instructions.map {
+                it.isOk(accountKeys[it!!.programIdIndex])
+            }
             val newInnerInstructions = transactionDto.meta?.innerInstructions?.map { innerInstruction ->
                 SolanaTransactionDto.InnerInstruction(
                     index = innerInstruction.index,
@@ -60,6 +62,14 @@ object BlockConverter {
             result = block.copy(transactions = newTransactions),
             error = response.error,
             jsonrpc = response.jsonrpc
+        )
+    }
+
+    companion object {
+        val DEFAULT_COMPRESSOR_PROGRAM_IDS = setOf(
+            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s",
+            "hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk",
         )
     }
 }
