@@ -24,6 +24,10 @@ class CollectionService(
         return collectionRepository.findById(id)
     }
 
+    suspend fun findByIds(ids: List<String>): Flow<SolanaCollection> {
+        return collectionRepository.findByIds(ids)
+    }
+
     suspend fun findAll(fromId: String?): Flow<SolanaCollection> {
         return collectionRepository.findAll(fromId)
     }
