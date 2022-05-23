@@ -8,6 +8,7 @@ import com.rarible.protocol.solana.common.service.CollectionConverter
 import com.rarible.protocol.solana.common.service.CollectionService
 import com.rarible.protocol.solana.common.service.CollectionUpdateService
 import com.rarible.protocol.solana.dto.CollectionDto
+import com.rarible.protocol.solana.dto.CollectionsByIdRequestDto
 import com.rarible.protocol.solana.dto.CollectionsDto
 import com.rarible.protocol.solana.nft.api.exceptions.EntityNotFoundApiException
 import com.rarible.protocol.union.dto.continuation.page.PageSize
@@ -44,6 +45,16 @@ class CollectionController(
         return ResponseEntity.ok(collectionDto)
     }
 
+    override suspend fun searchCollectionsByIds(collectionsByIdRequestDto: CollectionsByIdRequestDto): ResponseEntity<CollectionsDto> {
+        val collections = collectionService.findByIds(collectionsByIdRequestDto.ids)
+            .mapNotNull { collectionConverter.toDto(it) }
+            .toList()
+        return ResponseEntity.ok(CollectionsDto(
+            collections = collections,
+            continuation = null,
+        ))
+    }
+
     override suspend fun getCollectionsByOwner(
         owner: String,
         continuation: String?,
@@ -60,6 +71,7 @@ class CollectionController(
         collectionUpdateService.markNftAsCollection(collection)
         return ResponseEntity.ok().build()
     }
+
 
     private suspend fun toSlice(collections: List<CollectionDto>, size: Int): CollectionsDto {
         val continuationFactory = CollectionContinuation.ById

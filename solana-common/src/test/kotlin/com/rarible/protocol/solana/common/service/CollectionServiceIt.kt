@@ -31,6 +31,18 @@ class CollectionServiceIt : AbstractIntegrationTest() {
     }
 
     @Test
+    fun `find by ids`() = runBlocking<Unit> {
+        val c1 = collectionService.save(SolanaCollectionV1(randomString(), randomString(), randomString()))
+        val c2 = collectionService.save(SolanaCollectionV1(randomString(), randomString(), randomString()))
+        val c3 = collectionService.save(SolanaCollectionV1(randomString(), randomString(), randomString()))
+
+        val actual = collectionService.findByIds(listOf(c1.id, c2.id, c3.id))
+            .toList()
+
+        assertThat(actual).containsExactlyInAnyOrder(c1, c2, c3)
+    }
+
+    @Test
     fun `find all`() = runBlocking<Unit> {
         val c3 = collectionService.save(SolanaCollectionV1("3", randomString(), randomString()))
         val c2 = collectionService.save(SolanaCollectionV2("2"))
