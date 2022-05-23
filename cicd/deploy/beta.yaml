@@ -4,7 +4,7 @@ global:
 solana-indexer:
   resources:
     jvm:
-      xmx_megabytes: 4096
+      xmx_megabytes: 2096
       max_direct_memory_megabytes: 512
   networks:
     common:
