@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 
 @Configuration
 @EnableSolanaScanner
@@ -83,6 +84,7 @@ class BlockchainScannerConfiguration(
     }
 
     @Bean
+    @Primary
     fun solanaApi(
         @Qualifier("solanaBlockCompressingApi") solanaBlockCompressingApi: SolanaBlockCompressingApi,
         repository: BlockCacheRepository,
