@@ -68,7 +68,7 @@ class SolanaCachingApi(
         } else {
             metricBlockCacheMisses.increment()
             val result = delegate.getBlock(slot, details)
-            if (shouldSaveBlockToCache(slot)) {
+            if (result.result != null && shouldSaveBlockToCache(slot)) {
                 val bytes = mapper.writeValueAsBytes(result)
                 repository.save(slot, bytes)
             }

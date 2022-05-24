@@ -1,8 +1,10 @@
 package com.rarible.protocol.solana.nft.listener.block.cache
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
 import com.rarible.core.apm.withTransaction
 import com.rarible.core.task.TaskHandler
+import com.rarible.solana.block.SolanaBlockCompressingApi
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import kotlinx.coroutines.async
@@ -13,16 +15,19 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
 @Component
 class BlockCacheTaskHandler(
-    private val client: BlockCacheClient,
     private val repository: BlockCacheRepository,
     private val blockCacheProperties: BlockCacheProperties,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
+    @Qualifier("solanaBlockCompressingApi") private val solanaBlockCompressingApi: SolanaBlockCompressingApi
 ) : TaskHandler<Long> {
+
+    private val mapper = jacksonObjectMapper()
 
     private val blockCacheSaveTimer by lazy { meterRegistry.timer("block_cache_save") }
 
@@ -47,9 +52,14 @@ class BlockCacheTaskHandler(
             val loadedBlocks = blocks.map {
                 async {
                     if (!repository.isPresent(it)) {
-                        logger.info("loading block $it")
-                        val result = client.getBlockBytesToCache(it, GetBlockRequest.TransactionDetails.Full)
-                        it to result
+                        logger.info("BlockCacheTaskHandler: loading block $it")
+                        val block = solanaBlockCompressingApi.getBlock(it, GetBlockRequest.TransactionDetails.Full)
+                        if (block.result != null) {
+                            it to mapper.writeValueAsBytes(block)
+                        } else {
+                            logger.info("BlockCacheTaskHandler: block $it is missing")
+                            null
+                        }
                     } else {
                         logger.info("block cache already exists: $it")
                         null
