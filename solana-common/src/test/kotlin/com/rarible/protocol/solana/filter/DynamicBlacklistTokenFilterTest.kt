@@ -26,18 +26,6 @@ class DynamicBlacklistTokenFilterTest : AbstractIntegrationTest() {
     }
 
     @Test
-    fun `black listed mint but disabled filtering`() = runBlocking<Unit> {
-        val mint = randomString()
-        dynamicBlacklistedTokenRepository.save(mint, "test")
-        val filter = DynamicBlacklistSolanaTokenFilter(
-            dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository,
-            featureFlagEnableDynamicFiltering = false
-        )
-        assertThat(filter.isAcceptableToken(mint)).isTrue
-        assertThat(filter.isAcceptableToken(randomString())).isTrue()
-    }
-
-    @Test
     fun `is acceptable`() = runBlocking<Unit> {
         val filter = DynamicBlacklistSolanaTokenFilter(
             dynamicBlacklistedTokenRepository = dynamicBlacklistedTokenRepository

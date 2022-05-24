@@ -29,7 +29,6 @@ data class FeatureFlags(
      * so we could have not seen balance/token initialization records.
      */
     val isIndexingFromBeginning: Boolean = true,
-    val tokenFilterEnableDynamicBlacklist: Boolean = false,
     val tokenFilterInMemoryCacheSize: Long = 1_000_000
 )
 
