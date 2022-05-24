@@ -68,21 +68,8 @@ class SolanaBalanceRecordsRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
-        private val BALANCE_ACTIVITY_BY_ITEM: Index = Index()
-            .on("_class", Sort.Direction.ASC)
-            .on("mint", Sort.Direction.ASC)
-            .on("_id", Sort.Direction.ASC)
-            .background()
-
-        private val BALANCE_ACTIVITY_ALL: Index = Index()
-            .on("_class", Sort.Direction.DESC)
-            .on("_id", Sort.Direction.DESC)
-            .background()
-
         private val ALL = listOf(
-            BALANCE_REDUCE,
-            BALANCE_ACTIVITY_BY_ITEM,
-            BALANCE_ACTIVITY_ALL,
+            BALANCE_REDUCE
         )
     }
 }
