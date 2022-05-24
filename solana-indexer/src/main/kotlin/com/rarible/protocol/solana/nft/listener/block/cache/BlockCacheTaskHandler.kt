@@ -81,7 +81,7 @@ class BlockCacheTaskHandler(
     }
 }
 
-private fun getRangesReversed(from: Long, to: Long, step: Int): Sequence<LongRange> {
+fun getRangesReversed(from: Long, to: Long, step: Int): Sequence<LongRange> {
     check(from >= 0) { "$from " }
     check(to >= 0) { "$to" }
     if (from > to) return emptySequence()

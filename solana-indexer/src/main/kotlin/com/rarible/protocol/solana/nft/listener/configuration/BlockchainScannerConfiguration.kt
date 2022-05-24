@@ -11,7 +11,6 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.records.SubscriberGroup
-import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheProperties
 import com.rarible.protocol.solana.nft.listener.block.cache.BlockCacheRepository
 import com.rarible.protocol.solana.nft.listener.block.cache.SolanaCachingApi
 import com.rarible.protocol.solana.nft.listener.consumer.KafkaEntityEventConsumer
@@ -71,15 +70,21 @@ class BlockchainScannerConfiguration(
 
     @Bean("solanaBlockCompressingApi")
     fun solanaBlockCompressingApi(
-        @Qualifier("solanaHttpRpcApi") solanaHttpRpcApi: SolanaHttpRpcApi
+        @Qualifier("solanaHttpRpcApi") solanaHttpRpcApi: SolanaHttpRpcApi,
+        blockCompressor: BlockCompressor
     ): SolanaBlockCompressingApi {
+        return SolanaBlockCompressingApi(
+            httpApi = solanaHttpRpcApi,
+            blockCompressor = blockCompressor
+        )
+    }
+
+    @Bean
+    fun blockCompressor(): BlockCompressor {
         val solanaProgramIdsToKeep = solanaIndexerProperties.featureFlags.blockCompressorProgramIdsToKeep
             .takeIf { it.isNotEmpty() } ?: BlockCompressor.DEFAULT_COMPRESSOR_PROGRAM_IDS
         logger.info("Solana blocks will be compressed by keeping only the following programs: $solanaProgramIdsToKeep")
-        return SolanaBlockCompressingApi(
-            httpApi = solanaHttpRpcApi,
-            blockCompressor = BlockCompressor(solanaProgramIdsToKeep)
-        )
+        return BlockCompressor(solanaProgramIdsToKeep)
     }
 
     @Bean
