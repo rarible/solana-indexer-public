@@ -32,8 +32,7 @@ class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val tokenFilter: SolanaTokenFilter,
-    private val auctionHouseFilter: SolanaAuctionHouseFilter,
-    private val solanaRecordsLogEventFilterNewTokenProcessor: SolanaRecordsLogEventFilterNewTokenProcessor
+    private val auctionHouseFilter: SolanaAuctionHouseFilter
 ) : SolanaLogEventFilter {
 
     private val logger = LoggerFactory.getLogger(SolanaRecordsLogEventFilter::class.java)
@@ -44,8 +43,6 @@ class SolanaRecordsLogEventFilter(
         if (events.isEmpty()) {
             return emptyList()
         }
-
-        solanaRecordsLogEventFilterNewTokenProcessor.addNewTokensWithoutMetaToBlacklist(events)
 
         val knownInMemoryAccountMappings = getKnownInMemoryAccountToMintMapping(events)
 
