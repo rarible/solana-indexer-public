@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.count
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
@@ -79,6 +80,11 @@ class BlockCacheRepository(
         } else {
             null
         }
+    }
+
+    suspend fun delete(id: Long) {
+        val criteria = Criteria("_id").isEqualTo(id)
+        mongo.remove(Query(criteria), BlockCache::class.java).awaitFirstOrNull()
     }
 }
 

@@ -87,7 +87,8 @@ class BlockCacheCompressorTaskHandler(
 
                     val cachedBlockResponse = mapper.readValue<ApiResponse<SolanaBlockDto>>(cachedBlockBytes)
                     if (cachedBlockResponse.result == null) {
-                        logger.info("$logPrefix: block $blockNumber had error ${cachedBlockResponse.error}")
+                        logger.info("$logPrefix: block $blockNumber had error ${cachedBlockResponse.error}, removing it")
+                        repository.delete(blockNumber)
                         return@async
                     }
 
