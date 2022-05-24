@@ -97,10 +97,11 @@ class CommonConfiguration(
                 override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean = true
             }
             TokenFilterType.BLACKLIST -> object : SolanaAuctionHouseFilter {
-                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = auctionHouse in auctionHouses
+                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean =
+                    auctionHouses.isEmpty() || auctionHouse in auctionHouses
 
                 override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
-                    auctionHouse in auctionHouses
+                    auctionHouses.isEmpty() || auctionHouse in auctionHouses
             }
             TokenFilterType.WHITELIST_V2 -> object : SolanaAuctionHouseFilter {
                 // Accept all records.
