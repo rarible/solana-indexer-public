@@ -8,6 +8,7 @@ import com.rarible.core.test.data.randomBoolean
 import com.rarible.core.test.data.randomInt
 import com.rarible.core.test.data.randomLong
 import com.rarible.core.test.data.randomString
+import com.rarible.protocol.solana.borsh.Base58
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.common.model.Asset
@@ -228,7 +229,7 @@ fun randomSellOrder(
     makerAccount: String = randomAccount()
 ): Order {
     return Order(
-        auctionHouse = randomString(),
+        auctionHouse = Base58.encode(randomString().toByteArray()),
         maker = maker,
         makerAccount = makerAccount,
         status = OrderStatus.ACTIVE,
@@ -252,7 +253,7 @@ fun randomBuyOrder(
     take: Asset = randomAsset(randomAssetTypeNft()),
 ): Order {
     return Order(
-        auctionHouse = randomString(),
+        auctionHouse = Base58.encode(randomString().toByteArray()),
         maker = randomAccount(),
         makerAccount = randomAccount(),
         status = OrderStatus.ACTIVE,
