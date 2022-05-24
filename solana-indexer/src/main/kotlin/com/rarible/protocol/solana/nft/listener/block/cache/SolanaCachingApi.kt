@@ -24,7 +24,6 @@ import java.util.*
 class SolanaCachingApi(
     private val delegate: SolanaApi,
     private val repository: BlockCacheRepository,
-    private val enableBatchedGetBlocks: Boolean,
     meterRegistry: MeterRegistry
 ) : SolanaApi {
 
@@ -33,7 +32,6 @@ class SolanaCachingApi(
         .build()
 
     private val metricBlockCacheFetchTimer = Timer.builder(BLOCK_CACHE_TIMER).register(meterRegistry)
-    private val metricBlockCacheBatchFetchTimer = Timer.builder(BLOCK_CACHE_BATCH_TIMER).register(meterRegistry)
     private val metricBlockCacheLoadedSize = Counter.builder(BLOCK_CACHE_LOADED_SIZE).register(meterRegistry)
     private val metricBlockCacheHits = Counter.builder(BLOCK_CACHE_HITS).register(meterRegistry)
     private val metricBlockCacheMisses = Counter.builder(BLOCK_CACHE_MISSES).register(meterRegistry)
@@ -87,30 +85,10 @@ class SolanaCachingApi(
         slots: List<Long>,
         details: GetBlockRequest.TransactionDetails
     ): Map<Long, ApiResponse<SolanaBlockDto>> {
-        return if (enableBatchedGetBlocks) {
-            return if (details == GetBlockRequest.TransactionDetails.None) {
-                slots.associateWith { delegate.getBlock(it, details) }
-            } else {
-                val fetchStart = Timer.start()
-                val slotToBlock = getFromCache(slots)
-                fetchStart.stop(metricBlockCacheBatchFetchTimer)
-
-                coroutineScope {
-                    slots.map { slot ->
-                        async {
-                            val block = slotToBlock[slot]
-
-                            slot to parseBlock(slot, block, details)
-                        }
-                    }.awaitAll().toMap()
-                }
-            }
-        } else {
-            coroutineScope {
-                slots.map {
-                    async { it to getBlock(it, details) }
-                }.awaitAll().toMap()
-            }
+        return coroutineScope {
+            slots.map {
+                async { it to getBlock(it, details) }
+            }.awaitAll().toMap()
         }
     }
 
@@ -127,10 +105,6 @@ class SolanaCachingApi(
             )
         }
         return shouldSave
-    }
-
-    private suspend fun getFromCache(slots: List<Long>): Map<Long, ByteArray?> {
-        return repository.findAll(slots).mapValues { it.value.takeIf { bytes -> isCorrectCachedBlock(bytes) } }
     }
 
     private suspend fun getFromCache(slot: Long): ByteArray? {
@@ -171,7 +145,6 @@ class SolanaCachingApi(
 
     private companion object {
         val logger: Logger = LoggerFactory.getLogger(SolanaCachingApi::class.java)
-        const val BLOCK_CACHE_BATCH_TIMER = "block_cache_batch_fetch_timer"
         const val BLOCK_CACHE_TIMER = "block_cache_fetch_timer"
         const val BLOCK_CACHE_LOADED_SIZE = "block_cache_loaded_size"
         const val BLOCK_CACHE_HITS = "block_cache_hits"

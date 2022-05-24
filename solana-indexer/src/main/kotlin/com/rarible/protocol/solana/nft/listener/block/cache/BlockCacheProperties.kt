@@ -9,6 +9,5 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class BlockCacheProperties(
     val batchSize: Int = 200,
     val mongo: MongoProperties?,
-    val enableBatch: Boolean = false,
     val batchSave: Boolean = false
 )

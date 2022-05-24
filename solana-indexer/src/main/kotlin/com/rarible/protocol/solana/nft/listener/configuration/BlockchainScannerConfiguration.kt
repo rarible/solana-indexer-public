@@ -57,8 +57,7 @@ import org.springframework.context.annotation.Primary
 class BlockchainScannerConfiguration(
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val meterRegistry: MeterRegistry,
-    private val applicationEnvironmentInfo: ApplicationEnvironmentInfo,
-    private val blockCacheProperties: BlockCacheProperties
+    private val applicationEnvironmentInfo: ApplicationEnvironmentInfo
 ) {
 
     @Bean("solanaHttpRpcApi")
@@ -88,14 +87,12 @@ class BlockchainScannerConfiguration(
     fun solanaApi(
         @Qualifier("solanaBlockCompressingApi") solanaBlockCompressingApi: SolanaBlockCompressingApi,
         repository: BlockCacheRepository,
-        properties: SolanaBlockchainScannerProperties,
         meterRegistry: MeterRegistry
     ): SolanaApi {
         return if (solanaIndexerProperties.featureFlags.enableCacheApi) {
             logger.info("Solana caching client is enabled")
             SolanaCachingApi(
                 repository = repository,
-                enableBatchedGetBlocks = blockCacheProperties.enableBatch,
                 meterRegistry = meterRegistry,
                 delegate = solanaBlockCompressingApi
             )
