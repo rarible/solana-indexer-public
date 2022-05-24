@@ -25,7 +25,7 @@ class EscrowUpdateService(
             logger.info("Escrow is empty, skipping it: {}", entity.account)
             return entity
         }
-        if (!auctionHouseFilter.isAcceptableAuctionHouse(entity.auctionHouse)) {
+        if (!auctionHouseFilter.isAcceptableForUpdateAuctionHouse(entity.auctionHouse)) {
             logger.info("Escrow update is ignored because auction house ${entity.auctionHouse} is filtered out")
             return entity
         }

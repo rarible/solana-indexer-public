@@ -23,7 +23,7 @@ class AuctionHouseUpdateService(
             logger.info("AuctionHouse is empty, skipping it: {}", entity.account)
             return entity
         }
-        if (!auctionHouseFilter.isAcceptableAuctionHouse(entity.account)) {
+        if (!auctionHouseFilter.isAcceptableForUpdateAuctionHouse(entity.account)) {
             logger.info("AuctionHouse update is ignored because auction house ${entity.account} is filtered out")
             return entity
         }

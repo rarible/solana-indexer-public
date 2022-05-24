@@ -6,6 +6,7 @@ import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilte
 import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
 import com.rarible.protocol.solana.common.filter.token.InMemoryCachingSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
+import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListOnlyUpdatableTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.StaticSolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
@@ -57,13 +58,14 @@ class CommonConfiguration(
                     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
                 }
             }
-            TokenFilterType.WHITELIST -> {
-                val tokens = TokenListFileReader("/whitelist").readTokens(WHITELIST_FILES)
-                SolanaWhiteListTokenFilter(tokens)
-            }
             TokenFilterType.WHITELIST_V2 -> {
                 val tokens = TokenListFileReader("/whitelist_v2").readTokens(WHITELIST_FILES)
-                SolanaWhiteListTokenFilter(tokens)
+                CompositeSolanaTokenFilter(
+                    listOf(
+                        SolanaWhiteListTokenFilter(tokens),
+                        SolanaWhiteListOnlyUpdatableTokenFilter(tokens)
+                    )
+                )
             }
             TokenFilterType.BLACKLIST -> {
                 val blacklistTokens = featureFlags.blacklistTokens
@@ -88,9 +90,25 @@ class CommonConfiguration(
     @Bean
     fun auctionHouseFilter(featureFlags: FeatureFlags): SolanaAuctionHouseFilter {
         val auctionHouses = featureFlags.auctionHouses
-        return object : SolanaAuctionHouseFilter {
-            override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean {
-                return auctionHouses.isEmpty() || auctionHouse in auctionHouses
+        return when (featureFlags.tokenFilter) {
+            TokenFilterType.NONE -> object : SolanaAuctionHouseFilter {
+                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = true
+
+                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean = true
+            }
+            TokenFilterType.BLACKLIST -> object : SolanaAuctionHouseFilter {
+                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = auctionHouse in auctionHouses
+
+                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
+                    auctionHouse in auctionHouses
+            }
+            TokenFilterType.WHITELIST_V2 -> object : SolanaAuctionHouseFilter {
+                // Accept all records.
+                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = true
+
+                // Accept only whitelisted auction houses for update.
+                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
+                    auctionHouse in auctionHouses
             }
         }
     }

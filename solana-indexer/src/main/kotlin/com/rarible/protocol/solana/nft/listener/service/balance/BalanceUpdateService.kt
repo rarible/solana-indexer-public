@@ -30,7 +30,7 @@ class BalanceUpdateService(
             logger.info("Balance without Initialize record, skipping it: {}", entity)
             return entity
         }
-        if (!tokenFilter.isAcceptableToken(entity.mint)) {
+        if (!tokenFilter.isAcceptableForUpdateToken(entity.mint)) {
             logger.info("Balance update is ignored because mint ${entity.mint} is filtered out")
             return entity
         }

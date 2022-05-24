@@ -29,7 +29,7 @@ class MetaUpdateService(
             logger.info("Meta in empty state: ${entity.id}")
             return entity
         }
-        if (!tokenFilter.isAcceptableToken(entity.tokenAddress)) {
+        if (!tokenFilter.isAcceptableForUpdateToken(entity.tokenAddress)) {
             logger.info("MetaplexMeta update is ignored because mint ${entity.tokenAddress} is filtered out")
             return entity
         }

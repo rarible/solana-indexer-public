@@ -34,7 +34,7 @@ class OrderUpdateService(
             logger.info("Order in empty state: ${entity.id}")
             return entity
         }
-        if (!auctionHouseFilter.isAcceptableAuctionHouse(entity.auctionHouse)) {
+        if (!auctionHouseFilter.isAcceptableForUpdateAuctionHouse(entity.auctionHouse)) {
             logger.info("Order update is ignored because auction house ${entity.auctionHouse} is filtered out")
             return entity
         }

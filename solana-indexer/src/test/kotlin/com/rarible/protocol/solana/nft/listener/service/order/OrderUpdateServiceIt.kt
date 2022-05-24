@@ -49,7 +49,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
     @BeforeEach
     fun cleanup() {
         clearMocks(auctionHouseFilter)
-        every { auctionHouseFilter.isAcceptableAuctionHouse(any()) } returns true
+        every { auctionHouseFilter.isAcceptableForUpdateAuctionHouse(any()) } returns true
     }
 
     @Test
@@ -77,7 +77,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
     fun `ignored auction house`() = runBlocking<Unit> {
         val order = randomSellOrder()
 
-        every { auctionHouseFilter.isAcceptableAuctionHouse(order.auctionHouse) } returns false
+        every { auctionHouseFilter.isAcceptableForUpdateAuctionHouse(order.auctionHouse) } returns false
         orderUpdateService.update(order)
 
         assertThat(orderRepository.findById(order.id)).isNull()

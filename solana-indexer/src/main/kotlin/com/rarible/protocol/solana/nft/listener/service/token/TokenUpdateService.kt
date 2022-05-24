@@ -27,7 +27,7 @@ class TokenUpdateService(
             logger.info("Token without Initialize record, skipping it: {}", entity.mint)
             return entity
         }
-        if (!tokenFilter.isAcceptableToken(entity.mint)) {
+        if (!tokenFilter.isAcceptableForUpdateToken(entity.mint)) {
             logger.info("Token update is ignored because mint ${entity.mint} is filtered out")
             return entity
         }
