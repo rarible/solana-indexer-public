@@ -32,7 +32,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexVerifyCollectionRecord(
         val collectionAccount: String,
-        override val mint: String,
+        override val mint: String?,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -40,7 +40,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexUnVerifyCollectionRecord(
         val unVerifyCollectionAccount: String,
-        override val mint: String,
+        override val mint: String?,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
@@ -48,7 +48,7 @@ sealed class SolanaMetaRecord : SolanaBaseLogRecord() {
 
     data class MetaplexSignMetadataRecord(
         val creatorAddress: String,
-        override val mint: String,
+        override val mint: String?,
         override val metaAccount: String,
         override val log: SolanaLog,
         override val timestamp: Instant
