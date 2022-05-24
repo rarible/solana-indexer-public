@@ -229,7 +229,7 @@ fun randomSellOrder(
     makerAccount: String = randomAccount()
 ): Order {
     return Order(
-        auctionHouse = Base58.encode(randomString().toByteArray()),
+        auctionHouse = randomAccount(),
         maker = maker,
         makerAccount = makerAccount,
         status = OrderStatus.ACTIVE,
@@ -253,7 +253,7 @@ fun randomBuyOrder(
     take: Asset = randomAsset(randomAssetTypeNft()),
 ): Order {
     return Order(
-        auctionHouse = Base58.encode(randomString().toByteArray()),
+        auctionHouse = randomAccount(),
         maker = randomAccount(),
         makerAccount = randomAccount(),
         status = OrderStatus.ACTIVE,
