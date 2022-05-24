@@ -101,7 +101,5 @@ class CommonConfiguration(
             "degenerate_ape_kindergarten",
             "degeneratetrashpandas"
         )
-
-        val BLACKLIST_FILES = emptyList<String>()
     }
 }
