@@ -72,18 +72,6 @@ class BlockCacheRepository(
         }
     }
 
-    suspend fun findAll(ids: List<Long>): Map<Long, ByteArray> {
-        val criteria = Criteria.where(BlockCache::id.name).`in`(ids)
-        val sort = Sort.by(Sort.Direction.ASC, "_id")
-
-        return mongo.find(Query(criteria).with(sort), BlockCache::class.java)
-            .asFlow()
-            .toList()
-            .associate {
-                it.id to ungzip(it.data.data)
-            }
-    }
-
     suspend fun find(id: Long): ByteArray? {
         val found = mongo.findById<BlockCache>(id).awaitFirstOrNull()
         return if (found != null) {
