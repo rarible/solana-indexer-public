@@ -34,19 +34,33 @@ class OrderReduceTaskHandler(
     override val type: String = "ORDER_REDUCER"
 
     @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
-    override fun runLongTask(from: String?, param: String) : Flow<String> {
+    override fun runLongTask(from: String?, param: String): Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
-        val auctionHouse = param.substringBefore(":")
-        val orderId = param.substringAfter(":")
 
-        require(auctionHouse.isNotBlank()) { "Auction house must be specified" }
-        val criteria = Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(auctionHouse).andOperator(
-            when {
-                from != null -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).gt(from)
-                orderId.isNotBlank() -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).`is`(orderId)
-                else -> Criteria()
+        val criteria = if (param.isNotBlank()) {
+            val auctionHouse = param.substringBefore(":")
+            val orderId = param.substringAfter(":")
+
+            require(auctionHouse.isNotBlank()) { "Auction house must be specified" }
+            Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).`is`(auctionHouse).andOperator(
+                when {
+                    from != null -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).gt(from.substringAfter(":"))
+                    orderId.isNotBlank() -> Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).`is`(orderId)
+                    else -> Criteria()
+                }
+            )
+        } else {
+            if (from == null) {
+                Criteria()
+            } else {
+                val fromAuctionHouse = param.substringBefore(":")
+                val fromOrderId = param.substringAfter(":")
+
+                Criteria.where(SolanaAuctionHouseOrderRecord::auctionHouse.name).gte(fromAuctionHouse).andOperator(
+                    Criteria.where(SolanaAuctionHouseOrderRecord::orderId.name).gt(fromOrderId)
+                )
             }
-        )
+        }
         val orderFlow = orderRecordsRepository.findBy(
             criteria,
             Sort.by(
@@ -59,7 +73,7 @@ class OrderReduceTaskHandler(
             orderEventConverter.convert(it, false).asFlow()
         }
 
-        return orderStreamFullReduceService.reduce(orderFlow).map { it.id }
+        return orderStreamFullReduceService.reduce(orderFlow).map { "${it.auctionHouse}:${it.id}" }
     }
 
     private suspend fun saveOrderActivity(orderRecord: SolanaAuctionHouseOrderRecord) {
