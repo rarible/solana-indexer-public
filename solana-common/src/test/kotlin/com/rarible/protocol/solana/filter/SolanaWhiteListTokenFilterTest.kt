@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 class SolanaWhiteListTokenFilterTest {
 
     private val whiteListFilter = SolanaWhiteListTokenFilter(
-        TokenListFileReader("/whitelist").readTokens(listOf("degenape"))
+        TokenListFileReader("/whitelist_v2").readTokens(listOf("degenape"))
     )
 
     @Test
