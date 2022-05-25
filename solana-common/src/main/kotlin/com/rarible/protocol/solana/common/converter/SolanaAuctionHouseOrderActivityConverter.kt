@@ -15,6 +15,7 @@ import com.rarible.protocol.solana.dto.OrderMatchActivityDto
 import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
 import com.rarible.protocol.solana.dto.SolanaSolAssetTypeDto
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 @Component
 class SolanaAuctionHouseOrderActivityConverter(
@@ -37,51 +38,63 @@ class SolanaAuctionHouseOrderActivityConverter(
     private suspend fun createMatchActivity(
         record: SolanaAuctionHouseOrderRecord.ExecuteSaleRecord,
         reverted: Boolean,
-    ) = OrderMatchActivityDto(
-        id = record.id,
-        date = record.timestamp,
-        type = when (record.direction) {
-            OrderDirection.SELL -> OrderMatchActivityDto.Type.SELL
-            OrderDirection.BUY -> OrderMatchActivityDto.Type.ACCEPT_BID
-        },
-        nft = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
-        payment = assetConverter.convert(Asset(WrappedSolAssetType(), record.price)),
-        buyer = record.buyer,
-        seller = record.seller,
-        price = priceNormalizer.normalize(Asset(WrappedSolAssetType(), record.price)),
-        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-        reverted = reverted,
-    )
+    ): OrderMatchActivityDto {
+        val make = Asset(TokenNftAssetType(record.mint), record.amount)
+        val take = Asset(WrappedSolAssetType(), record.price)
+        return OrderMatchActivityDto(
+            id = record.id,
+            date = record.timestamp,
+            type = when (record.direction) {
+                OrderDirection.SELL -> OrderMatchActivityDto.Type.SELL
+                OrderDirection.BUY -> OrderMatchActivityDto.Type.ACCEPT_BID
+            },
+            nft = assetConverter.convert(make),
+            payment = assetConverter.convert(take),
+            buyer = record.buyer,
+            seller = record.seller,
+            price = getPrice(make, take, record.direction),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
+            reverted = reverted,
+        )
+    }
 
     private suspend fun createListActivity(
         record: SolanaAuctionHouseOrderRecord.SellRecord,
         reverted: Boolean,
-    ) = OrderListActivityDto(
-        id = record.id,
-        date = record.timestamp,
-        hash = record.orderId,
-        maker = record.maker,
-        make = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
-        take = assetConverter.convert(Asset(WrappedSolAssetType(), record.sellPrice)),
-        price = priceNormalizer.normalize(WrappedSolAssetType(), record.sellPrice),
-        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-        reverted = reverted,
-    )
+    ): OrderListActivityDto {
+        val make = Asset(TokenNftAssetType(record.mint), record.amount)
+        val take = Asset(WrappedSolAssetType(), record.sellPrice)
+        return OrderListActivityDto(
+            id = record.id,
+            date = record.timestamp,
+            hash = record.orderId,
+            maker = record.maker,
+            make = assetConverter.convert(make),
+            take = assetConverter.convert(take),
+            price = getPrice(make, take, OrderDirection.SELL),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
+            reverted = reverted,
+        )
+    }
 
     private suspend fun createBidActivity(
         record: SolanaAuctionHouseOrderRecord.BuyRecord,
-        reverted: Boolean,
-    ) = OrderBidActivityDto(
-        id = record.id,
-        date = record.timestamp,
-        hash = record.orderId,
-        maker = record.maker,
-        make = assetConverter.convert(Asset(WrappedSolAssetType(), record.buyPrice)),
-        take = assetConverter.convert(Asset(TokenNftAssetType(record.mint), record.amount)),
-        price = priceNormalizer.normalize(WrappedSolAssetType(), record.buyPrice),
-        blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
-        reverted = reverted,
-    )
+        reverted: Boolean
+    ): OrderBidActivityDto {
+        val make = Asset(WrappedSolAssetType(), record.buyPrice)
+        val take = Asset(TokenNftAssetType(record.mint), record.amount)
+        return OrderBidActivityDto(
+            id = record.id,
+            date = record.timestamp,
+            hash = record.orderId,
+            maker = record.maker,
+            make = assetConverter.convert(make),
+            take = assetConverter.convert(take),
+            price = getPrice(make, take, OrderDirection.BUY),
+            blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
+            reverted = reverted
+        )
+    }
 
     private fun createCancelActivity(
         record: SolanaAuctionHouseOrderRecord.CancelRecord,
@@ -107,5 +120,17 @@ class SolanaAuctionHouseOrderActivityConverter(
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
         )
+    }
+
+    private suspend fun getPrice(
+        make: Asset,
+        take: Asset,
+        orderDirection: OrderDirection
+    ): BigDecimal {
+        val (makePrice, takePrice) = priceNormalizer.calculateMakeAndTakePrice(make, take, orderDirection)
+        return when (orderDirection) {
+            OrderDirection.BUY -> takePrice!!
+            OrderDirection.SELL -> makePrice!!
+        }
     }
 }
