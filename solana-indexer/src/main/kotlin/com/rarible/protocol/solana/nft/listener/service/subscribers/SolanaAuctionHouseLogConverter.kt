@@ -15,7 +15,8 @@ object SolanaAuctionHouseLogConverter {
     fun convertExecuteSale(
         log: SolanaBlockchainLog,
         instruction: ExecuteSale,
-        dateSeconds: Long
+        dateSeconds: Long,
+        direction: OrderDirection
     ): SolanaAuctionHouseOrderRecord.ExecuteSaleRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
         buyer = log.instruction.accounts[0],
         seller = log.instruction.accounts[1],
@@ -26,7 +27,7 @@ object SolanaAuctionHouseLogConverter {
         auctionHouse = log.instruction.accounts[10],
         log = log.log,
         timestamp = Instant.ofEpochSecond(dateSeconds),
-        direction = OrderDirection.SELL
+        direction = direction
     )
 
     fun convertBuy(

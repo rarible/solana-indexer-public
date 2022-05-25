@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.common.converter
 
 import com.rarible.protocol.solana.common.model.Asset
+import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.TokenNftAssetType
 import com.rarible.protocol.solana.common.model.WrappedSolAssetType
 import com.rarible.protocol.solana.common.records.OrderDirection
@@ -55,6 +56,18 @@ class SolanaAuctionHouseOrderActivityConverter(
             price = getPrice(make, take, record.direction),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
+            buyerOrderHash = Order.calculateAuctionHouseOrderId(
+                maker = record.buyer,
+                mint = record.mint,
+                direction = record.direction,
+                auctionHouse = record.auctionHouse
+            ),
+            sellerOrderHash = Order.calculateAuctionHouseOrderId(
+                maker = record.seller,
+                mint = record.mint,
+                direction = record.direction,
+                auctionHouse = record.auctionHouse
+            )
         )
     }
 
