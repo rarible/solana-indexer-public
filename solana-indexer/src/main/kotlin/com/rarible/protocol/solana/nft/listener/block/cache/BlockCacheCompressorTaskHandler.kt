@@ -91,6 +91,10 @@ class BlockCacheCompressorTaskHandler(
                         repository.delete(blockNumber)
                         return@async
                     }
+                    if (cachedBlockResponse.result!!.transactions.any { it.transaction == null }) {
+                        logger.info("$logPrefix: block $blockNumber is already compressed, skipping it")
+                        return@async
+                    }
 
                     logger.info("$logPrefix: compressing block $blockNumber")
                     val compressedResponse = solanaBlockCompressor.compress(cachedBlockResponse)
