@@ -90,27 +90,21 @@ class CommonConfiguration(
     @Bean
     fun auctionHouseFilter(featureFlags: FeatureFlags): SolanaAuctionHouseFilter {
         val auctionHouses = featureFlags.auctionHouses
-        return when (featureFlags.tokenFilter) {
-            TokenFilterType.NONE -> object : SolanaAuctionHouseFilter {
-                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = true
-
-                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean = true
-            }
-            TokenFilterType.BLACKLIST -> object : SolanaAuctionHouseFilter {
-                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean =
+        return object : SolanaAuctionHouseFilter {
+            override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean =
+                if (featureFlags.tokenFilter == TokenFilterType.WHITELIST_V2) {
+                    true // Accept all auction houses.
+                } else {
                     auctionHouses.isEmpty() || auctionHouse in auctionHouses
+                }
 
-                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
-                    auctionHouses.isEmpty() || auctionHouse in auctionHouses
-            }
-            TokenFilterType.WHITELIST_V2 -> object : SolanaAuctionHouseFilter {
-                // Accept all records.
-                override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean = true
-
-                // Accept only whitelisted auction houses for update.
-                override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
+            override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
+                if (featureFlags.tokenFilter == TokenFilterType.WHITELIST_V2) {
+                    // Accept only the whitelabel auction house.
                     auctionHouse in auctionHouses
-            }
+                } else {
+                    true
+                }
         }
     }
 
