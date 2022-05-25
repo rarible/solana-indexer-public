@@ -11,6 +11,8 @@ class DynamicBlacklistSolanaTokenFilter(
     override suspend fun isAcceptableToken(mint: String): Boolean =
         dynamicBlacklistedTokenRepository.findAll(listOf(mint)).isEmpty()
 
+    override suspend fun isAcceptableForUpdateToken(mint: String): Boolean = true
+
     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) {
         dynamicBlacklistedTokenRepository.saveAll(mintsAndReasons)
     }

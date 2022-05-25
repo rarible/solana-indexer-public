@@ -7,7 +7,6 @@ import com.rarible.protocol.solana.common.filter.token.CurrencyTokenReader
 import com.rarible.protocol.solana.common.filter.token.InMemoryCachingSolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaTokenFilter
 import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListOnlyUpdatableTokenFilter
-import com.rarible.protocol.solana.common.filter.token.SolanaWhiteListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.StaticSolanaBlackListTokenFilter
 import com.rarible.protocol.solana.common.filter.token.TokenListFileReader
 import com.rarible.protocol.solana.common.filter.token.dynamic.DynamicBlacklistSolanaTokenFilter
@@ -55,21 +54,22 @@ class CommonConfiguration(
                 object : SolanaTokenFilter {
                     override suspend fun isAcceptableToken(mint: String): Boolean = true
 
+                    override suspend fun isAcceptableForUpdateToken(mint: String): Boolean = true
+
                     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
                 }
             }
-            TokenFilterType.WHITELIST_V2 -> {
-                val tokens = TokenListFileReader("/whitelist_v2").readTokens(WHITELIST_FILES)
-                CompositeSolanaTokenFilter(
-                    listOf(
-                        SolanaWhiteListTokenFilter(tokens),
-                        SolanaWhiteListOnlyUpdatableTokenFilter(tokens)
-                    )
-                )
-            }
-            TokenFilterType.BLACKLIST -> {
+            TokenFilterType.BLACKLIST, TokenFilterType.WHITELIST_V2 -> {
                 val blacklistTokens = featureFlags.blacklistTokens
                 val coinTokens = CurrencyTokenReader().readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
+
+                val whitelistFilter = if (featureFlags.tokenFilter == TokenFilterType.WHITELIST_V2) {
+                    val whitelistTokens = TokenListFileReader("/whitelist_v2").readTokens(WHITELIST_FILES)
+                    listOf(SolanaWhiteListOnlyUpdatableTokenFilter(whitelistTokens))
+                } else {
+                    emptyList()
+                }
+
                 CompositeSolanaTokenFilter(
                     listOf(
                         StaticSolanaBlackListTokenFilter(
@@ -81,7 +81,7 @@ class CommonConfiguration(
                             ),
                             cacheMaxSize = solanaIndexerProperties.featureFlags.tokenFilterInMemoryCacheSize
                         )
-                    )
+                    ) + whitelistFilter
                 )
             }
         }
