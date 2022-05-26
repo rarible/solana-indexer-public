@@ -54,8 +54,6 @@ class CommonConfiguration(
                 object : SolanaTokenFilter {
                     override suspend fun isAcceptableToken(mint: String): Boolean = true
 
-                    override suspend fun isAcceptableForUpdateToken(mint: String): Boolean = true
-
                     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
                 }
             }
@@ -98,13 +96,6 @@ class CommonConfiguration(
                     auctionHouses.isEmpty() || auctionHouse in auctionHouses
                 }
 
-            override fun isAcceptableForUpdateAuctionHouse(auctionHouse: String): Boolean =
-                if (featureFlags.tokenFilter == TokenFilterType.WHITELIST_V2) {
-                    // Accept only the whitelabel auction house.
-                    auctionHouse in auctionHouses
-                } else {
-                    true
-                }
         }
     }
 

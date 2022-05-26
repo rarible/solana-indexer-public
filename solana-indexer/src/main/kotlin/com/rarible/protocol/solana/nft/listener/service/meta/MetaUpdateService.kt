@@ -15,8 +15,7 @@ import org.springframework.stereotype.Component
 class MetaUpdateService(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val tokenMetaService: TokenMetaService,
-    private val collectionUpdateService: CollectionUpdateService,
-    private val tokenFilter: SolanaTokenFilter
+    private val collectionUpdateService: CollectionUpdateService
 ) : EntityService<MetaId, MetaplexMeta> {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -27,10 +26,6 @@ class MetaUpdateService(
     override suspend fun update(entity: MetaplexMeta): MetaplexMeta {
         if (entity.isEmpty) {
             logger.info("Meta in empty state: ${entity.id}")
-            return entity
-        }
-        if (!tokenFilter.isAcceptableForUpdateToken(entity.tokenAddress)) {
-            logger.info("MetaplexMeta update is ignored because mint ${entity.tokenAddress} is filtered out")
             return entity
         }
         // We need to update collection before item, otherwise there could be situation item belongs to collection

@@ -22,7 +22,6 @@ class OrderUpdateService(
     private val balanceRepository: BalanceRepository,
     private val orderRepository: OrderRepository,
     private val orderUpdateListener: OrderUpdateListener,
-    private val auctionHouseFilter: SolanaAuctionHouseFilter,
     private val escrowRepository: EscrowRepository
 ) : EntityService<OrderId, Order> {
 
@@ -32,10 +31,6 @@ class OrderUpdateService(
     override suspend fun update(entity: Order): Order {
         if (entity.isEmpty) {
             logger.info("Order in empty state: ${entity.id}")
-            return entity
-        }
-        if (!auctionHouseFilter.isAcceptableForUpdateAuctionHouse(entity.auctionHouse)) {
-            logger.info("Order update is ignored because auction house ${entity.auctionHouse} is filtered out")
             return entity
         }
 

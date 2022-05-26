@@ -1,6 +1,5 @@
 package com.rarible.protocol.solana.nft.listener.service.order
 
-import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.model.Asset
 import com.rarible.protocol.solana.common.model.Order
 import com.rarible.protocol.solana.common.model.OrderStatus
@@ -15,7 +14,6 @@ import com.rarible.protocol.solana.test.randomSellOrder
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -31,8 +29,6 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     private val orderUpdateListener: OrderUpdateListener = mockk()
 
-    private val auctionHouseFilter = mockk<SolanaAuctionHouseFilter>()
-
     @BeforeEach
     fun beforeEach() {
         clearMocks(orderUpdateListener)
@@ -41,15 +37,8 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
             balanceRepository = balanceRepository,
             orderRepository = orderRepository,
             orderUpdateListener = orderUpdateListener,
-            auctionHouseFilter = auctionHouseFilter,
             escrowRepository = escrowRepository
         )
-    }
-
-    @BeforeEach
-    fun cleanup() {
-        clearMocks(auctionHouseFilter)
-        every { auctionHouseFilter.isAcceptableForUpdateAuctionHouse(any()) } returns true
     }
 
     @Test
@@ -71,17 +60,6 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
         // Order saved, event sent
         val saved = orderRepository.findById(order.id)!!
         assertListenerWasCalled(saved)
-    }
-
-    @Test
-    fun `ignored auction house`() = runBlocking<Unit> {
-        val order = randomSellOrder()
-
-        every { auctionHouseFilter.isAcceptableForUpdateAuctionHouse(order.auctionHouse) } returns false
-        orderUpdateService.update(order)
-
-        assertThat(orderRepository.findById(order.id)).isNull()
-        coVerify(exactly = 0) { orderUpdateListener.onOrderChanged(any()) }
     }
 
     @Test

@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component
 @Component
 class AuctionHouseUpdateService(
     private val auctionHouseRepository: AuctionHouseRepository,
-    private val auctionHouseFilter: SolanaAuctionHouseFilter,
     private val orderRepository: OrderRepository,
     private val logRecordEventPublisher: LogRecordEventPublisher
 ) : EntityService<AuctionHouseId, AuctionHouse> {
@@ -31,10 +30,6 @@ class AuctionHouseUpdateService(
     override suspend fun update(entity: AuctionHouse): AuctionHouse {
         if (entity.isEmpty) {
             logger.info("AuctionHouse is empty, skipping it: {}", entity.account)
-            return entity
-        }
-        if (!auctionHouseFilter.isAcceptableForUpdateAuctionHouse(entity.account)) {
-            logger.info("AuctionHouse update is ignored because auction house ${entity.account} is filtered out")
             return entity
         }
         val auctionHouse = auctionHouseRepository.save(entity)

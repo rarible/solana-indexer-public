@@ -7,8 +7,5 @@ class SolanaWhiteListOnlyUpdatableTokenFilter(
     // Accept all records.
     override suspend fun isAcceptableToken(mint: String): Boolean = true
 
-    // Reduce only whitelisted mints.
-    override suspend fun isAcceptableForUpdateToken(mint: String): Boolean = mint in whitelistMints
-
     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
 }
