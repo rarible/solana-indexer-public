@@ -124,8 +124,8 @@ class OrderControllerFt : AbstractControllerTest() {
         val result = orderControllerApi.getOrderById(order.id).awaitFirst()
 
         assertThat(result.hash).isEqualTo(order.id)
-        assertThat(result.auctionHouseFee).isEqualTo(100)
-        assertThat(result.auctionHouseRequiresSignOff).isEqualTo(true)
+        assertThat(result.auctionHouseFee).isEqualTo(order.auctionHouseSellerFeeBasisPoints)
+        assertThat(result.auctionHouseRequiresSignOff).isEqualTo(order.auctionHouseRequiresSignOff)
     }
 
     @Test
@@ -234,8 +234,8 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(bestSell.continuation).isEqualTo(expectedContinuation)
         assertThat(bestSell.orders).hasSize(1)
         assertThat(bestSell.orders[0].hash).isEqualTo(order1.id)
-        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(100)
-        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(true)
+        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(order1.auctionHouseSellerFeeBasisPoints)
+        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(order1.auctionHouseRequiresSignOff)
     }
 
     @Test
@@ -279,8 +279,8 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isNull()
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(sorted[1].id)
-        assertThat(result.orders[0].auctionHouseFee).isEqualTo(100)
-        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(true)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(sorted[1].auctionHouseSellerFeeBasisPoints)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(sorted[1].auctionHouseRequiresSignOff)
     }
 
     @Test
@@ -323,8 +323,8 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isNull()
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
-        assertThat(result.orders[0].auctionHouseFee).isEqualTo(300)
-        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(order2.auctionHouseSellerFeeBasisPoints)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(order2.auctionHouseRequiresSignOff)
     }
 
     @Test
@@ -398,8 +398,8 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(bestSell.continuation).isEqualTo(expectedContinuation)
         assertThat(bestSell.orders).hasSize(1)
         assertThat(bestSell.orders[0].hash).isEqualTo(order2.id)
-        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(300)
-        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
+        assertThat(bestSell.orders[0].auctionHouseFee).isEqualTo(order2.auctionHouseSellerFeeBasisPoints)
+        assertThat(bestSell.orders[0].auctionHouseRequiresSignOff).isEqualTo(order2.auctionHouseRequiresSignOff)
     }
 
     @Test
@@ -444,7 +444,7 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.continuation).isEqualTo(DateIdContinuation(order2.updatedAt, order2.id).toString())
         assertThat(result.orders).hasSize(1)
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
-        assertThat(result.orders[0].auctionHouseFee).isEqualTo(300)
-        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(false)
+        assertThat(result.orders[0].auctionHouseFee).isEqualTo(order2.auctionHouseSellerFeeBasisPoints)
+        assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(order2.auctionHouseRequiresSignOff)
     }
 }
