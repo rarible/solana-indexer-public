@@ -90,12 +90,7 @@ class CommonConfiguration(
         val auctionHouses = featureFlags.auctionHouses
         return object : SolanaAuctionHouseFilter {
             override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean =
-                if (featureFlags.tokenFilter == TokenFilterType.WHITELIST_V2) {
-                    true // Accept all auction houses.
-                } else {
-                    auctionHouses.isEmpty() || auctionHouse in auctionHouses
-                }
-
+                auctionHouses.isEmpty() || auctionHouse in auctionHouses
         }
     }
 
