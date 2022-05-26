@@ -811,24 +811,28 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
                 type = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::class.java
             ).toList()
-            val sellRecord = SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
-                buyer = buyerWallet,
-                seller = sellerWallet,
-                mint = token,
-                amount = 1L.toBigInteger(),
-                price = 5.scaleSupply(9),
-                auctionHouse = house.id,
-                log = EMPTY_SOLANA_LOG,
-                timestamp = Instant.EPOCH,
-                direction = OrderDirection.SELL,
-                treasuryMint = WrappedSolAssetType.SOL
-            )
+
+            fun createSaleRecord(direction: OrderDirection): SolanaAuctionHouseOrderRecord.ExecuteSaleRecord {
+                return SolanaAuctionHouseOrderRecord.ExecuteSaleRecord(
+                    buyer = buyerWallet,
+                    seller = sellerWallet,
+                    mint = token,
+                    amount = 1L.toBigInteger(),
+                    price = 5.scaleSupply(9),
+                    auctionHouse = house.id,
+                    log = EMPTY_SOLANA_LOG,
+                    timestamp = Instant.EPOCH,
+                    direction = direction,
+                    treasuryMint = WrappedSolAssetType.SOL
+                )
+            }
+
             assertThat(saleRecords).usingElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::timestamp.name
             ).containsExactlyInAnyOrder(
-                sellRecord,
-                sellRecord.copy(direction = OrderDirection.BUY)
+                createSaleRecord(direction = OrderDirection.SELL),
+                createSaleRecord(direction = OrderDirection.BUY)
             )
 
             val incomeTransfersRecords = findRecordByType(
