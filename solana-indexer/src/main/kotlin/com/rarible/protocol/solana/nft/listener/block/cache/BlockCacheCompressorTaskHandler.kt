@@ -91,7 +91,7 @@ class BlockCacheCompressorTaskHandler(
                         repository.delete(blockNumber)
                         return@async
                     }
-                    if (cachedBlockResponse.result!!.transactions.any { it.transaction == null }) {
+                    if (isCompressedBlock(cachedBlockResponse)) {
                         logger.info("$logPrefix: block $blockNumber is already compressed, skipping it")
                         return@async
                     }
@@ -111,6 +111,13 @@ class BlockCacheCompressorTaskHandler(
             )
         }
     }
+
+    private fun isCompressedBlock(cachedBlockResponse: ApiResponse<SolanaBlockDto>) =
+        cachedBlockResponse.result!!.transactions.any { transactionDto ->
+            transactionDto.transaction == null || transactionDto.meta != null && transactionDto.meta!!.innerInstructions.any { innerInstruction ->
+                innerInstruction.instructions.any { it == null }
+            }
+        }
 
     private fun Long.nanoToMillis() = TimeUnit.NANOSECONDS.toMillis(this)
 }
