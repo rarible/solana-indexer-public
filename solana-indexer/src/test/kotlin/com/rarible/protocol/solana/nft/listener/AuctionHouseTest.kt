@@ -956,7 +956,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
         }
 
-        assertThat(getBalance(sellerWallet) - sellerBalanceBefore).isEqualByComparingTo(BigDecimal.valueOf(4.5))
-        assertThat(getBalance(house.treasuryAcct)).isEqualByComparingTo(BigDecimal.valueOf(0.5))
+        assertThat(getBalance(sellerWallet) - sellerBalanceBefore).isEqualByComparingTo(BigDecimal.valueOf(4.75))
+        assertThat(getBalance(house.treasuryAcct)).isEqualByComparingTo(BigDecimal.valueOf(0.25))
     }
 }
