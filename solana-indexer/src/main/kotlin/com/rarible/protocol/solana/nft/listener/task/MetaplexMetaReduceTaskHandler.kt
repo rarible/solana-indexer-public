@@ -36,7 +36,8 @@ class MetaplexMetaReduceTaskHandler(
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null -> Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from)
+            from != null && param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from)
+                .and(SolanaMetaRecord::metaAccount.name).lte(param)
             param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).`is`(param)
             else -> Criteria()
         }

@@ -33,7 +33,8 @@ class TokenReduceTaskHandler(
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null -> Criteria.where(SolanaTokenRecord::mint.name).gt(from)
+            from != null && param.isNotBlank() -> Criteria.where(SolanaTokenRecord::mint.name).gt(from)
+                .and(SolanaTokenRecord::mint.name).lte(param)
             param.isNotBlank() -> Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
             else -> Criteria()
         }

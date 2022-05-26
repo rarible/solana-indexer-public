@@ -34,11 +34,14 @@ class BalanceReduceTaskHandler(
     override val type: String = "BALANCE_REDUCER"
 
     @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
-    override fun runLongTask(from: String?, param: String) : Flow<String> {
+    override fun runLongTask(from: String?, param: String): Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null -> Criteria.where(SolanaBalanceRecord::account.name).gt(from)
+            from != null && param.isNotBlank() -> {
+                Criteria.where(SolanaBalanceRecord::account.name).gt(from)
+                    .and(SolanaBalanceRecord::account.name).lte(param)
+            }
             param.isNotBlank() -> Criteria.where(SolanaBalanceRecord::account.name).`is`(param)
             else -> Criteria()
         }
