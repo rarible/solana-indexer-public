@@ -29,12 +29,14 @@ class TokenReduceTaskHandler(
     override val type: String = "TOKEN_REDUCER"
 
     @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
-    override fun runLongTask(from: String?, param: String) : Flow<String> {
+    override fun runLongTask(from: String?, param: String): Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null && param.isNotBlank() -> Criteria.where(SolanaTokenRecord::mint.name).gt(from)
-                .and(SolanaTokenRecord::mint.name).lte(param)
+            from != null && param.isNotBlank() -> Criteria().andOperator(
+                Criteria.where(SolanaTokenRecord::mint.name).gt(from),
+                Criteria.where(SolanaTokenRecord::mint.name).lte(param),
+            )
             param.isNotBlank() -> Criteria.where(SolanaTokenRecord::mint.name).`is`(param)
             else -> Criteria()
         }

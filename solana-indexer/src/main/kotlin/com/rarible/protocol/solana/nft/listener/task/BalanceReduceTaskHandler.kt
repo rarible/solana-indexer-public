@@ -38,10 +38,10 @@ class BalanceReduceTaskHandler(
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null && param.isNotBlank() -> {
-                Criteria.where(SolanaBalanceRecord::account.name).gt(from)
-                    .and(SolanaBalanceRecord::account.name).lte(param)
-            }
+            from != null && param.isNotBlank() -> Criteria().andOperator(
+                Criteria.where(SolanaBalanceRecord::account.name).gt(from),
+                Criteria.where(SolanaBalanceRecord::account.name).lte(param),
+            )
             param.isNotBlank() -> Criteria.where(SolanaBalanceRecord::account.name).`is`(param)
             else -> Criteria()
         }

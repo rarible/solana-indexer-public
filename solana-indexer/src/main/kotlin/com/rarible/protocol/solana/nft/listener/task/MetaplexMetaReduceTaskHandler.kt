@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.nft.listener.task
 
 import com.rarible.core.entity.reducer.service.StreamFullReduceService
 import com.rarible.core.task.TaskHandler
-import com.rarible.protocol.solana.borsh.MetaplexMetadata
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
@@ -32,12 +31,14 @@ class MetaplexMetaReduceTaskHandler(
     override val type: String = "METAPLEX_META_REDUCER"
 
     @Suppress("EXPERIMENTAL_API_USAGE", "OPT_IN_USAGE")
-    override fun runLongTask(from: String?, param: String) : Flow<String> {
+    override fun runLongTask(from: String?, param: String): Flow<String> {
         logger.info("Starting $type with from: $from, param: $param")
 
         val criteria = when {
-            from != null && param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from)
-                .and(SolanaMetaRecord::metaAccount.name).lte(param)
+            from != null && param.isNotBlank() -> Criteria().andOperator(
+                Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from),
+                Criteria.where(SolanaMetaRecord::metaAccount.name).lte(param),
+            )
             param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).`is`(param)
             else -> Criteria()
         }
