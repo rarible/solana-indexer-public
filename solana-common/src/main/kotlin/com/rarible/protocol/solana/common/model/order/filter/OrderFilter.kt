@@ -58,6 +58,7 @@ sealed class OrderFilter {
         val sort: OrderFilterSort,
         val statuses: List<OrderStatus>? = null,
         val makers: List<String>? = null,
+        val origin: String? = null,
         val continuation: DateIdContinuation? = null
     ) : OrderFilter() {
 
@@ -65,6 +66,7 @@ sealed class OrderFilter {
             val criteria = Criteria()
                 .forDirection(OrderDirection.SELL)
                 .forMakers(makers)
+                .forOrigin(origin)
                 .forStatuses(statuses)
                 .addContinuation(continuation, sort)
 
@@ -79,7 +81,8 @@ sealed class OrderFilter {
         val currency: String,
         val tokenAddress: String,
         val makers: List<String>? = null,
-        val continuation: PriceIdContinuation?
+        val origin: String? = null,
+        val continuation: PriceIdContinuation?,
     ) : OrderFilter() {
 
         override fun getQuery(limit: Int): Query {
@@ -88,6 +91,7 @@ sealed class OrderFilter {
                 .forMakers(makers)
                 .forSellCurrency(currency)
                 .forStatuses(statuses)
+                .forOrigin(origin)
                 .addSellContinuation(continuation)
 
             return Query(criteria)
@@ -124,6 +128,7 @@ sealed class OrderFilter {
         val sort: OrderFilterSort,
         val statuses: List<OrderStatus>? = null,
         val makers: List<String>? = null,
+        val origin: String? = null,
         val start: Instant? = null,
         val end: Instant? = null,
         val continuation: DateIdContinuation? = null
@@ -134,6 +139,7 @@ sealed class OrderFilter {
                 .forMakers(makers)
                 .forStatuses(statuses)
                 .forCreatedAt(start, end)
+                .forOrigin(origin)
                 .addContinuation(continuation, sort)
 
             return Query(criteria)
@@ -147,6 +153,7 @@ sealed class OrderFilter {
         val currency: String,
         val tokenAddress: String,
         val makers: List<String>? = null,
+        val origin: String? = null,
         val start: Instant? = null,
         val end: Instant? = null,
         val continuation: PriceIdContinuation? = null
@@ -158,6 +165,7 @@ sealed class OrderFilter {
                 .forMakers(makers)
                 .forBuyCurrency(currency)
                 .forStatuses(statuses)
+                .forOrigin(origin)
                 .forCreatedAt(start, end)
                 .addBidContinuation(continuation)
 
@@ -237,6 +245,10 @@ sealed class OrderFilter {
 
         return this
     }
+
+    fun Criteria.forOrigin(origin: String?) = origin?.let {
+        and(Order::auctionHouse).isEqualTo(origin)
+    } ?: this
 
     fun Criteria.addSyncContinuation(continuation: DateIdContinuation?, sort: OrderFilterSort) =
         continuation?.let {

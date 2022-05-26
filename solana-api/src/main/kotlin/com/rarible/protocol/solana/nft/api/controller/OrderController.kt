@@ -99,6 +99,7 @@ class OrderController(
             statuses = listOf(OrderStatus.ACTIVE),
             makers = null,
             sort = sort,
+            origin = origin,
             continuation = DateIdContinuation.parse(continuation)
         )
 
@@ -123,6 +124,7 @@ class OrderController(
             currency = currencyId,
             tokenAddress = itemId,
             makers = maker,
+            origin = origin,
             continuation = PriceIdContinuation.parse(continuation)
         )
 
@@ -145,6 +147,7 @@ class OrderController(
         val orderFilter = OrderFilter.Sell(
             statuses = status?.fromDto(),
             makers = listOf(maker),
+            origin = origin,
             sort = sort,
             continuation = DateIdContinuation.parse(continuation)
         )
@@ -178,6 +181,7 @@ class OrderController(
             currency = currencyId,
             tokenAddress = itemId,
             makers = maker,
+            origin = origin,
             continuation = PriceIdContinuation.parse(continuation),
             start = start?.let { Instant.ofEpochMilli(it) },
             end = end?.let { Instant.ofEpochMilli(it) }
@@ -205,6 +209,7 @@ class OrderController(
             sort = sort,
             statuses = status?.fromDto(),
             makers = listOf(maker),
+            origin = origin,
             continuation = DateIdContinuation.parse(continuation),
             start = start?.let { Instant.ofEpochMilli(it) },
             end = start?.let { Instant.ofEpochMilli(it) },
