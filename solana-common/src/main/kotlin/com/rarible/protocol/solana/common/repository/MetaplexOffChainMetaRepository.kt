@@ -12,6 +12,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.count
 import org.springframework.data.mongodb.core.findById
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.data.mongodb.core.query.Criteria
@@ -29,6 +30,11 @@ class MetaplexOffChainMetaRepository(
 
     suspend fun findByTokenAddress(tokenAddress: TokenId): MetaplexOffChainMeta? =
         mongo.findById<MetaplexOffChainMeta>(tokenAddress).awaitFirstOrNull()
+
+    suspend fun hasByTokenAddress(tokenAddress: TokenId): Boolean {
+        val count = mongo.count<MetaplexOffChainMeta>(Query(Criteria.where("_id").`is`(tokenAddress))).awaitFirst()
+        return count > 0
+    }
 
     fun findByTokenAddresses(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> {
         val criteria = Criteria.where(MetaplexOffChainMeta::tokenAddress.name).`in`(tokenAddresses)

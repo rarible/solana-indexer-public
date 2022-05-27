@@ -58,11 +58,17 @@ class MetaplexMetaRepository(
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
-    fun findAll(fromMint: String?): Flow<MetaplexMeta> {
-        val criteria = if (fromMint != null) {
-            Criteria(MetaplexMeta::tokenAddress.name).gt(fromMint)
-        } else {
-            Criteria()
+    fun findAll(
+        fromMintExclusive: String?,
+        toMintInclusive: String?
+    ): Flow<MetaplexMeta> {
+        val criteria = when {
+            fromMintExclusive != null && toMintInclusive != null -> Criteria().andOperator(
+                Criteria(MetaplexMeta::tokenAddress.name).gt(fromMintExclusive),
+                Criteria(MetaplexMeta::tokenAddress.name).lte(toMintInclusive)
+            )
+            fromMintExclusive != null -> Criteria(MetaplexMeta::tokenAddress.name).gt(fromMintExclusive)
+            else -> Criteria()
         }
         val query = Query(criteria).with(
             Sort.by(

@@ -1,27 +1,27 @@
 package com.rarible.protocol.solana.nft.listener.task
 
 import com.rarible.core.task.TaskHandler
-import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.repository.MetaplexMetaRepository
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.update.TokenMetaUpdateListener
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
- * Background task used to load metaplex meta for items that have Metaplex on-chain meta but for reason lack the off-chain meta.
+ * Background task used to trigger loading of meta on the union-service for mints.
  */
 @Component
-class MetaplexOffChainMetaLoaderTaskHandler(
+class MetaplexMetaLoadingTriggerTaskHandler(
     private val metaplexMetaRepository: MetaplexMetaRepository,
     private val metaplexOffChainMetaRepository: MetaplexOffChainMetaRepository,
-    private val metaplexOffChainMetaLoadService: MetaplexOffChainMetaLoadService
+    private val tokenMetaUpdateListener: TokenMetaUpdateListener
 ) : TaskHandler<String> {
 
-    private val logger = LoggerFactory.getLogger(MetaplexOffChainMetaLoaderTaskHandler::class.java)
+    private val logger = LoggerFactory.getLogger(MetaplexMetaLoadingTriggerTaskHandler::class.java)
 
-    override val type: String = "METAPLEX_META_LOADER"
+    override val type: String = "METAPLEX_META_LOADING_TRIGGER"
 
     /**
      * - [param] = "" - load all starting [from] if not loaded yet
@@ -37,7 +37,7 @@ class MetaplexOffChainMetaLoaderTaskHandler(
             else -> param to false
         }
         logger.info(
-            "Starting to load metaplex off-chain meta" +
+            "Triggering meta loading on the union-service for mints" +
                     (if (from != null) " from $from" else "") +
                     (if (toMint != null) " to $toMint" else "") +
                     " with reloading = $reload"
@@ -45,13 +45,9 @@ class MetaplexOffChainMetaLoaderTaskHandler(
         return metaplexMetaRepository.findAll(from, toMint)
             .map {
                 val tokenAddress = it.tokenAddress
-                val hasOffChainMeta = metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress) != null
+                val hasOffChainMeta = metaplexOffChainMetaRepository.hasByTokenAddress(tokenAddress)
                 if (reload || !hasOffChainMeta) {
-                    logger.info(
-                        "Loading off chain metaplex meta for $tokenAddress" +
-                                if (reload) "because reload is requested" else " because the off-chain meta has not been loaded before"
-                    )
-                    metaplexOffChainMetaLoadService.loadOffChainTokenMeta(tokenAddress)
+                    tokenMetaUpdateListener.triggerTokenMetaLoading(tokenAddress)
                 }
                 tokenAddress
             }
