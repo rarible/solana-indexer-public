@@ -17,7 +17,6 @@ import com.rarible.protocol.solana.common.records.OrderDirection
 import com.rarible.protocol.solana.common.records.SolanaOrderUpdateInstruction
 import com.rarible.protocol.solana.common.repository.AuctionHouseRepository
 import com.rarible.protocol.solana.common.service.PriceNormalizer
-import com.rarible.protocol.solana.nft.listener.service.auction.house.AuctionHouseNotReadyException
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 
@@ -49,11 +48,12 @@ class ForwardOrderReducer(
 
             is OrderBuyEvent -> {
                 val auctionHouse = auctionHouseRepository.findByAccount(event.auctionHouse)
-                    ?: throw AuctionHouseNotReadyException("Auction house: ${event.auctionHouse} missed in repository")
+//                    TODO reindex ah entries
+//                    ?: throw AuctionHouseNotReadyException("Auction house: ${event.auctionHouse} missed in repository")
 
                 Order(
-                    auctionHouseSellerFeeBasisPoints = auctionHouse.sellerFeeBasisPoints,
-                    auctionHouseRequiresSignOff = auctionHouse.requiresSignOff,
+                    auctionHouseSellerFeeBasisPoints = auctionHouse?.sellerFeeBasisPoints,
+                    auctionHouseRequiresSignOff = auctionHouse?.requiresSignOff,
                     auctionHouse = event.auctionHouse,
                     maker = event.maker,
                     makerAccount = event.makerAccount,
@@ -83,11 +83,11 @@ class ForwardOrderReducer(
 
             is OrderSellEvent -> {
                 val auctionHouse = auctionHouseRepository.findByAccount(event.auctionHouse)
-                    ?: throw AuctionHouseNotReadyException("Auction house: ${event.auctionHouse} missed in repository")
+//                    ?: throw AuctionHouseNotReadyException("Auction house: ${event.auctionHouse} missed in repository")
 
                 Order(
-                    auctionHouseSellerFeeBasisPoints = auctionHouse.sellerFeeBasisPoints,
-                    auctionHouseRequiresSignOff = auctionHouse.requiresSignOff,
+                    auctionHouseSellerFeeBasisPoints = auctionHouse?.sellerFeeBasisPoints,
+                    auctionHouseRequiresSignOff = auctionHouse?.requiresSignOff,
                     auctionHouse = event.auctionHouse,
                     maker = event.maker,
                     status = OrderStatus.ACTIVE,
