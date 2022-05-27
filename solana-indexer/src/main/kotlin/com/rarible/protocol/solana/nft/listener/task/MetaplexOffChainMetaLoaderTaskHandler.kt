@@ -23,10 +23,26 @@ class MetaplexOffChainMetaLoaderTaskHandler(
 
     override val type: String = "METAPLEX_META_LOADER"
 
+    /**
+     * - [param] = "" - load all starting [from] if not loaded yet
+     * - [param] = "reload" - reload all starting [from]
+     * - [param] = `128nFwDjdEBNhWMnutLog1YwXGqkYzuBuZQhJBqjN7FC` - load all starting [from] to [param] if not loaded yet
+     * - [param] = `128nFwDjdEBNhWMnutLog1YwXGqkYzuBuZQhJBqjN7FC:reload` - re-load all starting [from] to [param]
+     */
     override fun runLongTask(from: String?, param: String): Flow<String> {
-        val reload = param == "reload"
-        logger.info("Starting to load metaplex off-chain meta" + (if (from != null) " from $from" else "") + " with reloading = $reload")
-        return metaplexMetaRepository.findAll(from)
+        val (toMint, reload) = when {
+            param.isEmpty() -> null to false
+            param.contains(":") -> param.substringBefore(":") to (param.substringAfter(":") == "reload")
+            param == "reload" -> null to true
+            else -> param to false
+        }
+        logger.info(
+            "Starting to load metaplex off-chain meta" +
+                    (if (from != null) " from $from" else "") +
+                    (if (toMint != null) " to $toMint" else "") +
+                    " with reloading = $reload"
+        )
+        return metaplexMetaRepository.findAll(from, toMint)
             .map {
                 val tokenAddress = it.tokenAddress
                 val hasOffChainMeta = metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress) != null
