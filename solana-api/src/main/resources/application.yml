@@ -18,3 +18,16 @@ common:
 mongock:
   change-logs-scan-package:
     - com.rarible.blockchain.scanner.solana.migration
+
+rarible:
+  core:
+    apm:
+      agent:
+        enabled: true
+        server: http://apm-server.logging:8200
+        packages: com.rarible.protocol.solana.nft.api
+      web:
+        filter:
+          enabled: true
+      annotation:
+        enabled: true

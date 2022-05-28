@@ -1,5 +1,7 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.core.apm.CaptureSpan
+import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.common.model.MetaId
 import com.rarible.protocol.solana.common.model.MetaplexMeta
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
@@ -20,6 +22,7 @@ import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Component
 
 @Component
+@CaptureSpan(type = SpanType.DB)
 class MetaplexMetaRepository(
     private val mongo: ReactiveMongoOperations
 ) {

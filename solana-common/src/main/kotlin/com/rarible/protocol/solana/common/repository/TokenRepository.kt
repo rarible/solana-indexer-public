@@ -1,7 +1,8 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.core.apm.CaptureSpan
+import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.common.continuation.DateIdContinuation
-import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.Token
 import com.rarible.protocol.solana.common.model.TokenId
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
+@CaptureSpan(type = SpanType.DB)
 class TokenRepository(
     private val mongo: ReactiveMongoOperations
 ) {

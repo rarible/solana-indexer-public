@@ -1,5 +1,7 @@
 package com.rarible.protocol.solana.common.repository
 
+import com.rarible.core.apm.CaptureSpan
+import com.rarible.core.apm.SpanType
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.TokenId
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Component
 
 // TODO: for all repositories that need custom indexes introduce a base interface and inject in into "RepositoryConfiguration".
 @Component
+@CaptureSpan(type = SpanType.DB)
 class MetaplexOffChainMetaRepository(
     private val mongo: ReactiveMongoOperations
 ) {
