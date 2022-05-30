@@ -136,6 +136,11 @@ class ActivityRepository(
         private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
         const val COLLECTION = "activity"
 
+        private val TYPE_AND_ID = Index()
+            .on(ActivityRecord::type.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         private val TYPE_AND_MINT_AND_ID = Index()
             .on(ActivityRecord::type.name, Sort.Direction.ASC)
             .on(ActivityRecord::mint.name, Sort.Direction.ASC)
@@ -148,6 +153,7 @@ class ActivityRepository(
             .background()
 
         val ALL_INDEXES = listOf(
+            TYPE_AND_ID,
             TYPE_AND_MINT_AND_ID,
             DB_UPDATED_AT_AND_ID
         )
