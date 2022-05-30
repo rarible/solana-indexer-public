@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.common.model.OrderId
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.common.repository.SolanaAuctionHouseOrderRecordsRepository
+import com.rarible.protocol.solana.common.update.ActivityEventListener
 import com.rarible.protocol.solana.nft.listener.service.order.OrderEventConverter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -28,8 +29,8 @@ class OrderReduceTaskHandler(
     private val orderStreamFullReduceService: OrderStreamFullReduceService,
     private val orderRecordsRepository: SolanaAuctionHouseOrderRecordsRepository,
     private val orderEventConverter: OrderEventConverter,
-    private val activityRepository: ActivityRepository,
-    private val orderActivityConverter: SolanaAuctionHouseOrderActivityConverter
+    private val orderActivityConverter: SolanaAuctionHouseOrderActivityConverter,
+    private val activityEventListener: ActivityEventListener
 ) : TaskHandler<String> {
     override val type: String = "ORDER_REDUCER"
 
@@ -79,7 +80,7 @@ class OrderReduceTaskHandler(
     private suspend fun saveOrderActivity(orderRecord: SolanaAuctionHouseOrderRecord) {
         val activityDto = orderActivityConverter.convert(orderRecord, false)
         if (activityDto != null) {
-            activityRepository.save(activityDto)
+            activityEventListener.onActivities(listOf(activityDto))
         }
     }
 

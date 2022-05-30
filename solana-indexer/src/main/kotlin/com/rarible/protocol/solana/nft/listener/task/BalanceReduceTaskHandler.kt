@@ -7,8 +7,8 @@ import com.rarible.protocol.solana.common.event.BalanceEvent
 import com.rarible.protocol.solana.common.model.Balance
 import com.rarible.protocol.solana.common.model.BalanceId
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
-import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.common.repository.SolanaBalanceRecordsRepository
+import com.rarible.protocol.solana.common.update.ActivityEventListener
 import com.rarible.protocol.solana.nft.listener.service.balance.BalanceEventConverter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -28,8 +28,8 @@ class BalanceReduceTaskHandler(
     private val balanceStreamFullReduceService: BalanceStreamFullReduceService,
     private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
     private val balanceEventConverter: BalanceEventConverter,
-    private val activityRepository: ActivityRepository,
-    private val balanceActivityConverter: SolanaBalanceActivityConverter
+    private val balanceActivityConverter: SolanaBalanceActivityConverter,
+    private val activityEventListener: ActivityEventListener
 ) : TaskHandler<String> {
     override val type: String = "BALANCE_REDUCER"
 
@@ -60,7 +60,7 @@ class BalanceReduceTaskHandler(
     private suspend fun saveBalanceActivity(balanceRecord: SolanaBalanceRecord) {
         val activityDto = balanceActivityConverter.convert(balanceRecord, false)
         if (activityDto != null) {
-            activityRepository.save(activityDto)
+            activityEventListener.onActivities(listOf(activityDto))
         }
     }
 
