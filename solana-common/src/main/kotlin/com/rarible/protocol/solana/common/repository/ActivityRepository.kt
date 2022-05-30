@@ -63,14 +63,16 @@ class ActivityRepository(
     fun findAllActivities(
         types: Collection<ActivityTypeDto>,
         continuation: IdContinuation?,
-        size: Int,
+        size: Int?,
         sortAscending: Boolean,
     ): Flow<ActivityDto> {
         val criteria = Criteria(ActivityRecord::type.name).`in`(types)
             .addContinuation(continuation, sortAscending)
         val query = Query(criteria)
             .with(Sort.by("_id").direction(sortAscending))
-            .limit(size)
+        if (size != null) {
+            query.limit(size)
+        }
         return mongo.find(query, ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
     }
