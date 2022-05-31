@@ -15,6 +15,7 @@ import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityFilterDto
 import com.rarible.protocol.solana.dto.ActivitySortDto
 import com.rarible.protocol.solana.dto.SyncSortDto
+import com.rarible.protocol.solana.dto.SyncTypeDto
 import com.rarible.protocol.solana.nft.api.service.ActivityApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
 import org.springframework.http.ResponseEntity
@@ -26,6 +27,7 @@ class ActivityController(
 ) : ActivityControllerApi {
 
     override suspend fun getActivitiesSync(
+        type: SyncTypeDto?,
         continuation: String?,
         size: Int?,
         sort: SyncSortDto?
@@ -35,6 +37,7 @@ class ActivityController(
         val sortAscending = sort != SyncSortDto.DB_UPDATE_DESC
 
         val result = activityApiService.getAllActivitiesSync(
+            type = type,
             continuation = dateIdContinuation,
             size = safeSize,
             sortAscending = sortAscending

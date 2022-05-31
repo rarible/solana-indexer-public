@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.dto.ActivityFilterByItemDto
 import com.rarible.protocol.solana.dto.ActivityFilterByItemTypeDto
 import com.rarible.protocol.solana.dto.ActivityFilterByUserDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.SyncTypeDto
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import org.springframework.stereotype.Service
@@ -21,11 +22,12 @@ class ActivityApiService(
 ) {
 
     suspend fun getAllActivitiesSync(
+        type: SyncTypeDto?,
         continuation: DateIdContinuation?,
         size: Int,
-        sortAscending: Boolean,
+        sortAscending: Boolean
     ): List<ActivityDto> {
-        return activityRepository.findAllActivitiesSync(continuation, size, sortAscending)
+        return activityRepository.findAllActivitiesSync(type, continuation, size, sortAscending)
             .take(size).toList()
     }
 
