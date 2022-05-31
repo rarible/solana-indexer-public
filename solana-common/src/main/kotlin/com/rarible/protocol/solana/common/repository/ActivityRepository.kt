@@ -8,6 +8,7 @@ import com.rarible.protocol.solana.common.model.ActivityRecord
 import com.rarible.protocol.solana.common.model.asRecord
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.SyncTypeDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -47,15 +48,19 @@ class ActivityRepository(
     }
 
     fun findAllActivitiesSync(
+        type: SyncTypeDto?,
         continuation: DateIdContinuation?,
         size: Int,
-        sortAscending: Boolean,
+        sortAscending: Boolean
     ): Flow<ActivityDto> {
         val criteria = Criteria()
+            .addSyncFilter(type)
             .addSyncContinuation(continuation, sortAscending)
+
         val query = Query(criteria)
             .with(Sort.by(ActivityRecord::dbUpdatedAt.name).direction(sortAscending))
             .limit(size)
+
         return mongo.find(query, ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
     }
@@ -106,6 +111,16 @@ class ActivityRepository(
         }
     }
 
+    private fun Criteria.addSyncFilter(
+        type: SyncTypeDto?
+    ) = type?.let {
+        when (it) {
+            SyncTypeDto.AUCTION -> andOperator(AUCTION_CRITERIA)
+            SyncTypeDto.ORDER -> andOperator(ORDER_CRITERIA)
+            SyncTypeDto.NFT -> andOperator(NFT_CRITERIA)
+        }
+    } ?: this
+
     private fun Criteria.addSyncContinuation(
         continuation: DateIdContinuation?,
         sortAscending: Boolean
@@ -120,7 +135,6 @@ class ActivityRepository(
                 Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
                 Criteria(ActivityRecord::dbUpdatedAt.name).lt(continuation.date)
             )
-
         }
     } ?: this
 
@@ -138,6 +152,37 @@ class ActivityRepository(
         private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
         const val COLLECTION = "activity"
 
+        private val AUCTION_TYPES = setOf(
+            ActivityTypeDto.AUCTION_BID,
+            ActivityTypeDto.AUCTION_CANCEL,
+            ActivityTypeDto.AUCTION_CREATED,
+            ActivityTypeDto.AUCTION_ENDED,
+            ActivityTypeDto.AUCTION_FINISHED,
+            ActivityTypeDto.AUCTION_STARTED
+        )
+
+        private val NFT_TYPES = setOf(
+            ActivityTypeDto.TRANSFER,
+            ActivityTypeDto.MINT,
+            ActivityTypeDto.BURN
+        )
+
+        private val ORDER_TYPES = setOf(
+            ActivityTypeDto.BID,
+            ActivityTypeDto.LIST,
+            ActivityTypeDto.SELL,
+            ActivityTypeDto.CANCEL_LIST,
+            ActivityTypeDto.CANCEL_BID
+        )
+
+        private fun syncFilterCriteria(types: Set<ActivityTypeDto>): Criteria {
+            return Criteria(ActivityRecord::type.name).`in`(types)
+        }
+
+        private val AUCTION_CRITERIA = syncFilterCriteria(AUCTION_TYPES)
+        private val NFT_CRITERIA = syncFilterCriteria(NFT_TYPES)
+        private val ORDER_CRITERIA = syncFilterCriteria(ORDER_TYPES)
+
         private val TYPE_AND_ID = Index()
             .on(ActivityRecord::type.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
@@ -149,6 +194,12 @@ class ActivityRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        private val TYPE_AND_DB_UPDATED_AT_AND_ID = Index()
+            .on(ActivityRecord::type.name, Sort.Direction.ASC)
+            .on(ActivityRecord::dbUpdatedAt.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         private val DB_UPDATED_AT_AND_ID = Index()
             .on(ActivityRecord::dbUpdatedAt.name, Sort.Direction.ASC)
             .on("_id", Sort.Direction.ASC)
@@ -157,7 +208,8 @@ class ActivityRepository(
         val ALL_INDEXES = listOf(
             TYPE_AND_ID,
             TYPE_AND_MINT_AND_ID,
-            DB_UPDATED_AT_AND_ID
+            DB_UPDATED_AT_AND_ID,
+            TYPE_AND_DB_UPDATED_AT_AND_ID
         )
     }
 }

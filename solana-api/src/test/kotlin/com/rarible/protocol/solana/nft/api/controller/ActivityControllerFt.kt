@@ -3,9 +3,13 @@ package com.rarible.protocol.solana.nft.api.controller
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivitiesDto
 import com.rarible.protocol.solana.dto.ActivityDto
+import com.rarible.protocol.solana.dto.MintActivityDto
+import com.rarible.protocol.solana.dto.OrderListActivityDto
 import com.rarible.protocol.solana.dto.SyncSortDto
+import com.rarible.protocol.solana.dto.SyncTypeDto
 import com.rarible.protocol.solana.nft.api.test.AbstractControllerTest
 import com.rarible.protocol.solana.test.randomBurn
+import com.rarible.protocol.solana.test.randomList
 import com.rarible.protocol.solana.test.randomMintActivity
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
@@ -19,6 +23,50 @@ class ActivityControllerFt : AbstractControllerTest() {
     lateinit var activityRepository: ActivityRepository
 
     @Test
+    fun `activity controller sync test - order filter`() = runBlocking<Unit> {
+        val activityQuantity = 5
+
+        repeat(activityQuantity) {
+            activityRepository.save(randomMintActivity())
+            activityRepository.save(randomList())
+        }
+
+        val result: ActivitiesDto =
+            activityControllerApi.getActivitiesSync(SyncTypeDto.ORDER, null, activityQuantity, SyncSortDto.DB_UPDATE_ASC ).awaitFirst()
+
+        Assertions.assertThat(result.activities).hasSize(activityQuantity)
+        result.activities.forEach { Assertions.assertThat(it).isExactlyInstanceOf(OrderListActivityDto::class.java) }
+        Assertions.assertThat(result.activities).isSortedAccordingTo { o1, o2 ->
+            compareValues(
+                o1.dbUpdatedAt,
+                o2.dbUpdatedAt
+            )
+        }
+    }
+
+    @Test
+    fun `activity controller sync test - nft filter`() = runBlocking<Unit> {
+        val activityQuantity = 12
+
+        repeat(activityQuantity) {
+            activityRepository.save(randomMintActivity())
+            activityRepository.save(randomList())
+        }
+
+        val result: ActivitiesDto =
+            activityControllerApi.getActivitiesSync(SyncTypeDto.NFT, null, activityQuantity, SyncSortDto.DB_UPDATE_ASC ).awaitFirst()
+
+        Assertions.assertThat(result.activities).hasSize(activityQuantity)
+        result.activities.forEach { Assertions.assertThat(it).isExactlyInstanceOf(MintActivityDto::class.java) }
+        Assertions.assertThat(result.activities).isSortedAccordingTo { o1, o2 ->
+            compareValues(
+                o1.dbUpdatedAt,
+                o2.dbUpdatedAt
+            )
+        }
+    }
+
+    @Test
     fun `activity controller sync test`() = runBlocking<Unit> {
         val activityQuantity = 5
 
@@ -27,7 +75,7 @@ class ActivityControllerFt : AbstractControllerTest() {
         }
 
         val result: ActivitiesDto =
-            activityControllerApi.getActivitiesSync(null, activityQuantity, SyncSortDto.DB_UPDATE_ASC).awaitFirst()
+            activityControllerApi.getActivitiesSync(null, null, activityQuantity, SyncSortDto.DB_UPDATE_ASC ).awaitFirst()
 
         Assertions.assertThat(result.activities).hasSize(activityQuantity)
         Assertions.assertThat(result.activities).isSortedAccordingTo { o1, o2 ->
@@ -78,7 +126,7 @@ class ActivityControllerFt : AbstractControllerTest() {
 
         do {
             val result =
-                activityControllerApi.getActivitiesSync(continuation, chunkSize, sort).awaitFirst()
+                activityControllerApi.getActivitiesSync(null, continuation, chunkSize, sort).awaitFirst()
             activities.addAll(result.activities)
             continuation = result.continuation
             totalPages += 1
