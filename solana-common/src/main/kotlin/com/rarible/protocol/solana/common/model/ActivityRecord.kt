@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.model
 
+import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.common.util.getNftMint
 import com.rarible.protocol.solana.dto.ActivityBlockchainInfoDto
 import com.rarible.protocol.solana.dto.ActivityDto
@@ -50,7 +51,7 @@ data class MintActivityRecord(
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.MINT,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: MintActivityDto) : this(
@@ -74,7 +75,7 @@ data class MintActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class BurnActivityRecord(
@@ -85,7 +86,7 @@ data class BurnActivityRecord(
     override val blockchainInfo: ActivityBlockchainInfoDto,
     val value: BigInteger,
     override val type: ActivityTypeDto = ActivityTypeDto.BURN,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: BurnActivityDto) : this(
@@ -109,7 +110,7 @@ data class BurnActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class TransferActivityRecord(
@@ -122,7 +123,7 @@ data class TransferActivityRecord(
     val from: String,
     val purchase: Boolean,
     override val type: ActivityTypeDto = ActivityTypeDto.TRANSFER,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: TransferActivityDto) : this(
@@ -150,7 +151,7 @@ data class TransferActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class ListActivityRecord(
@@ -164,7 +165,7 @@ data class ListActivityRecord(
     val take: AssetDto,
     val price: BigDecimal,
     override val type: ActivityTypeDto = ActivityTypeDto.LIST,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: OrderListActivityDto) : this(
@@ -193,7 +194,7 @@ data class ListActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class BidActivityRecord(
@@ -207,7 +208,7 @@ data class BidActivityRecord(
     val take: AssetDto,
     val price: BigDecimal,
     override val type: ActivityTypeDto = ActivityTypeDto.BID,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: OrderBidActivityDto) : this(
@@ -236,7 +237,7 @@ data class BidActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class CancelListActivityRecord(
@@ -249,7 +250,7 @@ data class CancelListActivityRecord(
     val make: AssetTypeDto,
     val take: AssetTypeDto,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_LIST,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: OrderCancelListActivityDto) : this(
@@ -276,7 +277,7 @@ data class CancelListActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class CancelBidActivityRecord(
@@ -289,7 +290,7 @@ data class CancelBidActivityRecord(
     val make: AssetTypeDto,
     val take: AssetTypeDto,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_BID,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: OrderCancelBidActivityDto) : this(
@@ -316,7 +317,7 @@ data class CancelBidActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }
 
 data class MatchActivityRecord(
@@ -334,7 +335,7 @@ data class MatchActivityRecord(
     val price: BigDecimal,
     val orderType: OrderMatchActivityDto.Type,
     override val type: ActivityTypeDto = ActivityTypeDto.SELL,
-    override val dbUpdatedAt: Instant = Instant.now()
+    override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
 
     constructor(dto: OrderMatchActivityDto) : this(
@@ -370,5 +371,5 @@ data class MatchActivityRecord(
     )
 
     override fun withDbUpdatedAt() =
-        copy(dbUpdatedAt = Instant.now())
+        copy(dbUpdatedAt = nowMillis())
 }

@@ -1,5 +1,6 @@
 package com.rarible.protocol.solana.common.model
 
+import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.hash.Hash
 import com.rarible.protocol.solana.common.records.OrderDirection
@@ -55,7 +56,7 @@ data class Order(
     ),
 ) : SolanaEntity<OrderId, OrderEvent, Order> {
 
-    fun withDbUpdated(): Order = copy(dbUpdatedAt = Instant.now())
+    fun withDbUpdated(): Order = copy(dbUpdatedAt = nowMillis())
 
     override fun withRevertableEvents(events: List<OrderEvent>): Order = copy(revertableEvents = events)
 
