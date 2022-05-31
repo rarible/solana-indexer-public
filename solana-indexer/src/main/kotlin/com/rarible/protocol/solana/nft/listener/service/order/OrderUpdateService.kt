@@ -84,9 +84,20 @@ class OrderUpdateService(
             ?: return this.copy(status = OrderStatus.ACTIVE)
 
         if (balance.owner != maker) {
-            logger.info("Inactivate the SELL order $id because the owner of the sell account was changed from $maker to ${balance.owner}")
+            /**
+             * CHARLIE-282: when the owner of the seller token account gets changed, delegate authority for the AuctionHouse is automatically ended.
+             * AuctionHouse will not be able to execute the order because it cannot take the NFT from the token account anymore.
+             * We mark such an order CANCELLED. Even if the token account's ownership returns to the seller account, the delegate authority of the AH is gone,
+             * so we mark the order with non-changeable CANCELLED status other than INACTIVE, which can otherwise become ACTIVE after the owner changes.
+             * To activate the order again, the user needs to explicitly put the item on sale.
+             *
+             * This is a side effect of how MagicEden marketplace works. When a user puts item on sale on MagicEden, the MagicEden
+             * takes the token account from the seller (by SetAuthority instruction).
+             * In fact, all AuctionHouse sell orders get invalidated from this moment.
+             */
+            logger.info("Cancelling the SELL order $id because the owner of the sell account was changed from $maker to ${balance.owner}")
             return this.copy(
-                status = OrderStatus.INACTIVE,
+                status = OrderStatus.CANCELLED,
                 makeStock = BigInteger.ZERO
             )
         }
