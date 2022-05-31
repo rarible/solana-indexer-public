@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
@@ -27,9 +26,7 @@ typealias BalanceStreamFullReduceService = StreamFullReduceService<BalanceId, Ba
 class BalanceReduceTaskHandler(
     private val balanceStreamFullReduceService: BalanceStreamFullReduceService,
     private val balanceRecordsRepository: SolanaBalanceRecordsRepository,
-    private val balanceEventConverter: BalanceEventConverter,
-    private val balanceActivityConverter: SolanaBalanceActivityConverter,
-    private val activityEventListener: ActivityEventListener
+    private val balanceEventConverter: BalanceEventConverter
 ) : TaskHandler<String> {
     override val type: String = "BALANCE_REDUCER"
 
@@ -48,20 +45,12 @@ class BalanceReduceTaskHandler(
         val balanceFlow = balanceRecordsRepository.findBy(
             criteria,
             Sort.by(Sort.Direction.ASC, SolanaBalanceRecord::account.name, "_id"),
-        ).onEach { saveBalanceActivity(it) }.flatMapConcat {
+        ).flatMapConcat {
             balanceEventConverter.convert(it, false).asFlow()
         }
 
 
         return balanceStreamFullReduceService.reduce(balanceFlow).map { it.account }
-    }
-
-    // TODO: ideally, we should also remove all redundant left-over activities by this entity.
-    private suspend fun saveBalanceActivity(balanceRecord: SolanaBalanceRecord) {
-        val activityDto = balanceActivityConverter.convert(balanceRecord, false)
-        if (activityDto != null) {
-            activityEventListener.onActivities(listOf(activityDto))
-        }
     }
 
     companion object {
