@@ -10,18 +10,22 @@ import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.dto.SyncTypeDto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.index.Index
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.inValues
 import org.springframework.data.mongodb.core.query.isEqualTo
 import org.springframework.stereotype.Repository
+import reactor.kotlin.core.publisher.toMono
 
 @Repository
 @CaptureSpan(type = SpanType.DB)
@@ -29,19 +33,59 @@ class ActivityRepository(
     private val mongo: ReactiveMongoOperations,
 ) {
 
+    private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
+
     suspend fun save(activity: ActivityDto): ActivityRecord =
         mongo.save(activity.asRecord().withDbUpdatedAt(), COLLECTION).awaitFirst()
 
+    suspend fun saveAll(
+        activities: List<ActivityDto>
+    ): List<ActivityRecord> {
+        if (activities.isEmpty()) {
+            return emptyList()
+        }
+        return activities.map { save(it) }
+    }
 
-    suspend fun removeById(id: String): Boolean {
-        val record = mongo.findById(id, ActivityRecord::class.java, COLLECTION)
-        return mongo.remove(record, COLLECTION).awaitSingle().deletedCount == 1L
+    /**
+     * Alternative to [saveAll] that has a better performance when inserting new documents.
+     * Also, this function allows to override the target collection.
+     * Use it only if none of the [activities] are present in [collectionName], otherwise the function
+     * will fall back to saving one-by-one.
+     */
+    suspend fun insertAll(
+        activities: List<ActivityDto>,
+        collectionName: String
+    ): List<ActivityRecord> {
+        if (activities.isEmpty()) {
+            return emptyList()
+        }
+        return try {
+            mongo.insertAll(activities.map { it.asRecord() }.toMono(), collectionName).asFlow().toList()
+        } catch (e: DuplicateKeyException) {
+            logger.info("ActivityRepository.insertAll failed because of DuplicateKeyException, falling back to 'saveAll'")
+            saveAll(activities)
+        }
+    }
+
+    suspend fun removeById(id: String): Boolean =
+        removeByIds(listOf(id)) == 1L
+
+    suspend fun removeByIds(
+        ids: Collection<String>,
+        collection: String = COLLECTION
+    ): Long {
+        if (ids.isEmpty()) {
+            return 0
+        }
+        val criteria = Criteria("_id").inValues(ids)
+        return mongo.remove(Query(criteria), collection).awaitSingle().deletedCount
     }
 
     suspend fun findById(id: String): ActivityDto? =
         mongo.findById(id, ActivityRecord::class.java, COLLECTION).awaitFirstOrNull()?.toDto()
 
-    fun findByIds(ids:List<String>): Flow<ActivityDto> {
+    fun findByIds(ids: List<String>): Flow<ActivityDto> {
         val criteria = Criteria.where("_id").`in`(ids)
         return mongo.find(Query(criteria), ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
