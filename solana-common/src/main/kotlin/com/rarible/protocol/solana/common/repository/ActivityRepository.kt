@@ -35,16 +35,20 @@ class ActivityRepository(
 
     private val logger = LoggerFactory.getLogger(ActivityRepository::class.java)
 
-    suspend fun save(activity: ActivityDto): ActivityRecord =
-        mongo.save(activity.asRecord().withDbUpdatedAt(), COLLECTION).awaitFirst()
+    suspend fun save(
+        activity: ActivityDto,
+        collection: String = COLLECTION
+    ): ActivityRecord =
+        mongo.save(activity.asRecord().withDbUpdatedAt(), collection).awaitFirst()
 
     suspend fun saveAll(
-        activities: List<ActivityDto>
+        activities: List<ActivityDto>,
+        collection: String = COLLECTION
     ): List<ActivityRecord> {
         if (activities.isEmpty()) {
             return emptyList()
         }
-        return activities.map { save(it) }
+        return activities.map { save(it, collection) }
     }
 
     /**
@@ -63,8 +67,8 @@ class ActivityRepository(
         return try {
             mongo.insertAll(activities.map { it.asRecord() }.toMono(), collectionName).asFlow().toList()
         } catch (e: DuplicateKeyException) {
-            logger.info("ActivityRepository.insertAll failed because of DuplicateKeyException, falling back to 'saveAll'")
-            saveAll(activities)
+            logger.info("ActivityRepository.insertAll failed on collection $collectionName because of DuplicateKeyException, falling back to 'saveAll'")
+            saveAll(activities, collectionName)
         }
     }
 
