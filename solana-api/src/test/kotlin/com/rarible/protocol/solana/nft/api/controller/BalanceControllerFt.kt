@@ -27,13 +27,13 @@ class BalanceControllerFt : AbstractControllerTest() {
 
     @Test
     fun `find balance by mint and owner`() = runBlocking<Unit> {
-        val balanceWithMeta = saveRandomBalanceWithMeta()
+        val balance = saveRandomBalance()
 
-        val expected = BalanceWithMetaConverter.convert(balanceWithMeta)
+        val expected = BalanceWithMetaConverter.convert(balance)
 
         val result = balanceControllerApi.getBalanceByMintAndOwner(
-            balanceWithMeta.balance.mint,
-            balanceWithMeta.balance.owner
+            balance.balance.mint,
+            balance.balance.owner
         ).awaitFirst()
 
         assertThat(result).isEqualTo(expected)
@@ -43,7 +43,7 @@ class BalanceControllerFt : AbstractControllerTest() {
     fun `find balances by mint and owner`() = runBlocking<Unit> {
         val owner = randomAccount()
         val mint = randomMint()
-        val balanceWithMeta0 = saveRandomBalanceWithMeta(
+        val balance0 = saveRandomBalance(
             owner = owner,
             mint = mint,
             account = ProgramDerivedAddressCalc.getAssociatedTokenAccount(
@@ -51,14 +51,14 @@ class BalanceControllerFt : AbstractControllerTest() {
                 owner = PublicKey(owner)
             ).address.toBase58()
         )
-        val balanceWithMeta1 = saveRandomBalanceWithMeta(owner = owner, mint = mint)
-        val balanceWithMeta2 = saveRandomBalanceWithMeta(owner = owner, mint = mint)
-        saveRandomBalanceWithMeta(owner = owner) // Different owner
-        saveRandomBalanceWithMeta(mint = mint) // Different mint
+        val balance1 = saveRandomBalance(owner = owner, mint = mint)
+        val balance2 = saveRandomBalance(owner = owner, mint = mint)
+        saveRandomBalance(owner = owner) // Different owner
+        saveRandomBalance(mint = mint) // Different mint
 
         val result = balanceControllerApi.getBalancesByMintAndOwner(mint, owner).awaitFirst()
         val expected = BalancesDto(
-            balances = listOf(balanceWithMeta0, balanceWithMeta1, balanceWithMeta2)
+            balances = listOf(balance0, balance1, balance2)
                 .sortedBy { it.balance.account }
                 .map { BalanceWithMetaConverter.convert(it) },
             continuation = null
@@ -72,13 +72,13 @@ class BalanceControllerFt : AbstractControllerTest() {
         val now = nowMillis()
         val owner = randomAccount()
 
-        val balanceWithMeta1 = saveRandomBalanceWithMeta(owner = owner, updatedAt = now)
-        val balanceWithMeta2 = saveRandomBalanceWithMeta(owner = owner, updatedAt = now.minusSeconds(1))
+        val balance1 = saveRandomBalance(owner = owner, updatedAt = now)
+        val balance2 = saveRandomBalance(owner = owner, updatedAt = now.minusSeconds(1))
         // different owner
-        saveRandomBalanceWithMeta()
+        saveRandomBalance()
 
         val expected = BalancesDto(
-            balances = listOf(balanceWithMeta1, balanceWithMeta2).map { BalanceWithMetaConverter.convert(it) },
+            balances = listOf(balance1, balance2).map { BalanceWithMetaConverter.convert(it) },
             continuation = null
         )
 
@@ -91,17 +91,17 @@ class BalanceControllerFt : AbstractControllerTest() {
     fun `find balances by owner - second page`() = runBlocking<Unit> {
         val owner = randomAccount()
         val updatedAt = nowMillis()
-        val balanceWithMeta = saveRandomBalanceWithMeta(owner = owner, updatedAt = updatedAt)
+        val balance = saveRandomBalance(owner = owner, updatedAt = updatedAt)
 
         val pageBreakUpdatedAt = updatedAt.plusSeconds(1)
         // Same TS as in continuation, should be included by ID filter
-        val pageBreakBalance = saveRandomBalanceWithMeta(owner = owner, updatedAt = pageBreakUpdatedAt)
+        val pageBreakBalance = saveRandomBalance(owner = owner, updatedAt = pageBreakUpdatedAt)
 
         val continuation = "${pageBreakUpdatedAt.toEpochMilli()}_zzzzzzzz" // zzz... is 'greater' than any other str
 
         val expected = BalancesDto(
-            balances = listOf(pageBreakBalance, balanceWithMeta).map { BalanceWithMetaConverter.convert(it) },
-            continuation = "${updatedAt.toEpochMilli()}_${balanceWithMeta.balance.account}"
+            balances = listOf(pageBreakBalance, balance).map { BalanceWithMetaConverter.convert(it) },
+            continuation = "${updatedAt.toEpochMilli()}_${balance.balance.account}"
         )
 
         val result = balanceControllerApi.getBalanceByOwner(owner, continuation, 2).awaitFirst()
@@ -113,13 +113,13 @@ class BalanceControllerFt : AbstractControllerTest() {
         val now = nowMillis()
         val mint = randomMint()
 
-        val balanceWithMeta1 = saveRandomBalanceWithMeta(mint = mint, updatedAt = now)
-        val balanceWithMeta2 = saveRandomBalanceWithMeta(mint = mint, updatedAt = now.minusSeconds(1))
+        val balance1 = saveRandomBalance(mint = mint, updatedAt = now)
+        val balance2 = saveRandomBalance(mint = mint, updatedAt = now.minusSeconds(1))
         // different mint
-        saveRandomBalanceWithMeta()
+        saveRandomBalance()
 
         val expected = BalancesDto(
-            balances = listOf(balanceWithMeta1, balanceWithMeta2).map { BalanceWithMetaConverter.convert(it) },
+            balances = listOf(balance1, balance2).map { BalanceWithMetaConverter.convert(it) },
             continuation = null
         )
 
@@ -131,17 +131,17 @@ class BalanceControllerFt : AbstractControllerTest() {
     fun `find balances by mint - second page`() = runBlocking<Unit> {
         val mint = randomMint()
         val updatedAt = nowMillis()
-        val balanceWithMeta = saveRandomBalanceWithMeta(mint = mint, updatedAt = updatedAt)
+        val balance = saveRandomBalance(mint = mint, updatedAt = updatedAt)
 
         // From prev page, should be not included into result
         val prevUpdatedAt = updatedAt.plusSeconds(1)
-        val prev = saveRandomBalanceWithMeta(mint = mint, updatedAt = prevUpdatedAt)
+        val prev = saveRandomBalance(mint = mint, updatedAt = prevUpdatedAt)
 
         val continuation = "${prevUpdatedAt.toEpochMilli()}_${prev.balance.account}"
 
         val expected = BalancesDto(
-            balances = listOf(BalanceWithMetaConverter.convert(balanceWithMeta)),
-            continuation = "${updatedAt.toEpochMilli()}_${balanceWithMeta.balance.account}"
+            balances = listOf(BalanceWithMetaConverter.convert(balance)),
+            continuation = "${updatedAt.toEpochMilli()}_${balance.balance.account}"
         )
 
         assertThat(balanceControllerApi.getBalanceByMint(mint, continuation, 1).awaitFirst())
@@ -151,7 +151,7 @@ class BalanceControllerFt : AbstractControllerTest() {
     private val defaultCollectionV1 = MetaplexOffChainMetaFields.Collection("name", "family", "123")
     private val defaultCollectionV2 = MetaplexMetaFields.Collection(randomAccount(), true)
 
-    private suspend fun saveRandomBalanceWithMeta(
+    private suspend fun saveRandomBalance(
         owner: String = randomAccount(),
         mint: String = randomMint(),
         account: String = randomAccount(),

@@ -21,8 +21,8 @@ class BalanceController(
 ) : BalanceControllerApi {
 
     override suspend fun getBalanceByMintAndOwner(mint: String, owner: String): ResponseEntity<BalanceDto> {
-        val balanceWithMeta = balanceApiService.getBalanceWithMetaByMintAndOwner(mint, owner)
-        return ResponseEntity.ok(BalanceWithMetaConverter.convert(balanceWithMeta))
+        val balance = balanceApiService.getBalanceByMintAndOwner(mint, owner)
+        return ResponseEntity.ok(BalanceWithMetaConverter.convert(balance))
     }
 
     override suspend fun getBalanceByOwner(
@@ -31,13 +31,13 @@ class BalanceController(
         size: Int?
     ): ResponseEntity<BalancesDto> {
         val safeSize = PageSize.BALANCE.limit(size)
-        val balancesWithMeta = balanceApiService.getBalanceWithMetaByOwner(
+        val balances = balanceApiService.getBalanceByOwner(
             owner,
             DateIdContinuation.parse(continuation),
             safeSize
         ).toList()
 
-        val dto = toSlice(balancesWithMeta, safeSize)
+        val dto = toSlice(balances, safeSize)
         return ResponseEntity.ok(dto)
     }
 
@@ -45,11 +45,11 @@ class BalanceController(
         mint: String,
         owner: String
     ): ResponseEntity<BalancesDto> {
-        val balancesWithMeta = balanceApiService.getBalancesWithMetaByMintAndOwner(
+        val balances = balanceApiService.getBalancesByMintAndOwner(
             mint = mint,
             owner = owner
         ).map { BalanceWithMetaConverter.convert(it) }.toList()
-        return ResponseEntity.ok(BalancesDto(balancesWithMeta, null))
+        return ResponseEntity.ok(BalancesDto(balances, null))
     }
 
     override suspend fun getBalanceByMint(
@@ -58,13 +58,13 @@ class BalanceController(
         size: Int?
     ): ResponseEntity<BalancesDto> {
         val safeSize = PageSize.BALANCE.limit(size)
-        val balancesWithMeta = balanceApiService.getBalanceWithMetaByMint(
+        val balances = balanceApiService.getBalanceByMint(
             mint,
             DateIdContinuation.parse(continuation),
             safeSize
         ).toList()
 
-        val dto = toSlice(balancesWithMeta, safeSize)
+        val dto = toSlice(balances, safeSize)
         return ResponseEntity.ok(dto)
     }
 

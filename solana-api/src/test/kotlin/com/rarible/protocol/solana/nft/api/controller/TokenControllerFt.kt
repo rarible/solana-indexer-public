@@ -24,10 +24,10 @@ class TokenControllerFt : AbstractControllerTest() {
 
     @Test
     fun `find token by address`() = runBlocking<Unit> {
-        val tokenWithMeta = saveTokenWithMeta()
+        val token = saveToken()
 
-        val result = tokenControllerApi.getTokenByAddress(tokenWithMeta.token.mint).awaitFirst()
-        val expected = TokenWithMetaConverter.convert(tokenWithMeta)
+        val result = tokenControllerApi.getTokenByAddress(token.token.mint).awaitFirst()
+        val expected = TokenWithMetaConverter.convert(token)
 
         assertThat(result).isEqualTo(expected)
     }
@@ -37,23 +37,23 @@ class TokenControllerFt : AbstractControllerTest() {
         val now = nowMillis()
 
         val collection = createRandomMetaplexOffChainMetaFields().collection!!
-        val tokenWithMeta1 = saveTokenWithMeta(offCollection = collection, updatedAt = now)
-        val tokenWithMeta2 = saveTokenWithMeta(offCollection = collection, updatedAt = now.plusSeconds(1))
+        val token1 = saveToken(offCollection = collection, updatedAt = now)
+        val token2 = saveToken(offCollection = collection, updatedAt = now.plusSeconds(1))
 
         // Should be sorted from newest to oldest
 
         //Page 1
         val expected1 = TokensDto(
-            tokens = listOf(tokenWithMeta2).map { TokenWithMetaConverter.convert(it) },
-            continuation = "${tokenWithMeta2.token.updatedAt.toEpochMilli()}_${tokenWithMeta2.token.mint}"
+            tokens = listOf(token2).map { TokenWithMetaConverter.convert(it) },
+            continuation = "${token2.token.updatedAt.toEpochMilli()}_${token2.token.mint}"
         )
         val page1 = getAllTokens(continuation = null, size = 1)
         assertThat(page1).isEqualTo(expected1)
 
         // Page 2
         val expected2 = TokensDto(
-            tokens = listOf(tokenWithMeta1).map { TokenWithMetaConverter.convert(it) },
-            continuation = "${tokenWithMeta1.token.updatedAt.toEpochMilli()}_${tokenWithMeta1.token.mint}"
+            tokens = listOf(token1).map { TokenWithMetaConverter.convert(it) },
+            continuation = "${token1.token.updatedAt.toEpochMilli()}_${token1.token.mint}"
         )
         val page2 = getAllTokens(continuation = page1.continuation, size = 1)
         assertThat(page2).isEqualTo(expected2)
@@ -69,27 +69,27 @@ class TokenControllerFt : AbstractControllerTest() {
         val now = nowMillis()
 
         val collection = createRandomMetaplexOffChainMetaFields().collection!!
-        val tokenWithMeta1 = saveTokenWithMeta(offCollection = collection, updatedAt = now)
-        val tokenWithMeta2 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(10))
-        val tokenWithMeta3 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(20))
-        val tokenWithMeta4 = saveTokenWithMeta(offCollection = collection, updatedAt = now.minusSeconds(30))
+        val token1 = saveToken(offCollection = collection, updatedAt = now)
+        val token2 = saveToken(offCollection = collection, updatedAt = now.minusSeconds(10))
+        val token3 = saveToken(offCollection = collection, updatedAt = now.minusSeconds(20))
+        val token4 = saveToken(offCollection = collection, updatedAt = now.minusSeconds(30))
 
-        val from = tokenWithMeta4.token.updatedAt
-        val to = tokenWithMeta1.token.updatedAt
+        val from = token4.token.updatedAt
+        val to = token1.token.updatedAt
 
         // Should be sorted from newest to oldest
 
         //Page 1
         val expected1 = TokensDto(
-            tokens = listOf(tokenWithMeta2).map { TokenWithMetaConverter.convert(it) },
-            continuation = "${tokenWithMeta2.token.updatedAt.toEpochMilli()}_${tokenWithMeta2.token.mint}"
+            tokens = listOf(token2).map { TokenWithMetaConverter.convert(it) },
+            continuation = "${token2.token.updatedAt.toEpochMilli()}_${token2.token.mint}"
         )
         val page1 = getAllTokens(from, to, null, 1)
         assertThat(page1).isEqualTo(expected1)
 
         // Page 2
         val expected2 = TokensDto(
-            tokens = listOf(tokenWithMeta3).map { TokenWithMetaConverter.convert(it) },
+            tokens = listOf(token3).map { TokenWithMetaConverter.convert(it) },
             continuation = null
         )
         val page2 = getAllTokens(from, to, page1.continuation, 2)
@@ -128,15 +128,15 @@ class TokenControllerFt : AbstractControllerTest() {
     fun `find tokens by collection V1`() = runBlocking<Unit> {
 
         val collection = createRandomMetaplexOffChainMetaFields().collection!!
-        val tokenWithMeta1 = saveTokenWithMeta(mint = "b", offCollection = collection)
-        val tokenWithMeta2 = saveTokenWithMeta(mint = "a", offCollection = collection)
+        val token1 = saveToken(mint = "b", offCollection = collection)
+        val token2 = saveToken(mint = "a", offCollection = collection)
 
         // Should not be found
-        saveTokenWithMeta(onCollection = createRandomMetaplexMetaFieldsCollection())
+        saveToken(onCollection = createRandomMetaplexMetaFieldsCollection())
 
         // Should be sorted a -> b
         val expected = TokensDto(
-            tokens = listOf(tokenWithMeta2, tokenWithMeta1).map { TokenWithMetaConverter.convert(it) },
+            tokens = listOf(token2, token1).map { TokenWithMetaConverter.convert(it) },
             continuation = null
         )
 
@@ -149,15 +149,15 @@ class TokenControllerFt : AbstractControllerTest() {
     fun `find tokens by collection V2`() = runBlocking<Unit> {
 
         val collection = createRandomMetaplexMetaFieldsCollection()
-        val tokenWithMeta1 = saveTokenWithMeta(mint = "b", onCollection = collection)
-        val tokenWithMeta2 = saveTokenWithMeta(mint = "a", onCollection = collection)
+        val token1 = saveToken(mint = "b", onCollection = collection)
+        val token2 = saveToken(mint = "a", onCollection = collection)
 
         // Should not be found
-        saveTokenWithMeta(onCollection = createRandomMetaplexMetaFieldsCollection())
+        saveToken(onCollection = createRandomMetaplexMetaFieldsCollection())
 
         // Should be sorted a -> b
         val expected = TokensDto(
-            tokens = listOf(tokenWithMeta2, tokenWithMeta1).map { TokenWithMetaConverter.convert(it) },
+            tokens = listOf(token2, token1).map { TokenWithMetaConverter.convert(it) },
             continuation = null
         )
 

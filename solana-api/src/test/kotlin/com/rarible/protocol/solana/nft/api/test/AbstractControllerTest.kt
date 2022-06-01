@@ -92,7 +92,7 @@ abstract class AbstractControllerTest : AbstractIntegrationTest() {
         )
     }
 
-    suspend fun saveTokenWithMeta(
+    suspend fun saveToken(
         mint: String = randomMint(),
         updatedAt: Instant = nowMillis(),
         onCollection: MetaplexMetaFields.Collection? = null,

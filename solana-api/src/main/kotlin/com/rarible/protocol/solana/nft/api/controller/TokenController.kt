@@ -38,20 +38,20 @@ class TokenController(
     ): ResponseEntity<TokensDto> {
         val safeSize = PageSize.TOKEN.limit(size)
 
-        val tokensWithMeta = tokenApiService.findAll(
+        val tokens = tokenApiService.findAll(
             lastUpdatedFrom?.let { Instant.ofEpochMilli(it) },
             lastUpdatedTo?.let { Instant.ofEpochMilli(it) },
             DateIdContinuation.parse(continuation),
             safeSize
         ).toList()
 
-        val dto = toSlice(tokensWithMeta, TokenContinuation.ByLastUpdatedAndId, safeSize)
+        val dto = toSlice(tokens, TokenContinuation.ByLastUpdatedAndId, safeSize)
         return ResponseEntity.ok(dto)
     }
 
     override suspend fun getTokenByAddress(tokenAddress: String): ResponseEntity<TokenDto> {
-        val tokenWithMeta = tokenApiService.getTokenWithMeta(tokenAddress)
-        return ResponseEntity.ok(TokenWithMetaConverter.convert(tokenWithMeta))
+        val token = tokenApiService.getToken(tokenAddress)
+        return ResponseEntity.ok(TokenWithMetaConverter.convert(token))
     }
 
     override suspend fun getTokenMetaByAddress(tokenAddress: String): ResponseEntity<TokenMetaDto> {
@@ -66,8 +66,8 @@ class TokenController(
     }
 
     override suspend fun getTokensByAddresses(tokenAddresses: List<String>): ResponseEntity<TokensDto> {
-        val tokensWithMeta = tokenApiService.getTokensWithMeta(tokenAddresses).toList()
-        val dto = tokensWithMeta.map { TokenWithMetaConverter.convert(it) }
+        val tokens = tokenApiService.getTokens(tokenAddresses).toList()
+        val dto = tokens.map { TokenWithMetaConverter.convert(it) }
 
         // Originally, here should be another DTO without continuation
         return ResponseEntity.ok(TokensDto(dto, null))
@@ -80,15 +80,15 @@ class TokenController(
     ): ResponseEntity<TokensDto> {
         val safeSize = PageSize.TOKEN.limit(size)
 
-        val tokensWithMeta = tokenApiService.getTokensWithMetaByCollection(
-            collection,
+        val tokens = tokenApiService.getTokensByCollection(
+            collection = collection,
             // Here we use continuation by ID since we can't support date sort
             // Specifically for this request union passes continuation 'as is'
-            continuation,
-            safeSize
+            continuation = continuation,
+            limit = safeSize
         ).toList()
 
-        val dto = toSlice(tokensWithMeta, TokenContinuation.ById, safeSize)
+        val dto = toSlice(tokens, TokenContinuation.ById, safeSize)
         return ResponseEntity.ok(dto)
     }
 
@@ -99,19 +99,19 @@ class TokenController(
     ): ResponseEntity<TokensDto> {
         val safeSize = PageSize.TOKEN.limit(size)
 
-        val balancesWithMeta = balanceApiService.getBalanceWithMetaByOwner(
+        val balances = balanceApiService.getBalanceByOwner(
             owner,
             DateIdContinuation.parse(continuation),
             safeSize
         )
 
-        val tokensWithMeta = balancesWithMeta.map { balance ->
-            val tokenWithMeta = tokenApiService.getTokenWithMeta(balance.balance.mint)
+        val tokens = balances.map { balance ->
+            val token = tokenApiService.getToken(balance.balance.mint)
             // There is no way to provide correct sorting except of using updatedAt of the balance
-            tokenWithMeta.copy(token = tokenWithMeta.token.copy(updatedAt = balance.balance.updatedAt))
+            token.copy(token = token.token.copy(updatedAt = balance.balance.updatedAt))
         }.toList()
 
-        val dto = toSlice(tokensWithMeta, TokenContinuation.ByLastUpdatedAndId, safeSize)
+        val dto = toSlice(tokens, TokenContinuation.ByLastUpdatedAndId, safeSize)
         return ResponseEntity.ok(dto)
     }
 

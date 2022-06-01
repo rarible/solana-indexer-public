@@ -19,7 +19,7 @@ class BalanceApiService(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun getBalanceWithMetaByMintAndOwner(mint: String, owner: String): BalanceWithMeta {
+    suspend fun getBalanceByMintAndOwner(mint: String, owner: String): BalanceWithMeta {
         val balances = balanceRepository.findByMintAndOwner(mint, owner, false).toList()
         if (balances.isEmpty()) throw EntityNotFoundApiException("Balance", "$mint:$owner")
         if (balances.size > 1) {
@@ -28,12 +28,12 @@ class BalanceApiService(
         return tokenMetaService.extendWithAvailableMeta(balances.first())
     }
 
-    suspend fun getBalancesWithMetaByMintAndOwner(mint: String, owner: String): Flow<BalanceWithMeta> {
+    suspend fun getBalancesByMintAndOwner(mint: String, owner: String): Flow<BalanceWithMeta> {
         return balanceRepository.findByMintAndOwner(mint, owner, false)
             .map { tokenMetaService.extendWithAvailableMeta(it) }
     }
 
-    fun getBalanceWithMetaByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
+    fun getBalanceByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
         balanceRepository.findByOwner(
             owner,
             continuation,
@@ -41,7 +41,7 @@ class BalanceApiService(
             false
         ).map { tokenMetaService.extendWithAvailableMeta(it) }
 
-    fun getBalanceWithMetaByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
+    fun getBalanceByMint(mint: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
         balanceRepository.findByMint(
             mint,
             continuation,
