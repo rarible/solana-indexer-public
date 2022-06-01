@@ -34,17 +34,17 @@ class TokenMetaService(
     @Autowired
     private lateinit var metaplexMetaUpdateListener: MetaplexMetaUpdateListener
 
-    suspend fun getOnChainMeta(tokenAddress: TokenId): MetaplexMeta? =
+    private suspend fun getOnChainMeta(tokenAddress: TokenId): MetaplexMeta? =
         metaplexMetaRepository.findByTokenAddress(tokenAddress)
 
-    suspend fun getOffChainMeta(tokenAddress: TokenId): MetaplexOffChainMeta? =
+    private suspend fun getOffChainMeta(tokenAddress: TokenId): MetaplexOffChainMeta? =
         metaplexOffChainMetaRepository.findByTokenAddress(tokenAddress)
 
-    suspend fun getOnChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexMeta> =
+    private suspend fun getOnChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexMeta> =
         if (tokenAddresses.isNotEmpty()) metaplexMetaRepository.findByTokenAddresses(tokenAddresses)
         else emptyFlow()
 
-    suspend fun getOffChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> =
+    private suspend fun getOffChainMeta(tokenAddresses: Collection<TokenId>): Flow<MetaplexOffChainMeta> =
         if (tokenAddresses.isNotEmpty()) metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
         else emptyFlow()
 

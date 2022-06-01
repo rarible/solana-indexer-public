@@ -47,11 +47,11 @@ class TokenApiService(
     }
 
     suspend fun getTokenRoyalties(tokenAddress: String): List<RoyaltyDto> {
-        val meta = tokenMetaService.getOnChainMeta(tokenAddress) ?: return emptyList()
-        val creators = meta.metaFields.creators.associateBy({ it.address }, { it.share })
+        val tokenMeta = tokenMetaService.getAvailableTokenMeta(tokenAddress) ?: return emptyList()
+        val creators = tokenMeta.creators.associateBy({ it.address }, { it.share })
 
         return RoyaltyDistributor.distribute(
-            meta.metaFields.sellerFeeBasisPoints,
+            tokenMeta.sellerFeeBasisPoints,
             creators
         ).map { RoyaltyDto(it.key, it.value) }
     }
