@@ -56,6 +56,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             price = getPrice(make, take, record.direction),
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
+            auctionHouse = record.auctionHouse,
             buyerOrderHash = Order.calculateAuctionHouseOrderId(
                 maker = record.buyer,
                 mint = record.mint,
@@ -85,6 +86,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             make = assetConverter.convert(make),
             take = assetConverter.convert(take),
             price = getPrice(make, take, OrderDirection.SELL),
+            auctionHouse = record.auctionHouse,
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
         )
@@ -104,6 +106,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             make = assetConverter.convert(make),
             take = assetConverter.convert(take),
             price = getPrice(make, take, OrderDirection.BUY),
+            auctionHouse = record.auctionHouse,
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted
         )
@@ -120,6 +123,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             maker = record.maker,
             make = SolanaNftAssetTypeDto(record.mint),
             take = SolanaSolAssetTypeDto(),
+            auctionHouse = record.auctionHouse,
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
         )
@@ -130,6 +134,7 @@ class SolanaAuctionHouseOrderActivityConverter(
             maker = record.maker,
             make = SolanaSolAssetTypeDto(),
             take = SolanaNftAssetTypeDto(record.mint),
+            auctionHouse = record.auctionHouse,
             blockchainInfo = SolanaLogToActivityBlockchainInfoConverter.convert(record.log),
             reverted = reverted,
         )
