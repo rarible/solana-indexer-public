@@ -72,7 +72,8 @@ class BalanceActivityReducerTaskHandler(
             }
             activityEventListener.onActivities(
                 activities = activities,
-                alternativeCollection = options.alternativeCollectionName
+                alternativeCollection = options.alternativeCollectionName,
+                shouldSendEvents = options.shouldSendEvent
             )
             recordsChunk.last().id
         }
