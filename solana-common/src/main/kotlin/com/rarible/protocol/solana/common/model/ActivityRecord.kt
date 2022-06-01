@@ -164,6 +164,7 @@ data class ListActivityRecord(
     val make: AssetDto,
     val take: AssetDto,
     val price: BigDecimal,
+    val auctionHouse: String?,
     override val type: ActivityTypeDto = ActivityTypeDto.LIST,
     override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
@@ -178,6 +179,7 @@ data class ListActivityRecord(
         make = dto.make,
         take = dto.take,
         price = dto.price,
+        auctionHouse = dto.auctionHouse
     )
 
     override fun toDto() = OrderListActivityDto(
@@ -190,7 +192,8 @@ data class ListActivityRecord(
         take = take,
         price = price,
         blockchainInfo = blockchainInfo,
-        dbUpdatedAt = dbUpdatedAt
+        dbUpdatedAt = dbUpdatedAt,
+        auctionHouse = auctionHouse
     )
 
     override fun withDbUpdatedAt() =
@@ -207,6 +210,7 @@ data class BidActivityRecord(
     val make: AssetDto,
     val take: AssetDto,
     val price: BigDecimal,
+    val auctionHouse: String?,
     override val type: ActivityTypeDto = ActivityTypeDto.BID,
     override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
@@ -217,6 +221,7 @@ data class BidActivityRecord(
         mint = dto.take.type.getNftMint().orEmpty(),
         owner = dto.maker,
         blockchainInfo = dto.blockchainInfo,
+        auctionHouse = dto.auctionHouse,
         hash = dto.hash,
         make = dto.make,
         take = dto.take,
@@ -232,8 +237,9 @@ data class BidActivityRecord(
         make = make,
         take = take,
         price = price,
+        auctionHouse = auctionHouse,
         blockchainInfo = blockchainInfo,
-        dbUpdatedAt = dbUpdatedAt
+        dbUpdatedAt = dbUpdatedAt,
     )
 
     override fun withDbUpdatedAt() =
@@ -249,6 +255,7 @@ data class CancelListActivityRecord(
     val hash: String,
     val make: AssetTypeDto,
     val take: AssetTypeDto,
+    val auctionHouse: String?,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_LIST,
     override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
@@ -259,6 +266,7 @@ data class CancelListActivityRecord(
         mint = dto.make.getNftMint().orEmpty(),
         owner = dto.maker,
         blockchainInfo = dto.blockchainInfo,
+        auctionHouse = dto.auctionHouse,
         hash = dto.hash,
         make = dto.make,
         take = dto.take,
@@ -273,6 +281,7 @@ data class CancelListActivityRecord(
         make = make,
         take = take,
         blockchainInfo = blockchainInfo,
+        auctionHouse = auctionHouse,
         dbUpdatedAt = dbUpdatedAt
     )
 
@@ -289,6 +298,7 @@ data class CancelBidActivityRecord(
     val hash: String,
     val make: AssetTypeDto,
     val take: AssetTypeDto,
+    val auctionHouse: String?,
     override val type: ActivityTypeDto = ActivityTypeDto.CANCEL_BID,
     override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
@@ -299,6 +309,7 @@ data class CancelBidActivityRecord(
         mint = dto.take.getNftMint().orEmpty(),
         owner = dto.maker,
         blockchainInfo = dto.blockchainInfo,
+        auctionHouse = dto.auctionHouse,
         hash = dto.hash,
         make = dto.make,
         take = dto.take,
@@ -313,6 +324,7 @@ data class CancelBidActivityRecord(
         make = make,
         take = take,
         blockchainInfo = blockchainInfo,
+        auctionHouse = auctionHouse,
         dbUpdatedAt = dbUpdatedAt
     )
 
@@ -334,6 +346,7 @@ data class MatchActivityRecord(
     val sellerOrderHash: String?,
     val price: BigDecimal,
     val orderType: OrderMatchActivityDto.Type,
+    val auctionHouse: String?,
     override val type: ActivityTypeDto = ActivityTypeDto.SELL,
     override val dbUpdatedAt: Instant = nowMillis()
 ) : ActivityRecord() {
@@ -344,6 +357,7 @@ data class MatchActivityRecord(
         mint = dto.nft.type.getNftMint().orEmpty(),
         owner = dto.seller,
         blockchainInfo = dto.blockchainInfo,
+        auctionHouse = dto.auctionHouse,
         nft = dto.nft,
         payment = dto.payment,
         buyer = dto.buyer,
@@ -366,6 +380,7 @@ data class MatchActivityRecord(
         sellerOrderHash = sellerOrderHash,
         price = price,
         blockchainInfo = blockchainInfo,
+        auctionHouse = auctionHouse,
         type = orderType,
         dbUpdatedAt = dbUpdatedAt
     )
