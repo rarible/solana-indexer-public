@@ -13,7 +13,8 @@ class ActivityEventListener(
 
     suspend fun onActivities(
         activities: List<ActivityDto>,
-        alternativeCollection: String? = null
+        alternativeCollection: String? = null,
+        shouldSendEvents: Boolean = true
     ) {
         val (revertedActivities, newActivities) = activities.partition { it.reverted }
 
@@ -26,8 +27,10 @@ class ActivityEventListener(
             activityRepository.saveAll(newActivities)
         }
 
-        val messages = activities.map { KafkaEventFactory.activityEvent(it) }
-        publisher.send(messages).collect { it.ensureSuccess() }
+        if (shouldSendEvents) {
+            val messages = activities.map { KafkaEventFactory.activityEvent(it) }
+            publisher.send(messages).collect { it.ensureSuccess() }
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.task
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.rarible.core.kafka.chunked
 import com.rarible.core.task.TaskHandler
 import com.rarible.protocol.solana.common.converter.SolanaBalanceActivityConverter
@@ -32,18 +34,26 @@ class BalanceActivityReducerTaskHandler(
 
     override val type: String = "BALANCE_ACTIVITY_SAVER"
 
+    /**
+     * JSON schema of the task options.
+     */
+    data class BalanceActivityReducerTaskHandlerOptions(
+        val toId: String? = null,
+        val alternativeCollectionName: String? = null,
+        val shouldSendEvent: Boolean = true
+    )
+
     override fun runLongTask(from: String?, param: String): Flow<String> {
-        val (toId, alternativeCollectionName) = when {
-            param.contains(":") -> param.substringBefore(":") to param.substringAfter(":")
-            param.isNotBlank() -> param to null
-            else -> null to null
+        val options: BalanceActivityReducerTaskHandlerOptions = when {
+            param.isEmpty() -> BalanceActivityReducerTaskHandlerOptions(null, null, true)
+            else -> jacksonObjectMapper().readValue(param)
         }
 
-        logger.info("Saving activities from '$from' to '$toId' to collection '${alternativeCollectionName ?: ActivityRepository.COLLECTION}'")
+        logger.info("Saving activities from '$from' to '${options.toId}' to collection '${options.alternativeCollectionName ?: ActivityRepository.COLLECTION}'")
         val criteria = when {
-            from != null && toId != null -> Criteria().andOperator(
+            from != null && options.toId != null -> Criteria().andOperator(
                 Criteria.where("_id").gt(from),
-                Criteria.where("_id").lte(toId),
+                Criteria.where("_id").lte(options.toId),
             )
             from != null -> Criteria.where("_id").gt(from)
             else -> Criteria()
@@ -60,7 +70,10 @@ class BalanceActivityReducerTaskHandler(
                     }
                 }.awaitAll().filterNotNull()
             }
-            activityEventListener.onActivities(activities, alternativeCollection = alternativeCollectionName)
+            activityEventListener.onActivities(
+                activities = activities,
+                alternativeCollection = options.alternativeCollectionName
+            )
             recordsChunk.last().id
         }
     }
