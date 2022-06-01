@@ -47,7 +47,7 @@ class MetaplexOffChainMetaRepository(
     fun findByOffChainCollectionHash(
         offChainCollectionHash: String,
         fromTokenAddress: String? = null,
-        limit: Int = PageSize.COLLECTION.default
+        limit: Int? = null
     ): Flow<MetaplexOffChainMeta> {
         val criteria = Criteria.where(offChainCollectionHashKey).isEqualTo(offChainCollectionHash)
             .fromTokenAddress(fromTokenAddress)
@@ -58,7 +58,10 @@ class MetaplexOffChainMetaRepository(
                 MetaplexOffChainMeta::tokenAddress.name,
                 "_id"
             )
-        ).limit(limit)
+        )
+        if (limit != null) {
+            query.limit(limit)
+        }
         return mongo.find(query, MetaplexOffChainMeta::class.java).asFlow()
     }
 

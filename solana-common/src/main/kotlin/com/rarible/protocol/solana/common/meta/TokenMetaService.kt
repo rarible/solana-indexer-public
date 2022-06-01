@@ -48,10 +48,10 @@ class TokenMetaService(
         if (tokenAddresses.isNotEmpty()) metaplexOffChainMetaRepository.findByTokenAddresses(tokenAddresses)
         else emptyFlow()
 
-    private suspend fun getOnChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int) =
+    private suspend fun getOnChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int?) =
         metaplexMetaRepository.findByCollectionAddress(collection, fromTokenAddress, limit)
 
-    private suspend fun getOffChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int) =
+    private suspend fun getOffChainMetaByCollection(collection: String, fromTokenAddress: String?, limit: Int?) =
         metaplexOffChainMetaRepository.findByOffChainCollectionHash(collection, fromTokenAddress, limit)
 
     suspend fun extendWithAvailableMeta(tokens: Flow<Token>): Flow<TokenWithMeta> {
@@ -69,7 +69,7 @@ class TokenMetaService(
     suspend fun getTokensMetaByCollection(
         collection: String,
         fromTokenAddress: String?,
-        limit: Int
+        limit: Int?
     ): Map<String, TokenMeta> {
         val (onChainMap, offChainMap) = coroutineScope {
             val onChainMap = async {

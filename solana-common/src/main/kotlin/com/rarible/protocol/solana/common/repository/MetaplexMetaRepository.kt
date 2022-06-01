@@ -46,7 +46,7 @@ class MetaplexMetaRepository(
     fun findByCollectionAddress(
         collectionAddress: String,
         fromTokenAddress: String? = null,
-        limit: Int = PageSize.COLLECTION.default
+        limit: Int? = null
     ): Flow<MetaplexMeta> {
         val criteria = Criteria.where(collectionAddressKey).isEqualTo(collectionAddress)
             .fromTokenAddress(fromTokenAddress)
@@ -57,7 +57,10 @@ class MetaplexMetaRepository(
                 MetaplexMeta::tokenAddress.name,
                 "_id"
             )
-        ).limit(limit)
+        )
+        if (limit != null) {
+            query.limit(limit)
+        }
         return mongo.find(query, MetaplexMeta::class.java).asFlow()
     }
 
