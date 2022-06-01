@@ -11,6 +11,7 @@ import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.model.TokenWithMeta
 import com.rarible.protocol.solana.dto.RoyaltiesDto
 import com.rarible.protocol.solana.dto.TokenDto
+import com.rarible.protocol.solana.dto.TokenIdsDto
 import com.rarible.protocol.solana.dto.TokenMetaDto
 import com.rarible.protocol.solana.dto.TokensDto
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
@@ -65,8 +66,8 @@ class TokenController(
         return ResponseEntity.ok(RoyaltiesDto(royalties))
     }
 
-    override suspend fun getTokensByAddresses(tokenAddresses: List<String>): ResponseEntity<TokensDto> {
-        val tokens = tokenApiService.getTokens(tokenAddresses).toList()
+    override suspend fun getTokensByAddresses(tokenIdsDto: TokenIdsDto): ResponseEntity<TokensDto> {
+        val tokens = tokenApiService.getTokens(tokenIdsDto.ids).toList()
         val dto = tokens.map { TokenWithMetaConverter.convert(it) }
 
         // Originally, here should be another DTO without continuation
