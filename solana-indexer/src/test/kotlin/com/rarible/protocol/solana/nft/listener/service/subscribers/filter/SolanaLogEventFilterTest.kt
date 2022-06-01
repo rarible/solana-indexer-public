@@ -40,8 +40,7 @@ class SolanaLogEventFilterTest {
             kafkaReplicaSet = "kafka",
             metricRootPath = "metricRootPath"
         ),
-        tokenFilter = tokenFilter,
-        auctionHouseFilter = auctionHouseFilter
+        tokenFilter = tokenFilter
     )
 
     @BeforeEach

@@ -31,8 +31,7 @@ import org.springframework.stereotype.Component
 class SolanaRecordsLogEventFilter(
     private val accountToMintAssociationService: AccountToMintAssociationService,
     private val solanaIndexerProperties: SolanaIndexerProperties,
-    private val tokenFilter: SolanaTokenFilter,
-    private val auctionHouseFilter: SolanaAuctionHouseFilter
+    private val tokenFilter: SolanaTokenFilter
 ) : SolanaLogEventFilter {
 
     private val logger = LoggerFactory.getLogger(SolanaRecordsLogEventFilter::class.java)
@@ -173,7 +172,7 @@ class SolanaRecordsLogEventFilter(
         is SolanaTokenRecord -> filterTokenRecord(record)
         is SolanaBalanceRecord -> filterBalanceRecord(record, accountToMintMapping)
         is SolanaMetaRecord -> filterMetaRecord(record, accountToMintMapping)
-        is SolanaAuctionHouseRecord -> filterAuctionHouseRecord(record)
+        is SolanaAuctionHouseRecord -> record
         is SolanaAuctionHouseOrderRecord -> filterAuctionHouseOrderRecord(record, accountToMintMapping)
         is SolanaEscrowRecord -> record
     }
@@ -225,17 +224,10 @@ class SolanaRecordsLogEventFilter(
         }
     )
 
-    private fun filterAuctionHouseRecord(
-        record: SolanaAuctionHouseRecord
-    ): SolanaBaseLogRecord? = record.takeIf { auctionHouseFilter.isAcceptableAuctionHouse(it.auctionHouse) }
-
     private fun filterAuctionHouseOrderRecord(
         record: SolanaAuctionHouseOrderRecord,
         accountToMintMapping: Map<String, String>
     ): SolanaAuctionHouseOrderRecord? {
-        if (!auctionHouseFilter.isAcceptableAuctionHouse(record.auctionHouse)) {
-            return null
-        }
         return when (record) {
             is SolanaAuctionHouseOrderRecord.ExecuteSaleRecord -> record
             is SolanaAuctionHouseOrderRecord.BuyRecord -> {
