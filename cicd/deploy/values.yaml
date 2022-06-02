@@ -6,6 +6,7 @@ solana-indexer:
     APPLICATION_ENVIRONMENT: '{{ include "service.appEnv" $ }}'
     CONSUL_ROOT_PATH: '{{ include "service.appEnv" $ }}/protocol/{{ .Values.blockchain }}/nft'
     SPRING_PROFILES_ACTIVE: '{{ .Values.blockchain }},consul,{{ include "service.appEnv" $ }},{{ .Values.blockchain }}-{{ include "service.appEnv" $ }}'
+    JAVA_OPTIONS: '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'
   nodeSelector:
     node.labels.rarible.job: true
   endpointMode: dnsrr
