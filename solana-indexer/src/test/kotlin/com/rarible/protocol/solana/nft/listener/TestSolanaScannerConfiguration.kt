@@ -10,7 +10,7 @@ import com.rarible.protocol.solana.dto.TokenEventDto
 import com.rarible.protocol.solana.subscriber.SolanaEventsConsumerFactory
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import io.mockk.coJustRun
+import io.mockk.coEvery
 import io.mockk.mockk
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -51,8 +51,8 @@ class TestSolanaScannerConfiguration {
     @Bean
     @Primary
     @Qualifier("test.metaplex.off.chain.meta.repository")
-    fun testMetaplexOffChainMetaRepository(): MetaplexOffChainMetaRepository = mockk() {
-        coJustRun { createIndexes() }
+    fun testMetaplexOffChainMetaRepository(): MetaplexOffChainMetaRepository = mockk(relaxed = true) {
+        coEvery { findByTokenAddress(any()) } returns null
     }
 
     @RestController

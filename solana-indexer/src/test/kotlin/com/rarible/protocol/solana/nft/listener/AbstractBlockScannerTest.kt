@@ -10,6 +10,7 @@ import com.rarible.core.test.ext.KafkaTest
 import com.rarible.core.test.ext.MongoCleanup
 import com.rarible.core.test.ext.MongoTest
 import com.rarible.core.test.ext.RedisTest
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.TokenMetaService
@@ -22,11 +23,7 @@ import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaReposit
 import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.repository.TokenRepository
 import com.rarible.protocol.solana.common.service.CollectionService
-import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.coJustRun
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -104,6 +101,9 @@ abstract class AbstractBlockScannerTest {
     protected lateinit var balanceRepository: BalanceRepository
 
     @Autowired
+    protected lateinit var auctionHouseFilter: SolanaAuctionHouseFilter
+
+    @Autowired
     protected lateinit var orderRepository: OrderRepository
 
     @Autowired
@@ -135,11 +135,6 @@ abstract class AbstractBlockScannerTest {
 
     @BeforeEach
     fun cleanupMocks() {
-        clearMocks(metaplexOffChainMetaRepository)
-        coJustRun { metaplexOffChainMetaRepository.createIndexes() }
-        coEvery { metaplexOffChainMetaRepository.findByTokenAddress(any()) } returns null
-        coEvery { metaplexOffChainMetaRepository.findByOffChainCollectionHash(any()) } returns emptyFlow()
-        coEvery { metaplexOffChainMetaRepository.save(any()) } throws (UnsupportedOperationException())
     }
 
     protected fun airdrop(sol: Int, address: String): String {
