@@ -37,9 +37,10 @@ class MetaplexMetaReduceTaskHandler(
         val criteria = when {
             from != null && param.isNotBlank() -> Criteria().andOperator(
                 Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from),
-                Criteria.where(SolanaMetaRecord::metaAccount.name).lte(param),
+                Criteria.where(SolanaMetaRecord::metaAccount.name).`in`(param.split(',')),
             )
-            param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).`is`(param)
+            from != null && param.isBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from)
+            param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).`in`(param.split(','))
             else -> Criteria()
         }
         val metaEventFlow = metaplexMetaRecordsRepository.findBy(
