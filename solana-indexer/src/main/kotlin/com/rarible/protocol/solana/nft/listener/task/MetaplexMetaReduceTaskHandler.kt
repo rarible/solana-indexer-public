@@ -50,7 +50,7 @@ class MetaplexMetaReduceTaskHandler(
             metaEventConverter.convert(it, false).asFlow()
         }
 
-        return metaStreamFullReduceService.reduce(metaEventFlow).map { it.metaAddress }
+        return metaStreamFullReduceService.reduce(metaEventFlow).map { it.tokenAddress }
     }
 
     /**
