@@ -36,21 +36,21 @@ class MetaplexMetaReduceTaskHandler(
 
         val criteria = when {
             from != null && param.isNotBlank() -> Criteria().andOperator(
-                Criteria.where(SolanaMetaRecord::mint.name).gt(from),
-                Criteria.where(SolanaMetaRecord::mint.name).`in`(param.split(',')),
+                Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from),
+                Criteria.where(SolanaMetaRecord::metaAccount.name).`in`(param.split(',')),
             )
-            from != null && param.isBlank() -> Criteria.where(SolanaMetaRecord::mint.name).gt(from)
-            param.isNotBlank() -> Criteria.where(SolanaMetaRecord::mint.name).`in`(param.split(','))
+            from != null && param.isBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).gt(from)
+            param.isNotBlank() -> Criteria.where(SolanaMetaRecord::metaAccount.name).`in`(param.split(','))
             else -> Criteria()
         }
         val metaEventFlow = metaplexMetaRecordsRepository.findBy(
             criteria = criteria,
-            sort = Sort.by(Sort.Direction.ASC, SolanaMetaRecord::mint.name, "_id"),
+            sort = Sort.by(Sort.Direction.ASC, SolanaMetaRecord::metaAccount.name, "_id"),
         ).map { it.withFixedEndNulls() }.flatMapConcat {
             metaEventConverter.convert(it, false).asFlow()
         }
 
-        return metaStreamFullReduceService.reduce(metaEventFlow).map { it.tokenAddress }
+        return metaStreamFullReduceService.reduce(metaEventFlow).map { it.metaAddress }
     }
 
     /**
