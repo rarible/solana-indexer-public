@@ -45,7 +45,7 @@ class CollectionConverterIt : AbstractIntegrationTest() {
         metaplexMetaRepository.save(meta)
 
         val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(meta.metaFields, null)
-        val expected = collectionConverter.convertV2(collection, tokenMeta)
+        val expected = collectionConverter.convertV2(collection, tokenMeta, null)
 
         val dto = collectionConverter.toDto(collection)
 
@@ -62,7 +62,7 @@ class CollectionConverterIt : AbstractIntegrationTest() {
         metaplexOffChainMetaRepository.save(metaOff)
 
         val tokenMeta = TokenMetaParser.mergeOnChainAndOffChainMeta(meta.metaFields, metaOff.metaFields)
-        val expected = collectionConverter.convertV2(collection, tokenMeta)
+        val expected = collectionConverter.convertV2(collection, tokenMeta, null)
 
         val dto = collectionConverter.toDto(collection)
 
