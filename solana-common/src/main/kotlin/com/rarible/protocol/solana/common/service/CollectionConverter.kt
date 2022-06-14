@@ -49,7 +49,7 @@ class CollectionConverter(
         balance: Balance?
     ): CollectionDto = CollectionDto(
         address = collection.id,
-        owner = balance?.account,
+        owner = balance?.owner,
         name = tokenMeta.name,
         symbol = tokenMeta.symbol,
         features = emptyList(), // TODO
