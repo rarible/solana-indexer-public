@@ -1,5 +1,5 @@
 global:
-  network: rinkeby
+  network: ropsten
 
 solana-api:
   service:
@@ -8,5 +8,5 @@ solana-api:
 solana-indexer:
   resources:
     jvm:
-      xmx_megabytes: 2048
+      xmx_megabytes: 3072
       max_direct_memory_megabytes: 512
