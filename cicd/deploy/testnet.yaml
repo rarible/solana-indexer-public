@@ -3,7 +3,7 @@ global:
 
 solana-api:
   service:
-    nodePort: 30228
+    nodePort: 30428
 
 solana-indexer:
   resources:
