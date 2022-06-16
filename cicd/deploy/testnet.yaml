@@ -8,5 +8,5 @@ solana-api:
 solana-indexer:
   resources:
     jvm:
-      xmx_megabytes: 3072
+      xmx_megabytes: 2048
       max_direct_memory_megabytes: 512
