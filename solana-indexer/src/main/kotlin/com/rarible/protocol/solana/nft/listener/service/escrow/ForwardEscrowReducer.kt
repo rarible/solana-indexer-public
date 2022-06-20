@@ -1,6 +1,7 @@
 package com.rarible.protocol.solana.nft.listener.service.escrow
 
 import com.rarible.core.entity.reducer.service.Reducer
+import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.event.EscrowBuyEvent
 import com.rarible.protocol.solana.common.event.EscrowDepositEvent
 import com.rarible.protocol.solana.common.event.EscrowEvent
@@ -11,7 +12,9 @@ import com.rarible.protocol.solana.common.model.isEmpty
 import org.springframework.stereotype.Component
 
 @Component
-class ForwardEscrowReducer : Reducer<EscrowEvent, Escrow> {
+class ForwardEscrowReducer(
+    private val properties: SolanaIndexerProperties
+) : Reducer<EscrowEvent, Escrow> {
     override suspend fun reduce(entity: Escrow, event: EscrowEvent): Escrow {
         val states = if (entity.isEmpty) emptyList() else entity.states + entity.copy(states = emptyList())
 
@@ -48,6 +51,6 @@ class ForwardEscrowReducer : Reducer<EscrowEvent, Escrow> {
             is EscrowWithdrawEvent -> entity.copy(
                 value = entity.value - event.amount
             )
-        }.copy(updatedAt = event.timestamp, states = states, lastEvent = event)
+        }.copy(updatedAt = event.timestamp, states = states.takeLast(properties.confirmationBlocks), lastEvent = event)
     }
 }
