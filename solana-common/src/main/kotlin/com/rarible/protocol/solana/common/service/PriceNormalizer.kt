@@ -45,10 +45,16 @@ class PriceNormalizer(
         return when (direction) {
             OrderDirection.BUY -> OrderMakeAndTakePrice(
                 makePrice = null,
-                takePrice = normalizedMake / normalizedTake
+                takePrice = if (normalizedTake.compareTo(BigDecimal.ZERO) == 0)
+                    BigDecimal.ZERO
+                else
+                    normalizedMake / normalizedTake
             )
             OrderDirection.SELL -> OrderMakeAndTakePrice(
-                makePrice = normalizedTake / normalizedMake,
+                makePrice = if (normalizedMake.compareTo(BigDecimal.ZERO) == 0)
+                    BigDecimal.ZERO
+                else
+                    normalizedTake / normalizedMake,
                 takePrice = null
             )
         }
