@@ -21,6 +21,8 @@ solana-indexer:
   networks:
     common:
       - '{{ include "service.appEnv" $ }}-backend'
+  podAnnotations:
+    fluentbit.io/parser: logfmt
 
 solana-api:
   image:
@@ -45,6 +47,8 @@ solana-api:
     common:
       - '{{ include "service.appEnv" $ }}-backend'
       - proxy-staging
+  podAnnotations:
+    fluentbit.io/parser: logfmt
 
 solana-migration:
   image:
@@ -71,3 +75,5 @@ solana-migration:
     common:
       - '{{ include "service.appEnv" $ }}-backend'
       - proxy-staging
+  podAnnotations:
+    fluentbit.io/parser: logfmt
