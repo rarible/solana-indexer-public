@@ -32,24 +32,32 @@ class BalanceEventConverter {
                 timestamp = record.timestamp
             )
         )
-        is SolanaBalanceRecord.TransferIncomeRecord -> listOf(
-            BalanceIncomeEvent(
-                reversed = reversed,
-                account = record.account,
-                amount = record.incomeAmount,
-                log = record.log,
-                timestamp = record.timestamp
-            )
-        )
-        is SolanaBalanceRecord.TransferOutcomeRecord -> listOf(
-            BalanceOutcomeEvent(
-                reversed = reversed,
-                account = record.account,
-                amount = record.outcomeAmount,
-                log = record.log,
-                timestamp = record.timestamp
-            )
-        )
+        is SolanaBalanceRecord.TransferIncomeRecord ->
+            if (record.from == record.account)
+                emptyList()
+            else
+                listOf(
+                    BalanceIncomeEvent(
+                        reversed = reversed,
+                        account = record.account,
+                        amount = record.incomeAmount,
+                        log = record.log,
+                        timestamp = record.timestamp
+                    )
+                )
+        is SolanaBalanceRecord.TransferOutcomeRecord ->
+            if (record.to == record.account)
+                emptyList()
+            else
+                listOf(
+                    BalanceOutcomeEvent(
+                        reversed = reversed,
+                        account = record.account,
+                        amount = record.outcomeAmount,
+                        log = record.log,
+                        timestamp = record.timestamp
+                    )
+                )
         is SolanaBalanceRecord.InitializeBalanceAccountRecord -> listOf(
             BalanceInitializeAccountEvent(
                 reversed = reversed,
