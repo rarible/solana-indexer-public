@@ -192,6 +192,7 @@ fun createRandomBalance(
     owner = owner,
     mint = mint,
     value = value,
+    lastEvent = null,
     revertableEvents = emptyList(),
     createdAt = nowMillis(),
     updatedAt = updatedAt

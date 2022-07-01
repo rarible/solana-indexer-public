@@ -40,6 +40,6 @@ class ForwardBalanceReducer : Reducer<BalanceEvent, Balance> {
                     entity.copy(owner = event.newOwner)
                 }
             }
-        }.copy(updatedAt = event.timestamp)
+        }.copy(updatedAt = event.timestamp, lastEvent = event)
     }
 }

@@ -166,6 +166,7 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
         fun Balance.ignore() = this
             .copy(createdAt = Instant.EPOCH)
             .copy(updatedAt = Instant.EPOCH)
+            .copy(lastEvent = null)
             .copy(revertableEvents = emptyList())
         Assertions.assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
 

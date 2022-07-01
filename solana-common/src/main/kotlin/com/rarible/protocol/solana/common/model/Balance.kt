@@ -15,6 +15,7 @@ data class Balance(
     val owner: String,
     val mint: String,
     val value: BigInteger,
+    val lastEvent: BalanceEvent?,
     override val createdAt: Instant,
     override val updatedAt: Instant,
     override val revertableEvents: List<BalanceEvent>
@@ -35,6 +36,7 @@ data class Balance(
             account = account,
             owner = "",
             mint = "",
+            lastEvent = null,
             value = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
