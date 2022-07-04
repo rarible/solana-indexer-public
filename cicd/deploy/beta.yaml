@@ -6,22 +6,3 @@ solana-indexer:
     jvm:
       xmx_megabytes: 2096
       max_direct_memory_megabytes: 512
-  networks:
-    common:
-      - prod-backend
-    additional:
-      - proxy
-
-solana-api:
-  networks:
-    common:
-      - prod-backend
-    additional:
-      - proxy
-
-solana-migration:
-  networks:
-    common:
-      - prod-backend
-    additional:
-      - proxy
