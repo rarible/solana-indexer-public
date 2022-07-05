@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class MetaplexOffChainMetadataJsonSchema(
     val name: String,
-    val symbol: String,
+    val symbol: String = "",
     val description: String?,
     val collection: Collection?,
     val seller_fee_basis_points: Int?,
