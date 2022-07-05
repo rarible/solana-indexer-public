@@ -8,27 +8,40 @@ object TokenMetaParser {
 
     private val logger = LoggerFactory.getLogger(TokenMetaParser::class.java)
 
+    fun amendUrl(url: String): String {
+        return if (url.startsWith("https://coldfellas.mypinata.cloud/")) {
+            "ipfs://" + url.substringAfter("https://coldfellas.mypinata.cloud/")
+        } else {
+            url
+        }
+    }
+
     fun mergeOnChainAndOffChainMeta(
         onChainMeta: MetaplexMetaFields,
         offChainMeta: MetaplexOffChainMetaFields?
     ): TokenMeta = TokenMeta(
         name = onChainMeta.name,
         symbol = onChainMeta.symbol,
-        url = onChainMeta.uri,
+        url = amendUrl(onChainMeta.uri),
         creators = onChainMeta.creators,
         sellerFeeBasisPoints = onChainMeta.sellerFeeBasisPoints,
         collection = getCollection(onChainMeta, offChainMeta),
         description = offChainMeta?.description,
         attributes = offChainMeta?.attributes?.mapNotNull { it.getAttribute() },
         contents = offChainMeta?.let { parseContents(it) } ?: emptyList(),
-        externalUrl = offChainMeta?.externalUrl
+        externalUrl = offChainMeta?.externalUrl?.let { amendUrl(it) }
     )
 
     private fun parseContents(metaplexOffChainMetaFields: MetaplexOffChainMetaFields): List<TokenMeta.Content> =
         (metaplexOffChainMetaFields.getFiles() + listOfNotNull(
             metaplexOffChainMetaFields.getImage(),
             metaplexOffChainMetaFields.getAnimation()
-        )).distinctBy { it.url }
+        )).distinctBy { it.url }.map {
+            when (it) {
+                is TokenMeta.Content.ImageContent -> it.copy(url = amendUrl(it.url))
+                is TokenMeta.Content.VideoContent -> it.copy(url = amendUrl(it.url))
+            }
+        }
 
     private fun MetaplexOffChainMetaFields.getImage(): TokenMeta.Content.ImageContent? =
         if (image == null) null else TokenMeta.Content.ImageContent(image, null)

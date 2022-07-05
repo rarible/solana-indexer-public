@@ -41,7 +41,7 @@ class MetaplexOffChainMetaLoader(
         metaplexMetaFields: MetaplexMetaFields
     ): MetaplexOffChainMeta? {
         val metadataUrl = try {
-            url(metaplexMetaFields.uri)
+            url(TokenMetaParser.amendUrl(metaplexMetaFields.uri)) // TODO: remove workaround
         } catch (e: Exception) {
             logger.error("Invalid metadata URL for token $tokenAddress: ${metaplexMetaFields.uri.take(1024)}", e)
             metaMetrics.onMetaLoadingError()
