@@ -13,21 +13,22 @@ import com.rarible.blockchain.scanner.solana.client.dto.SolanaTransactionDto
 class BlockCompressor(
     private val solanaProgramIdsToKeep: Set<String> = DEFAULT_COMPRESSOR_PROGRAM_IDS
 ) {
-    private fun SolanaTransactionDto.Instruction?.isOk(programId: String): SolanaTransactionDto.Instruction? {
+    private fun SolanaTransactionDto.Instruction.isOk(programId: String): SolanaTransactionDto.Instruction? {
         return takeIf { solanaProgramIdsToKeep.isEmpty() || programId in solanaProgramIdsToKeep }
     }
 
     fun compress(response: ApiResponse<SolanaBlockDto>): ApiResponse<SolanaBlockDto> {
         val block = response.result!!
         val newTransactions = block.transactions.map { transactionDto ->
-            val accountKeys = transactionDto.transaction!!.message.accountKeys
-            val newInstructions = transactionDto.transaction!!.message.instructions.map {
-                it.isOk(accountKeys[it!!.programIdIndex])
+            val transaction = transactionDto.transaction ?: return@map transactionDto
+            val accountKeys = transaction.message.accountKeys
+            val newInstructions = transaction.message.instructions.map {
+                it?.isOk(accountKeys[it.programIdIndex])
             }
             val newInnerInstructions = transactionDto.meta?.innerInstructions?.map { innerInstruction ->
                 SolanaTransactionDto.InnerInstruction(
                     index = innerInstruction.index,
-                    instructions = innerInstruction.instructions.map { it.isOk(accountKeys[it!!.programIdIndex]) }
+                    instructions = innerInstruction.instructions.map { it?.isOk(accountKeys[it.programIdIndex]) }
                 )
             }
 
@@ -40,17 +41,17 @@ class BlockCompressor(
                     if (newInnerInstructions.isNullOrEmpty()) {
                         null
                     } else {
-                        transactionDto.transaction!!.copy(
-                            message = transactionDto.transaction!!.message.copy(
+                        transaction.copy(
+                            message = transaction.message.copy(
                                 instructions = emptyList(),
-                                accountKeys = transactionDto.transaction!!.message.accountKeys,
-                                recentBlockhash = transactionDto.transaction!!.message.recentBlockhash
+                                accountKeys = transaction.message.accountKeys,
+                                recentBlockhash = transaction.message.recentBlockhash
                             )
                         )
                     }
                 } else
-                    transactionDto.transaction!!.copy(
-                        message = transactionDto.transaction!!.message.copy(
+                    transaction.copy(
+                        message = transaction.message.copy(
                             instructions = newInstructions
                         )
                     )
