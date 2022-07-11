@@ -33,6 +33,13 @@ class BalanceApiService(
             .map { tokenMetaService.extendWithAvailableMeta(it) }
     }
 
+    fun getBalancesAll(showDeleted: Boolean?, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
+        balanceRepository.findAll(
+            continuation,
+            limit,
+            showDeleted ?: false
+        ).map { tokenMetaService.extendWithAvailableMeta(it) }
+
     fun getBalanceByOwner(owner: String, continuation: DateIdContinuation?, limit: Int): Flow<BalanceWithMeta> =
         balanceRepository.findByOwner(
             owner,

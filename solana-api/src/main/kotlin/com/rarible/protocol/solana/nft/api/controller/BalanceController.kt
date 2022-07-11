@@ -40,6 +40,21 @@ class BalanceController(
         val dto = toSlice(balances, safeSize)
         return ResponseEntity.ok(dto)
     }
+    override suspend fun getBalancesAll(
+        continuation: String?,
+        size: Int?,
+        showDeleted: Boolean?
+    ): ResponseEntity<BalancesDto> {
+        val safeSize = PageSize.BALANCE.limit(size)
+        val balances = balanceApiService.getBalancesAll(
+            showDeleted,
+            DateIdContinuation.parse(continuation),
+            safeSize
+        ).toList()
+
+        val dto = toSlice(balances, safeSize)
+        return ResponseEntity.ok(dto)
+    }
 
     override suspend fun getBalancesByMintAndOwner(
         mint: String,

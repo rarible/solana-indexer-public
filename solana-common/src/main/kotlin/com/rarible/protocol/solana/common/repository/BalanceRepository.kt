@@ -45,6 +45,20 @@ class BalanceRepository(
         return mongo.find(query, Balance::class.java).asFlow()
     }
 
+    fun findAll(
+        continuation: DateIdContinuation?,
+        limit: Int,
+        includeDeleted: Boolean
+    ): Flow<Balance> {
+        val criteria = Criteria()
+            .includeDeleted(includeDeleted)
+            .addContinuation(continuation)
+
+        val query = Query(criteria).limit(limit).withSortByLastUpdateAndId()
+
+        return mongo.find(query, Balance::class.java).asFlow()
+    }
+
     fun findByOwner(
         owner: String,
         continuation: DateIdContinuation?,
