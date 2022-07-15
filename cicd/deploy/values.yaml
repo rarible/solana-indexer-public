@@ -30,6 +30,7 @@ solana-api:
     APPLICATION_ENVIRONMENT: '{{ include "service.env" $ }}'
     CONSUL_ROOT_PATH: '{{ include "service.env" $ }}/protocol/{{ .Values.blockchain }}/nft'
     SPRING_PROFILES_ACTIVE: '{{ .Values.blockchain }},consul,{{ include "service.env" $ }},{{ .Values.blockchain }}-{{ include "service.env" $ }}'
+    JAVA_OPTIONS: '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'
   nodeSelector:
     node.labels.rarible.job: true
   resources:
