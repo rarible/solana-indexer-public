@@ -10,7 +10,7 @@ object TokenMetaParser {
 
     fun amendUrl(url: String): String {
         return if (url.startsWith("https://coldfellas.mypinata.cloud/")) {
-            "ipfs://" + url.substringAfter("https://coldfellas.mypinata.cloud/")
+            "https://nftstorage.link/" + url.substringAfter("https://coldfellas.mypinata.cloud/")
         } else {
             url
         }
