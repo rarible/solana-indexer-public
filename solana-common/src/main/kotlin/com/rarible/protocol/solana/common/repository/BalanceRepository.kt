@@ -135,6 +135,12 @@ class BalanceRepository(
             .on("_id", Sort.Direction.ASC)
             .background()
 
+        val VALUE_AND_UPDATED_AT_AND_ID: Index = Index()
+            .on(Balance::value.name, Sort.Direction.ASC)
+            .on(Balance::updatedAt.name, Sort.Direction.ASC)
+            .on("_id", Sort.Direction.ASC)
+            .background()
+
         val OWNER_AND_MINT: Index = Index()
             .on(Balance::owner.name, Sort.Direction.ASC)
             .on(Balance::mint.name, Sort.Direction.ASC)
@@ -143,7 +149,8 @@ class BalanceRepository(
         val ALL_INDEXES = listOf(
             OWNER_AND_UPDATED_AT_AND_ID,
             MINT_AND_UPDATED_AT_AND_ID,
-            OWNER_AND_MINT
+            OWNER_AND_MINT,
+            VALUE_AND_UPDATED_AT_AND_ID
         )
     }
 
