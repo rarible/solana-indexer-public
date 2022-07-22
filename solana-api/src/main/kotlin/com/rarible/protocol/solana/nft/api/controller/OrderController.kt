@@ -135,7 +135,7 @@ class OrderController(
     }
 
     override suspend fun getSellOrdersByMaker(
-        maker: String,
+        maker: List<String>,
         origin: String?,
         status: List<OrderStatusDto>?,
         continuation: String?,
@@ -146,7 +146,7 @@ class OrderController(
 
         val orderFilter = OrderFilter.Sell(
             statuses = status?.fromDto(),
-            makers = listOf(maker),
+            makers = maker,
             origin = origin,
             sort = sort,
             continuation = DateIdContinuation.parse(continuation)
@@ -194,7 +194,7 @@ class OrderController(
     }
 
     override suspend fun getOrderBidsByMaker(
-        maker: String,
+        maker: List<String>,
         origin: String?,
         status: List<OrderStatusDto>?,
         start: Long?,
@@ -208,7 +208,7 @@ class OrderController(
         val filter = OrderFilter.Buy(
             sort = sort,
             statuses = status?.fromDto(),
-            makers = listOf(maker),
+            makers = maker,
             origin = origin,
             continuation = DateIdContinuation.parse(continuation),
             start = start?.let { Instant.ofEpochMilli(it) },

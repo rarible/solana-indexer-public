@@ -234,7 +234,7 @@ class OrderControllerFt : AbstractControllerTest() {
         auctionHouseRepository.save(randomAuctionHouse(order2, 300, false))
 
         val result = orderControllerApi.getSellOrdersByMaker(
-            order2.maker,
+            listOf(order2.maker),
             null,
             null,
             null,
@@ -246,6 +246,16 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
         assertThat(result.orders[0].auctionHouseFee).isEqualTo(order2.auctionHouseSellerFeeBasisPoints)
         assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(order2.auctionHouseRequiresSignOff)
+
+        val result2 = orderControllerApi.getSellOrdersByMaker(
+            listOf(order2.maker, order1.maker),
+            null,
+            null,
+            null,
+            2
+        ).awaitFirst()
+
+        assertThat(result2.orders.map { it.hash }).containsExactlyInAnyOrder(order1.id, order2.id)
     }
 
     @Test
@@ -320,7 +330,7 @@ class OrderControllerFt : AbstractControllerTest() {
         auctionHouseRepository.save(randomAuctionHouse(order2, 300, false))
 
         val result = orderControllerApi.getOrderBidsByMaker(
-            order2.maker,
+            listOf(order2.maker),
             null,
             null,
             null,
@@ -334,6 +344,18 @@ class OrderControllerFt : AbstractControllerTest() {
         assertThat(result.orders[0].hash).isEqualTo(order2.id)
         assertThat(result.orders[0].auctionHouseFee).isEqualTo(order2.auctionHouseSellerFeeBasisPoints)
         assertThat(result.orders[0].auctionHouseRequiresSignOff).isEqualTo(order2.auctionHouseRequiresSignOff)
+
+        val result2 = orderControllerApi.getOrderBidsByMaker(
+            listOf(order2.maker, order1.maker),
+            null,
+            null,
+            null,
+            null,
+            null,
+            2
+        ).awaitFirst()
+
+        assertThat(result2.orders.map { it.hash }).containsExactlyInAnyOrder(order2.id, order1.id)
     }
 
     private suspend fun getBestBuyOrders(
