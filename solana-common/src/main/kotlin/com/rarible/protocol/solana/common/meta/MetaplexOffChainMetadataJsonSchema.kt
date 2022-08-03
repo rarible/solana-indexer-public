@@ -21,7 +21,7 @@ data class MetaplexOffChainMetadataJsonSchema(
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Collection(
         val name: String,
-        val family: String
+        val family: String?
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
