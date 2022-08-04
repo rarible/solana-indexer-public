@@ -1,6 +1,13 @@
 package com.rarible.protocol.solana.common.meta
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 
 // TODO[meta]: consider renaming fields without _
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -8,6 +15,7 @@ data class MetaplexOffChainMetadataJsonSchema(
     val name: String,
     val symbol: String = "",
     val description: String?,
+    @JsonDeserialize(using = CollectionDeserializer::class)
     val collection: Collection?,
     val seller_fee_basis_points: Int?,
     val external_url: String?,
@@ -49,5 +57,26 @@ data class MetaplexOffChainMetadataJsonSchema(
             val uri: String?,
             val type: String?
         )
+    }
+}
+
+private class CollectionDeserializer : JsonDeserializer<MetaplexOffChainMetadataJsonSchema.Collection>() {
+    override fun deserialize(
+        parser: JsonParser,
+        context: DeserializationContext
+    ): MetaplexOffChainMetadataJsonSchema.Collection {
+        return when (val node = parser.codec.readTree<JsonNode>(parser)) {
+            is ObjectNode -> MetaplexOffChainMetadataJsonSchema.Collection(
+                name = node["name"].textValue(),
+                family = node["family"]?.textValue(),
+            )
+
+            is TextNode -> MetaplexOffChainMetadataJsonSchema.Collection(
+                name = node.textValue(),
+                family = null
+            )
+
+            else -> error("Failed to parse $node")
+        }
     }
 }
