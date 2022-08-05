@@ -136,6 +136,7 @@ sealed class OrderFilter {
 
         override fun getQuery(limit: Int): Query {
             val criteria = Criteria()
+                .forDirection(OrderDirection.BUY)
                 .forMakers(makers)
                 .forStatuses(statuses)
                 .forCreatedAt(start, end)

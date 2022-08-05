@@ -186,6 +186,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
         val order1 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
         val order2 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
         val order3 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset).copy(maker = maker))
+        val order4 = orderRepository.save(randomBuyOrder(take = nftAsset, make = currencyAsset).copy(maker = maker))
 
         // Should not be found due to status filter
         orderRepository.save(
@@ -239,6 +240,12 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
         assertThat(result3).hasSize(1)
         assertThat(result3[0]).isEqualTo(expectedSorted[2])
+
+        val result4 = orderRepository.query(
+            OrderFilter.Sell(makers = listOf(maker), sort = OrderFilterSort.LAST_UPDATE_DESC).getQuery(10)
+        ).toList()
+
+        assertThat(result4).containsExactlyInAnyOrder(order3)
     }
 
     @Test
@@ -259,6 +266,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
             randomBuyOrder(take = nftAsset, make = currencyAsset)
                 .copy(maker = maker, createdAt = old)
         )
+        val order5 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset).copy(maker = maker))
 
         // Should not be found due to status filter
         orderRepository.save(
@@ -329,6 +337,12 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
 
         assertThat(result4).hasSize(1)
         assertThat(result4[0]).isEqualTo(order4)
+
+        val result5 = orderRepository.query(
+            OrderFilter.Buy(makers = listOf(maker), sort = OrderFilterSort.LAST_UPDATE_DESC).getQuery(10)
+        ).toList()
+
+        assertThat(result5).containsExactlyInAnyOrder(order4, order3)
     }
 
     @Test
@@ -424,5 +438,4 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
         assertThat(result3).hasSize(1)
         assertThat(result3[0]).isEqualTo(order1)
     }
-
 }
