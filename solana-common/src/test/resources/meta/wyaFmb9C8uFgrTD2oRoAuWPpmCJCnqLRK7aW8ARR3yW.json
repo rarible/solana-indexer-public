@@ -1,0 +1,70 @@
+{
+  "name": "Corrupt Camel Collective #704",
+  "symbol": "CCC",
+  "description": "The MisFit Derby(Corrupt Camel Collective)",
+  "seller_fee_basis_points": 1000,
+  "image": "https://themisfitderby.mypinata.cloud/ipfs/QmdvvHP5bpG36wttmLKrubCfM7fumipca4DpuduZ5jNR3q",
+  "external_url": "https://TheMisFitDerby.com",
+  "edition": 704,
+  "attributes": [
+    {
+      "trait_type": "background",
+      "value": "Uncommonpup"
+    },
+    {
+      "trait_type": "backgroundprop",
+      "value": "None"
+    },
+    {
+      "trait_type": "backaccess",
+      "value": "Ultrarare_scythe_sword"
+    },
+    {
+      "trait_type": "bodies",
+      "value": "Red"
+    },
+    {
+      "trait_type": "mouth",
+      "value": "Commongrimace"
+    },
+    {
+      "trait_type": "Clothes",
+      "value": "Uncommongoldhoodie"
+    },
+    {
+      "trait_type": "eyes",
+      "value": "Uncommonsnek"
+    },
+    {
+      "trait_type": "head",
+      "value": "Uncommonethhat"
+    },
+    {
+      "trait_type": "Access1",
+      "value": "None"
+    },
+    {
+      "trait_type": "Access2",
+      "value": "Uncommonnosering"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://themisfitderby.mypinata.cloud/ipfs/QmdvvHP5bpG36wttmLKrubCfM7fumipca4DpuduZ5jNR3q",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "2VqqL8RJhrbs8GeXNGF5NW1smypmkDLtsokouX28acdA",
+        "share": 100
+      }
+    ],
+    "collection": {
+      "name": "The MisFit Derby(CCC)",
+      "family": "Corrupt Camel"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "name": "SolAngelGenesis #615",
+  "symbol": "SA",
+  "description": "3,333 Genesis SolAngels have arrived. Bringing 2D Anime HANDRAWN art into the Solana Blockchain, SolAngel aims to build an auction house in the metaverse ",
+  "seller_fee_basis_points": 9800,
+  "image": "https://arweave.net/jJRcpPeno7LVyy1BYwCom-hrGFcs-VmOWIZzoUmqBQU?ext=png",
+  "external_url": "www.solangel.io",
+  "edition": 615,
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Snowflake"
+    },
+    {
+      "trait_type": "Wings",
+      "value": "White Wings"
+    },
+    {
+      "trait_type": "Base Model",
+      "value": "Base100"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Tuxedo"
+    },
+    {
+      "trait_type": "Earrings",
+      "value": "None"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Closed Eyes"
+    },
+    {
+      "trait_type": "Hair",
+      "value": "Bucket Hat"
+    },
+    {
+      "trait_type": "Handwear",
+      "value": "Watch"
+    },
+    {
+      "trait_type": "Headwear",
+      "value": "Neon Blue Halo"
+    },
+    {
+      "trait_type": "Mouth",
+      "value": "Lollipop Mouth50"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/jJRcpPeno7LVyy1BYwCom-hrGFcs-VmOWIZzoUmqBQU?ext=png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "2kQjixhGFaY6t69DMySGDeJXamhKcpbo33aK2E5hzG8M",
+        "share": 100
+      }
+    ]
+  },
+  "collection": [
+    {
+      "name": "SolAngel",
+      "family": "SolAngel",
+      "generation": "1"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 
@@ -43,7 +44,7 @@ data class MetaplexOffChainMetadataJsonSchema(
         val category: String?,
         val creators: List<Creator>?,
         // Non-standard, used in some collections.
-        val collection: String?,
+        val collection: Collection?,
         val files: List<File>?
     ) {
         @JsonIgnoreProperties(ignoreUnknown = true)
@@ -66,11 +67,14 @@ private class CollectionDeserializer : JsonDeserializer<MetaplexOffChainMetadata
         context: DeserializationContext
     ): MetaplexOffChainMetadataJsonSchema.Collection {
         return when (val node = parser.codec.readTree<JsonNode>(parser)) {
+            is ArrayNode -> MetaplexOffChainMetadataJsonSchema.Collection(
+                name = node[0]["name"].textValue(),
+                family = node[0]["family"]?.textValue(),
+            )
             is ObjectNode -> MetaplexOffChainMetadataJsonSchema.Collection(
                 name = node["name"].textValue(),
                 family = node["family"]?.textValue(),
             )
-
             is TextNode -> MetaplexOffChainMetadataJsonSchema.Collection(
                 name = node.textValue(),
                 family = null

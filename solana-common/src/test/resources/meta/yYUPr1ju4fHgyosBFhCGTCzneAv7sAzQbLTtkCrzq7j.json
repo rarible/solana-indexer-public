@@ -1,0 +1,75 @@
+{
+  "name": "The Court 2.3.2 #244",
+  "description": "A legend tells that a supreme court is hidden in a forest. 323 powerful entities would lead it.",
+  "image": "https://arweave.net/5FwjtI-D8uDeMDfc_Ch-YDt2spzI01xkQuZp02fN4Jg?ext=png",
+  "dna": "b0f4d804a49131be77c0174e94be537d1b1df110",
+  "edition": 244,
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Pink"
+    },
+    {
+      "trait_type": "Back",
+      "value": "Bramble"
+    },
+    {
+      "trait_type": "Skin",
+      "value": "Void"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Nothing"
+    },
+    {
+      "trait_type": "Mouth",
+      "value": "Nothing"
+    },
+    {
+      "trait_type": "Jewels",
+      "value": "Nothing"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Classic"
+    },
+    {
+      "trait_type": "Head",
+      "value": "Girl Scout Cookies"
+    },
+    {
+      "trait_type": "Eyebrows",
+      "value": "Classic"
+    }
+  ],
+  "symbol": "",
+  "seller_fee_basis_points": 1200,
+  "external_url": "https://lazybearz.io/",
+  "collection": {
+    "name": "The Court 2.3.2",
+    "family": "LazyBearZ"
+  },
+  "properties": {
+    "files": [
+      {
+        "uri": "https://arweave.net/5FwjtI-D8uDeMDfc_Ch-YDt2spzI01xkQuZp02fN4Jg?ext=png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "HVzLoyJrpHkofz9KJE5bEVp9ejx71LW8HEeD4nt5nsv4",
+        "share": 20
+      },
+      {
+        "address": "Dh5A7u47EcuXtZQocfiw4TpMuDwduXqQHsChNBkWuf5n",
+        "share": 60
+      },
+      {
+        "address": "EU7NWiQYqf74NBPtjJoejcvq9nexfeMEWk5VtVrdr7sK",
+        "share": 20
+      }
+    ]
+  }
+}

@@ -76,10 +76,10 @@ object MetaplexOffChainMetadataParser {
                 )
             properties?.collection != null ->
                 MetaplexOffChainMetaFields.Collection(
-                    name = properties.collection,
+                    name = properties.collection.name,
                     family = null,
                     hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
-                        name = properties.collection,
+                        name = properties.collection.name,
                         family = null,
                         creators = metaplexMetaFields.creators.map { it.address }
                     )

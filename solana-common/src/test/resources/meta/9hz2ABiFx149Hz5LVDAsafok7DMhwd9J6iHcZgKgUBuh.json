@@ -1,0 +1,84 @@
+{
+  "name": "Closing Ceremonies, 1984",
+  "symbol": "",
+  "description": "\"I was very moved by the closing ceremonies. It was a dramatic moment, the fireworks going off, the orange light of the peristyles and the 90,000 people in the stadium turning on their flashlights with blue gels. The ceremonies meant a lot to me because they were also the end of my assignment, and I was very sorry to see it come to an end. I tried to capture the overall mood of the event—the celebration and joy.\"\n\nWalter Iooss, Jr.\nSeptember 1, 1984",
+  "seller_fee_basis_points": 1000,
+  "image": "https://www.arweave.net/UnOG_9NS7YicTZKUpoGM3pXigWls9oT1EmRKYnTX8Dg?ext=jpg",
+  "attributes": [
+    {
+      "trait_type": "Platform",
+      "value": "Immutable Image",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Artist",
+      "value": "Walter Iooss Jr.",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Subject",
+      "value": "Closing Ceremonies",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Location",
+      "value": "Los Angeles, California",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Year",
+      "value": 1984,
+      "display_type": ""
+    },
+    {
+      "trait_type": "Category",
+      "value": "Sports",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Type",
+      "value": "Photography",
+      "display_type": ""
+    },
+    {
+      "trait_type": "Copyright",
+      "value": "© 1984 Walter Iooss Jr. ",
+      "display_type": ""
+    },
+    {
+      "display_type": "",
+      "trait_type": "Edition",
+      "value": 100
+    }
+  ],
+  "external_url": "",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://www.arweave.net/UnOG_9NS7YicTZKUpoGM3pXigWls9oT1EmRKYnTX8Dg?ext=jpg",
+        "type": "image/jpeg"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "address": "5QXKHq38iF5YBeDfEPL7gXwUqrBQfdzNGfPrBsALk3a3",
+        "share": 3
+      },
+      {
+        "address": "F31QsS8CkqC8sJhHdd9jMY7iJLAa4SVCtA51mp1wUF7U",
+        "share": 72
+      },
+      {
+        "address": "9wLzWy9VepFkTzJKG5V1CHCWSZZBTEwwcyLHoC4Mjice",
+        "share": 20
+      },
+      {
+        "address": "4GYztdYf54kSKdqGDYXC3THyf4joDCsB1W2sN5nJTfzW",
+        "share": 5
+      }
+    ]
+  },
+  "collection": "EsKvdYEGgyXop1M3Quif27AzGvzQSBwqRV9Y45NsTmtZ",
+  "use": null
+}
