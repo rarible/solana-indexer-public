@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.update
 
 import com.rarible.core.kafka.RaribleKafkaProducer
 import com.rarible.protocol.solana.common.converter.TokenMetaEventConverter
-import com.rarible.protocol.solana.common.meta.TokenMeta
 import com.rarible.protocol.solana.dto.TokenMetaEventDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -20,10 +19,6 @@ class TokenMetaUpdateListener(
     suspend fun triggerTokenMetaLoading(tokenAddress: String) {
         logger.info("Trigger token meta $tokenAddress loading on the Union Service")
         send(TokenMetaEventConverter.convertTriggerEvent(tokenAddress))
-    }
-
-    suspend fun onTokenMetaChanged(tokenAddress: String, tokenMeta: TokenMeta) {
-        send(TokenMetaEventConverter.convertUpdateEvent(tokenAddress, tokenMeta))
     }
 
     private suspend fun send(tokenMetaEventDto: TokenMetaEventDto) {
