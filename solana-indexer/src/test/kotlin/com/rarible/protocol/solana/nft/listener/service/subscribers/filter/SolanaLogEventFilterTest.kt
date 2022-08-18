@@ -14,8 +14,6 @@ import com.rarible.protocol.solana.nft.listener.service.AccountToMintAssociation
 import com.rarible.protocol.solana.nft.listener.service.filter.SolanaRecordsLogEventFilter
 import com.rarible.protocol.solana.nft.listener.test.data.randomSolanaBlockchainBlock
 import com.rarible.protocol.solana.test.BalanceRecordDataFactory
-import com.rarible.protocol.solana.test.OrderRecordDataFactory
-import com.rarible.protocol.solana.test.randomAccount
 import com.rarible.protocol.solana.test.randomMint
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -178,30 +176,6 @@ class SolanaLogEventFilterTest {
 
         val records = getRecords(result)
         assertThat(records).hasSize(0)
-    }
-
-    @Test
-    fun `auction house order with whitelisted auctionHouse`() = runBlocking<Unit> {
-        val whiteListedAuctionHouse = randomAccount()
-        val whiteListedOrderRecord =
-            OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = whiteListedAuctionHouse)
-
-        val ignoredAuctionHouse = randomAccount()
-        val ignoredOrderRecord = OrderRecordDataFactory.randomExecuteSaleRecord(auctionHouse = ignoredAuctionHouse)
-
-        coEvery { accountToMintAssociationService.getMintsByAccounts(any()) } returns mapOf()
-        coEvery { accountToMintAssociationService.saveMintsByAccounts(mapOf()) } returns Unit
-        coEvery { tokenFilter.isAcceptableToken(any()) } returns true
-        coEvery { auctionHouseFilter.isAcceptableAuctionHouse(whiteListedAuctionHouse) } returns true
-        coEvery { auctionHouseFilter.isAcceptableAuctionHouse(ignoredAuctionHouse) } returns false
-
-        val event = randomLogEvent(whiteListedOrderRecord, ignoredOrderRecord)
-        val result = filter.filter(listOf(event))
-
-        val records = getRecords(result)
-        assertThat(records).hasSize(1).satisfies {
-            assertThat(it.single()).isEqualTo(whiteListedOrderRecord)
-        }
     }
 
     private fun randomLogEvent(vararg records: SolanaLogRecord): LogEvent<SolanaLogRecord, SolanaDescriptor> {

@@ -44,6 +44,7 @@ data class MetaplexOffChainMetadataJsonSchema(
         val category: String?,
         val creators: List<Creator>?,
         // Non-standard, used in some collections.
+        @JsonDeserialize(using = CollectionDeserializer::class)
         val collection: Collection?,
         val files: List<File>?
     ) {
