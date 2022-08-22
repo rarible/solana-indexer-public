@@ -11,6 +11,9 @@ spring:
     web-application-type: reactive
 
 common:
+  ipfs:
+    ipfsPrivateGateway: "https://nftstorage.link"
+    ipfsPublicGateway: "https://ipfs.io"
   metricRootPath: solana-nft-metrics
   featureFlags:
     skipTransfersWithUnknownMint: false

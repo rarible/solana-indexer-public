@@ -23,6 +23,11 @@ blockchain:
       monitoring:
         enabled: false
 
+common:
+  ipfs:
+    ipfsPrivateGateway: "https://nftstorage.link"
+    ipfsPublicGateway: "https://ipfs.io"
+
 mongock:
   change-logs-scan-package:
     - com.rarible.protocol.solana.nft.migration.mongock

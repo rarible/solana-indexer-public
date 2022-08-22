@@ -1,7 +1,12 @@
 package com.rarible.protocol.solana.nft.api.controller.advice
 
+import com.rarible.protocol.solana.common.meta.MetaException
+import com.rarible.protocol.solana.common.meta.MetaTimeoutException
+import com.rarible.protocol.solana.common.meta.MetaUnparseableJsonException
+import com.rarible.protocol.solana.common.meta.MetaUnparseableLinkException
 import com.rarible.protocol.solana.dto.SolanaApiErrorBadRequestDto
 import com.rarible.protocol.solana.dto.SolanaApiErrorServerErrorDto
+import com.rarible.protocol.solana.dto.SolanaApiMetaErrorDto
 import com.rarible.protocol.solana.nft.api.controller.TokenController
 import com.rarible.protocol.solana.nft.api.exceptions.NftIndexerApiException
 import kotlinx.coroutines.reactor.mono
@@ -37,6 +42,27 @@ class ErrorsController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     fun handlerException(ex: Throwable) = mono {
         logUnexpectedError(ex)
+    }
+
+    @ExceptionHandler(MetaException::class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    fun handlerMetaException(ex: MetaException) = mono {
+        when (ex) {
+            is MetaUnparseableJsonException -> SolanaApiMetaErrorDto(
+                code = SolanaApiMetaErrorDto.Code.UNPARSEABLE_JSON,
+                message = ex.message
+            )
+
+            is MetaTimeoutException -> SolanaApiMetaErrorDto(
+                code = SolanaApiMetaErrorDto.Code.TIMEOUT,
+                message = ex.message
+            )
+
+            is MetaUnparseableLinkException -> SolanaApiMetaErrorDto(
+                code = SolanaApiMetaErrorDto.Code.UNPARSEABLE_LINK,
+                message = ex.message
+            )
+        }
     }
 
     private fun logUnexpectedError(ex: Throwable): SolanaApiErrorServerErrorDto {

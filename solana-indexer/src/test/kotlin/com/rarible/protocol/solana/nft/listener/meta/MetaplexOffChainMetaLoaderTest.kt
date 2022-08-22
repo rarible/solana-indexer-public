@@ -1,13 +1,22 @@
 package com.rarible.protocol.solana.nft.listener.meta
 
+import com.rarible.core.meta.resource.parser.UrlParser
+import com.rarible.core.meta.resource.resolver.ConstantGatewayProvider
+import com.rarible.core.meta.resource.resolver.IpfsGatewayResolver
+import com.rarible.core.meta.resource.resolver.LegacyIpfsGatewaySubstitutor
+import com.rarible.core.meta.resource.resolver.RandomGatewayProvider
+import com.rarible.core.meta.resource.resolver.UrlResolver
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.meta.ExternalHttpClient
+import com.rarible.protocol.solana.common.meta.MetaUnparseableJsonException
+import com.rarible.protocol.solana.common.meta.MetaUnparseableLinkException
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainCollectionHash
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 import com.rarible.protocol.solana.common.service.CollectionService
+import com.rarible.protocol.solana.common.service.UrlService
 import com.rarible.protocol.solana.test.createRandomMetaplexMeta
 import com.rarible.protocol.solana.test.randomMint
 import io.mockk.coEvery
@@ -15,7 +24,9 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.net.URL
 import java.time.Instant
 
@@ -29,10 +40,23 @@ class MetaplexOffChainMetaLoaderTest {
         },
         externalHttpClient = externalHttpClient,
         solanaIndexerProperties = mockk<SolanaIndexerProperties>().apply { every { this@apply.metaplexOffChainMetaLoadingTimeout } returns 20000 },
-        metaMetrics = mockk(),
+        metaMetrics = mockk {
+            every { onMetaLoadingError() } returns Unit
+            every { onMetaParsingError() } returns Unit
+        },
         clock = mockk {
             every { instant() } returns Instant.EPOCH
-        }
+        },
+        urlService = UrlService(
+            UrlParser(),
+            UrlResolver(
+                IpfsGatewayResolver(
+                    ConstantGatewayProvider("https://ipfs.io"),
+                    RandomGatewayProvider(listOf("https://ipfs.io")),
+                    customGatewaysResolver = LegacyIpfsGatewaySubstitutor(emptyList())
+                )
+            )
+        )
     )
 
     @Test
@@ -150,5 +174,60 @@ class MetaplexOffChainMetaLoaderTest {
                 )
             )
         )
+    }
+
+    @Test
+    fun `not found error`() = runBlocking {
+        val url = URL("https://arweave.net/notfound")
+        val metaplexMeta = createRandomMetaplexMeta().let {
+            it.copy(
+                metaFields = it.metaFields.copy(
+                    uri = url.toExternalForm()
+                )
+            )
+        }
+
+        val metaplexOffChainMeta = metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+            tokenAddress = randomMint(),
+            metaplexMetaFields = metaplexMeta.metaFields
+        )
+
+        assertNull(metaplexOffChainMeta)
+    }
+
+    @Test
+    fun `unparseable link`() = runBlocking<Unit> {
+        val metaplexMeta = createRandomMetaplexMeta().let {
+            it.copy(
+                metaFields = it.metaFields.copy(
+                    uri = "notvalidschema://meta"
+                )
+            )
+        }
+
+        assertThrows<MetaUnparseableLinkException> {
+            metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+                tokenAddress = randomMint(),
+                metaplexMetaFields = metaplexMeta.metaFields
+            )
+        }
+    }
+
+    @Test
+    fun `unparseable json`() = runBlocking<Unit> {
+        val metaplexMeta = createRandomMetaplexMeta().let {
+            it.copy(
+                metaFields = it.metaFields.copy(
+                    uri = "https://gist.github.com/enslinmike/332b0805282271ee80e1947742072e87"
+                )
+            )
+        }
+
+        assertThrows<MetaUnparseableJsonException> {
+            metaplexOffChainMetaLoader.loadMetaplexOffChainMeta(
+                tokenAddress = randomMint(),
+                metaplexMetaFields = metaplexMeta.metaFields
+            )
+        }
     }
 }

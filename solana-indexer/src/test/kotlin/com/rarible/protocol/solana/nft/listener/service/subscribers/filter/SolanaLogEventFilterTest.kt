@@ -36,9 +36,13 @@ class SolanaLogEventFilterTest {
         accountToMintAssociationService = accountToMintAssociationService,
         solanaIndexerProperties = SolanaIndexerProperties(
             kafkaReplicaSet = "kafka",
-            metricRootPath = "metricRootPath"
+            metricRootPath = "metricRootPath",
+            ipfs = SolanaIndexerProperties.IpfsProperties(
+                ipfsPrivateGateway = "https://nftstorage.link",
+                ipfsPublicGateway = "https://ipfs.io"
+            )
         ),
-        tokenFilter = tokenFilter
+        tokenFilter = tokenFilter,
     )
 
     @BeforeEach
