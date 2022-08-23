@@ -1,4 +1,7 @@
 common:
+  ipfs:
+    ipfsPrivateGateway: "https://nftstorage.link"
+    ipfsPublicGateway: "https://ipfs.io"
   kafka-replica-set: ${kafka.hosts}
   metricRootPath: solana-common-test
 

@@ -5,6 +5,7 @@ val tinkVersion: String by project
 
 dependencies {
     api(project(":util-borsh"))
+    api("com.rarible.core:rarible-core-meta-resource:$raribleCommonVersion")
     api("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     api("com.rarible.blockchain.scanner:rarible-blockchain-scanner-solana:$solanaScannerVersion")
     api("com.rarible.core:rarible-core-entity-reducer:$raribleCommonVersion")

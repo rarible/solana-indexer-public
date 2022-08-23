@@ -13,8 +13,14 @@ data class SolanaIndexerProperties(
     val metricRootPath: String,
     val confirmationBlocks: Int = 100,
     val metaplexOffChainMetaLoadingTimeout: Long = 20000,
-    val featureFlags: FeatureFlags = FeatureFlags()
-)
+    val featureFlags: FeatureFlags = FeatureFlags(),
+    val ipfs: IpfsProperties
+) {
+    data class IpfsProperties(
+        val ipfsPrivateGateway: String,
+        val ipfsPublicGateway: String
+    )
+}
 
 data class FeatureFlags(
     val enableCacheApi: Boolean = false,

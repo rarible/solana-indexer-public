@@ -40,9 +40,6 @@ class ExternalHttpClient {
     }
 }
 
-// TODO[meta]: validate URL is correct (http/https, not a hack).
-fun url(url: String) = URL(url)
-
 private const val X_API_KEY = "X-API-KEY"
 private val DEFAULT_TIMEOUT: Duration = Duration.ofSeconds(60)
 

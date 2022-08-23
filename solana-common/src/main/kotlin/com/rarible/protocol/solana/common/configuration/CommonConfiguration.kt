@@ -1,5 +1,13 @@
 package com.rarible.protocol.solana.common.configuration
 
+import com.rarible.core.common.safeSplit
+import com.rarible.core.meta.resource.parser.UrlParser
+import com.rarible.core.meta.resource.resolver.ConstantGatewayProvider
+import com.rarible.core.meta.resource.resolver.GatewayProvider
+import com.rarible.core.meta.resource.resolver.IpfsGatewayResolver
+import com.rarible.core.meta.resource.resolver.LegacyIpfsGatewaySubstitutor
+import com.rarible.core.meta.resource.resolver.RandomGatewayProvider
+import com.rarible.core.meta.resource.resolver.UrlResolver
 import com.rarible.protocol.solana.common.converter.PackageConverters
 import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.filter.token.CompositeSolanaTokenFilter
@@ -57,6 +65,7 @@ class CommonConfiguration(
                     override suspend fun addToBlacklist(mintsAndReasons: Map<String, String>) = Unit
                 }
             }
+
             TokenFilterType.BLACKLIST, TokenFilterType.WHITELIST_V2 -> {
                 val blacklistTokens = featureFlags.blacklistTokens
                 val coinTokens = CurrencyTokenReader().readCurrencyTokens().tokens.mapTo(hashSetOf()) { it.address }
@@ -92,6 +101,40 @@ class CommonConfiguration(
             override fun isAcceptableAuctionHouse(auctionHouse: String): Boolean =
                 auctionHouses.isEmpty() || auctionHouse in auctionHouses
         }
+    }
+
+    @Bean
+    fun ipfsProperties(): SolanaIndexerProperties.IpfsProperties {
+        return properties.ipfs
+    }
+
+    @Bean
+    fun urlParser() = UrlParser()
+
+    @Bean
+    fun internalGatewayProvider(): GatewayProvider {
+        return RandomGatewayProvider(
+            properties.ipfs.ipfsPrivateGateway.safeSplit().map { it.trimEnd('/') }
+        )
+    }
+
+    @Bean
+    fun urlResolver(
+        internalGatewayProvider: GatewayProvider
+    ): UrlResolver {
+        val publicGatewayProvider = ConstantGatewayProvider(
+            properties.ipfs.ipfsPublicGateway.trimEnd('/')
+        )
+
+        val customGatewaysResolver = LegacyIpfsGatewaySubstitutor(emptyList()) // For handle Legacy gateways
+
+        return UrlResolver(
+            ipfsGatewayResolver = IpfsGatewayResolver(
+                publicGatewayProvider = publicGatewayProvider,
+                internalGatewayProvider = internalGatewayProvider,
+                customGatewaysResolver = customGatewaysResolver
+            )
+        )
     }
 
     private companion object {

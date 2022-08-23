@@ -1,18 +1,22 @@
 package com.rarible.protocol.solana.common.meta
 
+import com.rarible.core.meta.resource.util.MetaLogger.logMetaLoading
 import com.rarible.protocol.solana.common.configuration.SolanaIndexerProperties
 import com.rarible.protocol.solana.common.model.MetaplexMetaFields
 import com.rarible.protocol.solana.common.model.MetaplexOffChainMeta
 import com.rarible.protocol.solana.common.model.TokenId
 import com.rarible.protocol.solana.common.repository.MetaplexOffChainMetaRepository
+import com.rarible.protocol.solana.common.service.UrlService
 import com.rarible.protocol.solana.common.util.nowMillis
 import kotlinx.coroutines.reactive.awaitFirst
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import java.net.URL
 import java.time.Clock
 import java.time.Duration
+import java.util.concurrent.TimeoutException
 
 @Component
 class MetaplexOffChainMetaLoader(
@@ -21,6 +25,7 @@ class MetaplexOffChainMetaLoader(
     private val metaMetrics: MetaMetrics,
     private val solanaIndexerProperties: SolanaIndexerProperties,
     private val clock: Clock,
+    private val urlService: UrlService
 ) {
 
     private companion object {
@@ -40,37 +45,81 @@ class MetaplexOffChainMetaLoader(
         tokenAddress: TokenId,
         metaplexMetaFields: MetaplexMetaFields
     ): MetaplexOffChainMeta? {
-        val metadataUrl = try {
-            url(TokenMetaParser.amendUrl(metaplexMetaFields.uri)) // TODO: remove workaround
-        } catch (e: Exception) {
-            logger.error("Invalid metadata URL for token $tokenAddress: ${metaplexMetaFields.uri.take(1024)}", e)
+        val resource = urlService.parseUrl(metaplexMetaFields.uri, tokenAddress)
+        if (resource == null) {
             metaMetrics.onMetaLoadingError()
-            return null
+
+            throw MetaUnparseableLinkException(
+                "Can't parse metadata URL for token $tokenAddress: ${metaplexMetaFields.uri.take(1024)}"
+            )
         }
+        val internalUrl = urlService.resolveInternalHttpUrl(resource)
+
+        if (internalUrl == resource.original) {
+            logMetaLoading(tokenAddress, "Fetching property string by URL $internalUrl")
+        } else {
+            logMetaLoading(
+                tokenAddress, "Fetching property string by URL $internalUrl (original URL is ${resource.original})"
+            )
+        }
+
+        val metadataUrl = try {
+            URL(TokenMetaParser.amendUrl(internalUrl)) // TODO: remove workaround
+        } catch (e: Exception) {
+            logMetaLoading(tokenAddress, "Wrong URL: $internalUrl, $e")
+            metaMetrics.onMetaLoadingError()
+
+            throw MetaUnparseableLinkException(
+                "Invalid metadata URL for token $tokenAddress: ${metaplexMetaFields.uri.take(1024)}"
+            )
+        }
+
         // TODO: when meta gets changed, we have to send a token update event.
         logger.info("Loading off-chain metadata for token $tokenAddress by URL $metadataUrl")
         val offChainMetadataJsonContent = try {
             loadOffChainMetadataJson(metadataUrl)
-        } catch (e: Exception) {
-            logger.error("Failed to load metadata for token $tokenAddress by URL $metadataUrl", e)
+        } catch (e: TimeoutException) {
+            val message = "Timeout during loading metadata for token $tokenAddress by URL $metadataUrl"
+
+            logger.error(message, e)
             metaMetrics.onMetaLoadingError()
-            return null
+            throw MetaTimeoutException(message)
+        } catch (e: WebClientResponseException) {
+            if (e.statusCode.is4xxClientError) {
+                val message = "Metadata for token $tokenAddress by URL $metadataUrl not found"
+
+                logger.error(message, e)
+                metaMetrics.onMetaLoadingError()
+
+                return null
+            } else {
+                val message = "Failed to load metadata for token $tokenAddress by URL $metadataUrl"
+
+                logger.error(message, e)
+                metaMetrics.onMetaLoadingError()
+
+                error(message)
+            }
         }
+
         val metaplexOffChainMetaFields = try {
             MetaplexOffChainMetadataParser.parseMetaplexOffChainMetaFields(
                 offChainMetadataJsonContent = offChainMetadataJsonContent,
                 metaplexMetaFields = metaplexMetaFields
             )
         } catch (e: Exception) {
-            logger.error("Failed to parse metadata for token $tokenAddress by URL $metadataUrl", e)
+            val message = "Failed to parse metadata for token $tokenAddress by URL $metadataUrl"
+            logger.error(message, e)
             metaMetrics.onMetaParsingError()
-            return null
+
+            throw MetaUnparseableJsonException(message)
         }
         val metaplexOffChainMeta = MetaplexOffChainMeta(
             tokenAddress = tokenAddress,
             metaFields = metaplexOffChainMetaFields,
             loadedAt = clock.nowMillis()
         )
+
         return metaplexOffChainMetaRepository.save(metaplexOffChainMeta)
     }
 
