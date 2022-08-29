@@ -11,6 +11,7 @@ import com.rarible.blockchain.scanner.solana.client.dto.SolanaTransactionDto
  * Original blocks size in JSON format is around 3-5Mb. After compression, they become 10-30Kb.
  */
 class BlockCompressor(
+    private val environment: Environment,
     private val solanaProgramIdsToKeep: Set<String> = DEFAULT_COMPRESSOR_PROGRAM_IDS
 ) {
     private fun SolanaTransactionDto.Instruction.isOk(programId: String): SolanaTransactionDto.Instruction? {
@@ -20,42 +21,56 @@ class BlockCompressor(
     fun compress(response: ApiResponse<SolanaBlockDto>): ApiResponse<SolanaBlockDto> {
         val block = response.result!!
         val newTransactions = block.transactions.map { transactionDto ->
-            val transaction = transactionDto.transaction ?: return@map transactionDto
-            val accountKeys = transaction.message.accountKeys
-            val newInstructions = transaction.message.instructions.map {
-                it?.isOk(accountKeys[it.programIdIndex])
-            }
-            val newInnerInstructions = transactionDto.meta?.innerInstructions?.map { innerInstruction ->
-                SolanaTransactionDto.InnerInstruction(
-                    index = innerInstruction.index,
-                    instructions = innerInstruction.instructions.map { it?.isOk(accountKeys[it.programIdIndex]) }
-                )
-            }
+            try {
+                val transaction = transactionDto.transaction ?: return@map transactionDto
+                val accountKeys = transaction.message.accountKeys
+                val newInstructions = transaction.message.instructions.map {
+                    it?.isOk(accountKeys[it.programIdIndex])
+                }
+                val newInnerInstructions = transactionDto.meta?.innerInstructions?.map { innerInstruction ->
+                    SolanaTransactionDto.InnerInstruction(
+                        index = innerInstruction.index,
+                        instructions = innerInstruction.instructions.map { it?.isOk(accountKeys[it.programIdIndex]) }
+                    )
+                }
 
-            transactionDto.copy(
-                meta = SolanaTransactionDto.Meta(
-                    err = transactionDto.meta?.err?.let { true },
-                    innerInstructions = newInnerInstructions ?: emptyList()
-                ),
-                transaction = if (newInstructions.all { it == null }) {
-                    if (newInnerInstructions.isNullOrEmpty()) {
-                        null
-                    } else {
+                transactionDto.copy(
+                    meta = SolanaTransactionDto.Meta(
+                        err = transactionDto.meta?.err?.let { true },
+                        innerInstructions = newInnerInstructions ?: emptyList()
+                    ),
+                    transaction = if (newInstructions.all { it == null }) {
+                        if (newInnerInstructions.isNullOrEmpty()) {
+                            null
+                        } else {
+                            transaction.copy(
+                                message = transaction.message.copy(
+                                    instructions = emptyList(),
+                                    accountKeys = transaction.message.accountKeys,
+                                    recentBlockhash = transaction.message.recentBlockhash
+                                )
+                            )
+                        }
+                    } else
                         transaction.copy(
                             message = transaction.message.copy(
-                                instructions = emptyList(),
-                                accountKeys = transaction.message.accountKeys,
-                                recentBlockhash = transaction.message.recentBlockhash
+                                instructions = newInstructions
                             )
                         )
-                    }
-                } else
-                    transaction.copy(
-                        message = transaction.message.copy(
-                            instructions = newInstructions
-                        )
+                )
+            } catch (e: Exception) {
+                if ("prod" in environment.activeProfiles) {
+                    throw e
+                } else {
+                    transactionDto.copy(
+                        meta = SolanaTransactionDto.Meta(
+                            err = transactionDto.meta?.err?.let { true },
+                            innerInstructions = emptyList()
+                        ),
+                        transaction = null
                     )
-            )
+                }
+            }
         }
 
         return ApiResponse(
