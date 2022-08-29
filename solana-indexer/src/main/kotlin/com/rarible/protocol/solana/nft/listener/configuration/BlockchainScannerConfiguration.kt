@@ -85,7 +85,7 @@ class BlockchainScannerConfiguration(
         val solanaProgramIdsToKeep = solanaIndexerProperties.featureFlags.blockCompressorProgramIdsToKeep
             .takeIf { it.isNotEmpty() } ?: BlockCompressor.DEFAULT_COMPRESSOR_PROGRAM_IDS
         logger.info("Solana blocks will be compressed by keeping only the following programs: $solanaProgramIdsToKeep")
-        return BlockCompressor(environment, solanaProgramIdsToKeep)
+        return BlockCompressor(environment.activeProfiles.toList(), solanaProgramIdsToKeep)
     }
 
     @Bean

@@ -14,7 +14,7 @@ fun main() {
         .takeIf { it.isNotEmpty() }?.split(",")?.map { it.trim() }
         ?.toSet()
         ?: BlockCompressor.DEFAULT_COMPRESSOR_PROGRAM_IDS
-    val blockCompressor = BlockCompressor(blockCompressorProgramIds)
+    val blockCompressor = BlockCompressor(listOf("prod"), blockCompressorProgramIds)
     val urls = System.getProperty("solana.block.proxy.urls", "")
         .split(",").map { it.trim() }
         .also { require(it.isNotEmpty()) { "No 'solana.block.proxy.urls' specified" } }

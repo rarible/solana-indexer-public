@@ -11,7 +11,7 @@ import com.rarible.blockchain.scanner.solana.client.dto.SolanaTransactionDto
  * Original blocks size in JSON format is around 3-5Mb. After compression, they become 10-30Kb.
  */
 class BlockCompressor(
-    private val environment: Environment,
+    private val springProfiles: List<String>,
     private val solanaProgramIdsToKeep: Set<String> = DEFAULT_COMPRESSOR_PROGRAM_IDS
 ) {
     private fun SolanaTransactionDto.Instruction.isOk(programId: String): SolanaTransactionDto.Instruction? {
@@ -59,7 +59,7 @@ class BlockCompressor(
                         )
                 )
             } catch (e: Exception) {
-                if ("prod" in environment.activeProfiles) {
+                if ("prod" in springProfiles) {
                     throw e
                 } else {
                     transactionDto.copy(
