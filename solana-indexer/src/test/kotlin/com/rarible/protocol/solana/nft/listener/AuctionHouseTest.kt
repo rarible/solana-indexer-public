@@ -17,6 +17,12 @@ import com.rarible.protocol.solana.common.records.SolanaAuctionHouseRecord
 import com.rarible.protocol.solana.common.records.SolanaBalanceRecord
 import com.rarible.protocol.solana.common.records.SolanaEscrowRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.dto.ActivityTypeDto
+import com.rarible.protocol.solana.dto.MintActivityDto
+import com.rarible.protocol.solana.dto.OrderBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelBidActivityDto
+import com.rarible.protocol.solana.dto.OrderCancelListActivityDto
+import com.rarible.protocol.solana.dto.OrderListActivityDto
 import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -329,7 +335,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
     }
 
     @Test
-    fun sellCancelTest() = runBlocking {
+    fun sellCancelTest() = runBlocking<Unit> {
         val keypair = createKeypair(randomString())
         val wallet = getWallet(keypair)
         airdrop(10, wallet)
@@ -449,10 +455,23 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
         }
+
+        val activities = activityRepository.findActivitiesByMint(
+            types = ActivityTypeDto.values().toList(),
+            mint = token,
+            continuation = null,
+            10,
+            sortAscending = true
+        ).toList()
+
+        assertThat(activities.size).isEqualTo(3)
+        assertThat(activities[0]).isInstanceOf(MintActivityDto::class.java)
+        assertThat(activities[1]).isInstanceOf(OrderListActivityDto::class.java)
+        assertThat(activities[2]).isInstanceOf(OrderCancelListActivityDto::class.java)
     }
 
     @Test
-    fun buyCancelTest() = runBlocking {
+    fun buyCancelTest() = runBlocking<Unit> {
         val keypair = createKeypair(randomString())
         val wallet = getWallet(keypair)
         airdrop(10, wallet)
@@ -571,6 +590,19 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                     )
                 )
         }
+
+        val activities = activityRepository.findActivitiesByMint(
+            types = ActivityTypeDto.values().toList(),
+            mint = token,
+            continuation = null,
+            10,
+            sortAscending = true
+        ).toList()
+
+        assertThat(activities.size).isEqualTo(3)
+        assertThat(activities[0]).isInstanceOf(MintActivityDto::class.java)
+        assertThat(activities[1]).isInstanceOf(OrderBidActivityDto::class.java)
+        assertThat(activities[2]).isInstanceOf(OrderCancelBidActivityDto::class.java)
     }
 
     @Test

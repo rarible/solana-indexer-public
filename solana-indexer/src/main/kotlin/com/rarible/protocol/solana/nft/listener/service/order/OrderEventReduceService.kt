@@ -4,7 +4,9 @@ import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
 import com.rarible.protocol.solana.common.converter.SolanaAuctionHouseOrderActivityConverter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
+import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord.CancelRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
+import com.rarible.protocol.solana.common.repository.OrderRepository
 import com.rarible.protocol.solana.common.update.ActivityEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListener
 import com.rarible.protocol.solana.nft.listener.consumer.LogRecordEventListenerId
@@ -20,7 +22,8 @@ class OrderEventReduceService(
     environmentInfo: ApplicationEnvironmentInfo,
     val converter: OrderEventConverter,
     private val orderActivityConverter: SolanaAuctionHouseOrderActivityConverter,
-    private val activityEventListener: ActivityEventListener
+    private val activityEventListener: ActivityEventListener,
+    private val orderRepository: OrderRepository
 ) : LogRecordEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
@@ -57,10 +60,14 @@ class OrderEventReduceService(
             return
         }
         val activitiesDto = events.mapNotNull {
-            orderActivityConverter.convert(
-                it.record as SolanaAuctionHouseOrderRecord,
-                it.reversed
-            )
+            if (it.record is CancelRecord && orderRepository.findById(it.record.orderId) == null) {
+                null
+            } else {
+                orderActivityConverter.convert(
+                    it.record as SolanaAuctionHouseOrderRecord,
+                    it.reversed
+                )
+            }
         }
         activityEventListener.onActivities(activitiesDto)
     }

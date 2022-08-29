@@ -15,6 +15,7 @@ import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoadService
 import com.rarible.protocol.solana.common.meta.MetaplexOffChainMetaLoader
 import com.rarible.protocol.solana.common.meta.TokenMetaService
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
+import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.common.repository.AuctionHouseRepository
 import com.rarible.protocol.solana.common.repository.BalanceRepository
 import com.rarible.protocol.solana.common.repository.EscrowRepository
@@ -113,7 +114,10 @@ abstract class AbstractBlockScannerTest {
     protected lateinit var escrowRepository: EscrowRepository
 
     @Autowired
-    private lateinit var repository: BlockRepository
+    protected lateinit var activityRepository: ActivityRepository
+
+    @Autowired
+    private lateinit var blockRepository: BlockRepository
 
     @BeforeEach
     fun cleanDatabase() = runBlocking<Unit> {
@@ -121,7 +125,7 @@ abstract class AbstractBlockScannerTest {
         val currentBlock = client.getBlock(slot) ?: error("Can't get latest block")
 
         runCatching {
-            repository.save(
+            blockRepository.save(
                 Block(
                     id = currentBlock.number,
                     hash = currentBlock.hash,
