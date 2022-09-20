@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class BalanceTemplateProvider : EntityTemplateProvider<BalanceId, Balance> {
-    override fun getEntityTemplate(id: BalanceId): Balance = Balance.empty(id)
+    override fun getEntityTemplate(id: BalanceId, version: Long?): Balance = Balance.empty(id, version)
 }

@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.AuctionHouseEvent
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
@@ -16,7 +17,9 @@ data class AuctionHouse(
     val states: List<AuctionHouse>,
     override val revertableEvents: List<AuctionHouseEvent>,
     override val createdAt: Instant,
-    override val updatedAt: Instant
+    override val updatedAt: Instant,
+    @Version
+    override val version: Long? = null
 ) : SolanaEntity<AuctionHouseId, AuctionHouseEvent, AuctionHouse> {
     override val id: AuctionHouseId get() = account
 
@@ -30,14 +33,15 @@ data class AuctionHouse(
     companion object {
         const val COLLECTION = "auction-house"
 
-        fun empty(auctionHouse: String): AuctionHouse = AuctionHouse(
+        fun empty(auctionHouse: String, version: Long? = null): AuctionHouse = AuctionHouse(
             account = auctionHouse,
             sellerFeeBasisPoints = 0,
             requiresSignOff = false,
             states = emptyList(),
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
-            updatedAt = Instant.EPOCH
+            updatedAt = Instant.EPOCH,
+            version = version
         )
     }
 }

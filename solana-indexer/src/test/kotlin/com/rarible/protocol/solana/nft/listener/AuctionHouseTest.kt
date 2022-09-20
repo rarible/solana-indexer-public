@@ -243,7 +243,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
-                        updatedAt = Instant.EPOCH
+                        updatedAt = Instant.EPOCH,
+                        version = 0
                     )
                 )
         }
@@ -266,7 +267,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
-                        updatedAt = Instant.EPOCH
+                        updatedAt = Instant.EPOCH,
+                        version = 1
                     )
                 )
         }
@@ -289,7 +291,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         states = emptyList(),
                         revertableEvents = emptyList(),
                         createdAt = Instant.EPOCH,
-                        updatedAt = Instant.EPOCH
+                        updatedAt = Instant.EPOCH,
+                        version = 2
                     )
                 )
         }
@@ -382,7 +385,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
                         states = emptyList(),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 0
                     )
                 )
 
@@ -451,7 +455,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
                         states = listOf(sellOrder),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 1
                     )
                 )
         }
@@ -518,6 +523,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
                         states = emptyList(),
                         dbUpdatedAt = Instant.EPOCH,
+                        version = 0
                     )
                 )
 
@@ -586,7 +592,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
                         states = listOf(buyOrder),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 1
                     )
                 )
         }
@@ -731,7 +738,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
                         states = emptyList(),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 0
                     )
                 )
 
@@ -777,7 +785,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
                         states = emptyList(),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 0
                     )
                 )
 
@@ -943,7 +952,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = null,
                         takePrice = 5.scaleSupply(9).toBigDecimal(9),
                         states = listOf(originalBuyRecord),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 1
                     )
                 )
 
@@ -983,7 +993,8 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                         makePrice = 5.scaleSupply(9).toBigDecimal(9),
                         takePrice = null,
                         states = listOf(originalSellRecord),
-                        dbUpdatedAt = Instant.EPOCH
+                        dbUpdatedAt = Instant.EPOCH,
+                        version = 1
                     )
                 )
         }

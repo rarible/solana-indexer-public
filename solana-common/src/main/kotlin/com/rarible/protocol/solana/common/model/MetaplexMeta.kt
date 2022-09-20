@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
@@ -16,7 +17,9 @@ data class MetaplexMeta(
     val isMutable: Boolean,
     override val createdAt: Instant?,
     override val updatedAt: Instant,
-    override val revertableEvents: List<MetaplexMetaEvent>
+    override val revertableEvents: List<MetaplexMetaEvent>,
+    @Version
+    override val version: Long? = null
 ) : SolanaEntity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
 
     override val id: MetaId get() = metaAddress
@@ -31,14 +34,15 @@ data class MetaplexMeta(
     companion object {
         const val COLLECTION = "metaplex-meta"
 
-        fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
+        fun empty(metaAddress: MetaId, version: Long? = null): MetaplexMeta = MetaplexMeta(
             metaAddress = metaAddress,
             tokenAddress = "",
             metaFields = emptyMetaFields,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
-            isMutable = false
+            isMutable = false,
+            version = version
         )
 
         val emptyMetaFields: MetaplexMetaFields = MetaplexMetaFields(
