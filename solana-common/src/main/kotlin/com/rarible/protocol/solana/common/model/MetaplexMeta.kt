@@ -34,14 +34,15 @@ data class MetaplexMeta(
     companion object {
         const val COLLECTION = "metaplex-meta"
 
-        fun empty(metaAddress: MetaId): MetaplexMeta = MetaplexMeta(
+        fun empty(metaAddress: MetaId, version: Long? = null): MetaplexMeta = MetaplexMeta(
             metaAddress = metaAddress,
             tokenAddress = "",
             metaFields = emptyMetaFields,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             revertableEvents = emptyList(),
-            isMutable = false
+            isMutable = false,
+            version = version
         )
 
         val emptyMetaFields: MetaplexMetaFields = MetaplexMetaFields(

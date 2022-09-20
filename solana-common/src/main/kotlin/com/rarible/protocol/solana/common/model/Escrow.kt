@@ -38,7 +38,7 @@ data class Escrow(
     companion object {
         const val COLLECTION = "escrow"
 
-        fun empty(): Escrow = Escrow(
+        fun empty(version: Long? = null): Escrow = Escrow(
             account = "",
             wallet = "",
             auctionHouse = "",
@@ -47,7 +47,8 @@ data class Escrow(
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
             states = emptyList(),
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            version = version
         )
     }
 }

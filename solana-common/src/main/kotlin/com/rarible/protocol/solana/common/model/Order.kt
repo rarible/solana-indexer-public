@@ -71,7 +71,7 @@ data class Order(
     companion object {
         const val COLLECTION = "order"
 
-        fun empty(): Order = Order(
+        fun empty(version: Long? = null): Order = Order(
             auctionHouse = "",
             auctionHouseRequiresSignOff = null,
             auctionHouseSellerFeeBasisPoints = null,
@@ -88,7 +88,8 @@ data class Order(
             revertableEvents = emptyList(),
             direction = OrderDirection.SELL,
             states = emptyList(),
-            dbUpdatedAt = Instant.EPOCH
+            dbUpdatedAt = Instant.EPOCH,
+            version = version
         )
 
         fun calculateAuctionHouseOrderId(

@@ -35,7 +35,7 @@ data class Balance(
     companion object {
         const val COLLECTION = "balance"
 
-        fun empty(account: String): Balance = Balance(
+        fun empty(account: String, version: Long? = null): Balance = Balance(
             account = account,
             owner = "",
             mint = "",
@@ -43,7 +43,8 @@ data class Balance(
             value = BigInteger.ZERO,
             createdAt = Instant.EPOCH,
             updatedAt = Instant.EPOCH,
-            revertableEvents = emptyList()
+            revertableEvents = emptyList(),
+            version = version
         )
     }
 }

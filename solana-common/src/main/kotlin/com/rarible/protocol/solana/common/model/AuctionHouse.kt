@@ -33,14 +33,15 @@ data class AuctionHouse(
     companion object {
         const val COLLECTION = "auction-house"
 
-        fun empty(auctionHouse: String): AuctionHouse = AuctionHouse(
+        fun empty(auctionHouse: String, version: Long? = null): AuctionHouse = AuctionHouse(
             account = auctionHouse,
             sellerFeeBasisPoints = 0,
             requiresSignOff = false,
             states = emptyList(),
             revertableEvents = emptyList(),
             createdAt = Instant.EPOCH,
-            updatedAt = Instant.EPOCH
+            updatedAt = Instant.EPOCH,
+            version = version
         )
     }
 }

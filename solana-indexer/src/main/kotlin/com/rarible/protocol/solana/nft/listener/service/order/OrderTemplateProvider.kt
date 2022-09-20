@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class OrderTemplateProvider : EntityTemplateProvider<OrderId, Order> {
-    override fun getEntityTemplate(id: OrderId, version: Long?): Order = Order.empty()
+    override fun getEntityTemplate(id: OrderId, version: Long?): Order = Order.empty(version)
 }

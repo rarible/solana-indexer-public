@@ -34,13 +34,14 @@ data class Token(
 
         const val COLLECTION = "token"
 
-        fun empty(mint: String): Token = Token(
+        fun empty(mint: String, version: Long? = null): Token = Token(
             mint = mint,
             supply = BigInteger.ZERO,
             revertableEvents = emptyList(),
             decimals = 0,
             createdAt = Instant.EPOCH,
-            updatedAt = Instant.EPOCH
+            updatedAt = Instant.EPOCH,
+            version = version
         )
     }
 }
