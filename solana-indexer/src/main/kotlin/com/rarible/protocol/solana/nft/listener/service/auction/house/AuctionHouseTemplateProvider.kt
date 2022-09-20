@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class AuctionHouseTemplateProvider: EntityTemplateProvider<AuctionHouseId, AuctionHouse> {
-    override fun getEntityTemplate(id: AuctionHouseId): AuctionHouse = AuctionHouse.empty(id)
+    override fun getEntityTemplate(id: AuctionHouseId, version: Long?): AuctionHouse = AuctionHouse.empty(id)
 }

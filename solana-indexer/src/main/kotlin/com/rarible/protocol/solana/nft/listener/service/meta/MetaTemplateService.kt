@@ -7,7 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class MetaTemplateProvider : EntityTemplateProvider<MetaId, MetaplexMeta> {
-    override fun getEntityTemplate(id: MetaId): MetaplexMeta {
-        return MetaplexMeta.empty(id)
-    }
+    override fun getEntityTemplate(id: MetaId, version: Long?): MetaplexMeta = MetaplexMeta.empty(id)
 }

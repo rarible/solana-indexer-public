@@ -2,6 +2,7 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.TokenEvent
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
 import java.time.Instant
@@ -16,7 +17,9 @@ data class Token(
     val decimals: Int,
     override val createdAt: Instant,
     override val updatedAt: Instant,
-    override val revertableEvents: List<TokenEvent>
+    override val revertableEvents: List<TokenEvent>,
+    @Version
+    override val version: Long? = null
 ) : SolanaEntity<TokenId, TokenEvent, Token> {
 
     override val id: TokenId get() = mint

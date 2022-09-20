@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class EscrowTemplateProvider : EntityTemplateProvider<EscrowId, Escrow> {
-    override fun getEntityTemplate(id: EscrowId): Escrow = Escrow.empty()
+    override fun getEntityTemplate(id: EscrowId, version: Long?): Escrow = Escrow.empty()
 }
