@@ -18,23 +18,25 @@ class TokenRepositoryIt : AbstractIntegrationTest() {
     @Test
     fun `save and find by mint`() = runBlocking<Unit> {
         val token = createRandomToken()
-        tokenRepository.save(token)
-        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(token)
+        val expected = tokenRepository.save(token)
+
+        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(expected)
     }
 
     @Test
     fun `save and find by mints`() = runBlocking<Unit> {
         val tokens = (1..3).map { createRandomToken() }.sortedBy { it.id }
-        tokens.asReversed().forEach { tokenRepository.save(it) }
+        val expected = tokens.asReversed().map { tokenRepository.save(it) }.sortedBy { it.id }
 
-        assertThat(tokenRepository.findByMints(tokens.map { it.id }).toList()).isEqualTo(tokens)
+        assertThat(tokenRepository.findByMints(tokens.map { it.id }).toList()).isEqualTo(expected)
     }
 
     @Test
     fun `save with max ULong supply and find by mint`() = runBlocking<Unit> {
         val token = createRandomToken().copy(supply = ULong.MAX_VALUE.toBigInteger())
-        tokenRepository.save(token)
-        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(token)
+        val expected = tokenRepository.save(token)
+
+        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(expected)
     }
 
 }
