@@ -95,8 +95,9 @@ class BalanceRepositoryIt : AbstractIntegrationTest() {
     @Test
     fun `save with max ULong value and find by account`() = runBlocking<Unit> {
         val balance = createRandomBalance().copy(value = ULong.MAX_VALUE.toBigInteger())
-        balanceRepository.save(balance)
-        assertThat(balanceRepository.findByAccount(balance.account)).isEqualTo(balance)
+        val expected = balanceRepository.save(balance)
+
+        assertThat(balanceRepository.findByAccount(balance.account)).isEqualTo(expected)
     }
 
 }

@@ -19,8 +19,9 @@ class MetaplexMetaRepositoryIt : AbstractIntegrationTest() {
     @Test
     fun `save and find by meta address`() = runBlocking<Unit> {
         val metaplexMeta = createRandomMetaplexMeta()
-        metaplexMetaRepository.save(metaplexMeta)
-        assertThat(metaplexMetaRepository.findByMetaAddress(metaplexMeta.metaAddress)).isEqualTo(metaplexMeta)
+        val expected = metaplexMetaRepository.save(metaplexMeta)
+
+        assertThat(metaplexMetaRepository.findByMetaAddress(metaplexMeta.metaAddress)).isEqualTo(expected)
     }
 
     @Test
@@ -30,18 +31,20 @@ class MetaplexMetaRepositoryIt : AbstractIntegrationTest() {
             it.copy(metaFields = it.metaFields.copy(collection = metaplexMeta.metaFields.collection))
         }
         val metaplexMeta3 = createRandomMetaplexMeta()
-        metaplexMetaRepository.save(metaplexMeta)
-        metaplexMetaRepository.save(metaplexMeta2)
+        val expected = listOf(metaplexMetaRepository.save(metaplexMeta), metaplexMetaRepository.save(metaplexMeta2))
         metaplexMetaRepository.save(metaplexMeta3)
-        assertThat(metaplexMetaRepository.findByCollectionAddress(metaplexMeta.metaFields.collection!!.address).toList())
-            .isEqualTo(listOf(metaplexMeta, metaplexMeta2).sortedBy { it.tokenAddress })
+        val collectionAddress = metaplexMeta.metaFields.collection!!.address
+
+        assertThat(metaplexMetaRepository.findByCollectionAddress(collectionAddress).toList())
+            .isEqualTo(expected.sortedBy { it.tokenAddress })
     }
 
     @Test
     fun `save and find by token address`() = runBlocking<Unit> {
         val metaplexMeta = createRandomMetaplexMeta()
-        metaplexMetaRepository.save(metaplexMeta)
-        assertThat(metaplexMetaRepository.findByTokenAddress(metaplexMeta.tokenAddress)).isEqualTo(metaplexMeta)
+        val expected = metaplexMetaRepository.save(metaplexMeta)
+
+        assertThat(metaplexMetaRepository.findByTokenAddress(metaplexMeta.tokenAddress)).isEqualTo(expected)
     }
 
     @Test
