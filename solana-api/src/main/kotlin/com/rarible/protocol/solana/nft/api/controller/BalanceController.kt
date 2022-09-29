@@ -7,9 +7,13 @@ import com.rarible.protocol.solana.common.continuation.Paging
 import com.rarible.protocol.solana.common.converter.BalanceWithMetaConverter
 import com.rarible.protocol.solana.common.model.BalanceWithMeta
 import com.rarible.protocol.solana.dto.BalanceDto
+import com.rarible.protocol.solana.dto.BalanceIdsDto
 import com.rarible.protocol.solana.dto.BalancesDto
 import com.rarible.protocol.solana.nft.api.service.BalanceApiService
 import com.rarible.protocol.union.dto.continuation.page.PageSize
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import org.springframework.http.ResponseEntity
@@ -40,6 +44,7 @@ class BalanceController(
         val dto = toSlice(balances, safeSize)
         return ResponseEntity.ok(dto)
     }
+
     override suspend fun getBalancesAll(
         continuation: String?,
         size: Int?,
@@ -64,6 +69,29 @@ class BalanceController(
             mint = mint,
             owner = owner
         ).map { BalanceWithMetaConverter.convert(it) }.toList()
+        return ResponseEntity.ok(BalancesDto(balances, null))
+    }
+
+    override suspend fun getBalanceByMintAndOwnerBatch(balanceIdsDto: BalanceIdsDto): ResponseEntity<BalancesDto> {
+        val mintOwnerList = balanceIdsDto.ids.map {
+            val parts = it.split(":")
+
+            if (parts.size != 2) return ResponseEntity.badRequest().build()
+
+            parts[0] to parts[1]
+        }
+
+        val balances = coroutineScope {
+            mintOwnerList.map { (mint, owner) ->
+                async {
+                    balanceApiService.getBalancesByMintAndOwner(
+                        mint = mint,
+                        owner = owner
+                    ).map { BalanceWithMetaConverter.convert(it) }.toList()
+                }
+            }.awaitAll().flatten()
+        }
+
         return ResponseEntity.ok(BalancesDto(balances, null))
     }
 
