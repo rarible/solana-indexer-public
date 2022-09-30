@@ -18,8 +18,9 @@ class TokenUpdateServiceIt : EventAwareBlockScannerTest() {
     @Test
     fun `new token inserted`() = runBlocking<Unit> {
         val token = createRandomToken()
+
         tokenUpdateService.update(token)
-        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(token)
+        assertThat(tokenRepository.findByMint(token.mint)).isEqualTo(token.copy(version = 0))
         assertTokenMetaUpdatedEvent(token.mint, null, null)
     }
 

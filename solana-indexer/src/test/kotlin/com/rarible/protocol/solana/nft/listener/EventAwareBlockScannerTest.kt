@@ -135,6 +135,7 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
             .copy(createdAt = Instant.EPOCH)
             .copy(updatedAt = Instant.EPOCH)
             .copy(revertableEvents = emptyList())
+            .copy(version = 0)
         Assertions.assertThat(actualToken?.ignore()).isEqualTo(expectedToken.ignore())
 
         Assertions.assertThat(actualToken?.createdAt).isNotEqualTo(Instant.EPOCH)
@@ -168,6 +169,7 @@ abstract class EventAwareBlockScannerTest : AbstractBlockScannerTest() {
             .copy(updatedAt = Instant.EPOCH)
             .copy(lastEvent = null)
             .copy(revertableEvents = emptyList())
+            .copy(version = 0)
         Assertions.assertThat(actualBalance?.ignore()).isEqualTo(expectedBalance.ignore())
 
         // TODO: consider comparing these fields (get from the blockchain)?

@@ -234,7 +234,7 @@ class OrderUpdateServiceIt : AbstractBlockScannerTest() {
 
     private fun assertOrdersEqual(expected: Order, actual: Order) {
         assertThat(expected)
-            .usingRecursiveComparison().ignoringFields(Order::dbUpdatedAt.name)
+            .usingRecursiveComparison().ignoringFields(Order::dbUpdatedAt.name, Order::version.name)
             .isEqualTo(actual)
     }
 
