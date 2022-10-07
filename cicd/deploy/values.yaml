@@ -1,11 +1,10 @@
 solana-indexer:
   image:
     repository: solana-indexer-solana-indexer
-  blockchain: solana
   environments:
-    APPLICATION_ENVIRONMENT: '{{ include "service.env" $ }}'
-    CONSUL_ROOT_PATH: '{{ include "service.env" $ }}/protocol/{{ .Values.blockchain }}/nft'
-    SPRING_PROFILES_ACTIVE: '{{ .Values.blockchain }},consul,{{ include "service.env" $ }},{{ .Values.blockchain }}-{{ include "service.env" $ }}'
+    APPLICATION_ENVIRONMENT: '{{ include "app.env" $ }}'
+    CONSUL_ROOT_PATH: '{{ include "app.env" $ }}/protocol/solana/nft'
+    SPRING_PROFILES_ACTIVE: 'solana,consul,{{ include "app.env" $ }},solana-{{ include "app.env" $ }}'
     JAVA_OPTIONS: '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'
   nodeSelector:
     node.labels.rarible.job: true
@@ -13,8 +12,8 @@ solana-indexer:
     order: stop-first
   resources:
     jvm:
-      xmx_megabytes: 4096
-      max_direct_memory_megabytes: 1524
+      xmx_megabytes: 2048
+      max_direct_memory_megabytes: 512
   livenessProbe:
     initialDelaySeconds: 180
   podAnnotations:
@@ -23,13 +22,12 @@ solana-indexer:
 solana-api:
   image:
     repository: solana-indexer-solana-api
-  blockchain: solana
   service:
     enabled: true
   environments:
-    APPLICATION_ENVIRONMENT: '{{ include "service.env" $ }}'
-    CONSUL_ROOT_PATH: '{{ include "service.env" $ }}/protocol/{{ .Values.blockchain }}/nft'
-    SPRING_PROFILES_ACTIVE: '{{ .Values.blockchain }},consul,{{ include "service.env" $ }},{{ .Values.blockchain }}-{{ include "service.env" $ }}'
+    APPLICATION_ENVIRONMENT: '{{ include "app.env" $ }}'
+    CONSUL_ROOT_PATH: '{{ include "app.env" $ }}/protocol/solana/nft'
+    SPRING_PROFILES_ACTIVE: 'solana,consul,{{ include "app.env" $ }},solana-{{ include "app.env" $ }}'
     JAVA_OPTIONS: '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000'
   nodeSelector:
     node.labels.rarible.job: true
@@ -45,13 +43,10 @@ solana-api:
 solana-migration:
   image:
     repository: solana-indexer-solana-migration
-  blockchain: solana
-  service:
-    enabled: true
   environments:
-    APPLICATION_ENVIRONMENT: '{{ include "service.env" $ }}'
-    CONSUL_ROOT_PATH: '{{ include "service.env" $ }}/protocol/{{ .Values.blockchain }}/nft'
-    SPRING_PROFILES_ACTIVE: '{{ .Values.blockchain }},consul,{{ include "service.env" $ }},{{ .Values.blockchain }}-{{ include "service.env" $ }}'
+    APPLICATION_ENVIRONMENT: '{{ include "app.env" $ }}'
+    CONSUL_ROOT_PATH: '{{ include "app.env" $ }}/protocol/solana/nft'
+    SPRING_PROFILES_ACTIVE: 'solana,consul,{{ include "app.env" $ }},solana-{{ include "app.env" $ }}'
   nodeSelector:
     node.labels.rarible.job: true
   restartPolicy:

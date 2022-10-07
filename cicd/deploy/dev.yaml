@@ -1,12 +1,3 @@
-global:
-  network: ropsten
-
 solana-api:
   service:
     nodePort: 30328
-
-solana-indexer:
-  resources:
-    jvm:
-      xmx_megabytes: 3072
-      max_direct_memory_megabytes: 512
