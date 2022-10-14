@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.BalanceEvent
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
 import java.time.Instant
@@ -20,7 +19,6 @@ data class Balance(
     override val createdAt: Instant,
     override val updatedAt: Instant,
     override val revertableEvents: List<BalanceEvent>,
-    @Version
     override val version: Long? = null
 ) : SolanaEntity<BalanceId, BalanceEvent, Balance> {
 

@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.MetaplexMetaEvent
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
@@ -18,7 +17,6 @@ data class MetaplexMeta(
     override val createdAt: Instant?,
     override val updatedAt: Instant,
     override val revertableEvents: List<MetaplexMetaEvent>,
-    @Version
     override val version: Long? = null
 ) : SolanaEntity<MetaId, MetaplexMetaEvent, MetaplexMeta> {
 

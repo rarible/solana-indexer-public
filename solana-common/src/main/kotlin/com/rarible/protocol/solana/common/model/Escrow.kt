@@ -2,7 +2,6 @@ package com.rarible.protocol.solana.common.model
 
 import com.rarible.protocol.solana.common.event.EscrowEvent
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigInteger
 import java.time.Instant
@@ -21,7 +20,6 @@ data class Escrow(
     override val revertableEvents: List<EscrowEvent>,
     override val createdAt: Instant?,
     override val updatedAt: Instant,
-    @Version
     override val version: Long? = null
 ) : SolanaEntity<EscrowId, EscrowEvent, Escrow> {
     override val id: EscrowId get() = account

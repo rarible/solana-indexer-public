@@ -5,7 +5,6 @@ import com.rarible.protocol.solana.common.event.OrderEvent
 import com.rarible.protocol.solana.common.hash.Hash
 import com.rarible.protocol.solana.common.records.OrderDirection
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.Version
 import org.springframework.data.mongodb.core.mapping.Document
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -55,7 +54,6 @@ data class Order(
         direction = direction,
         auctionHouse = auctionHouse
     ),
-    @Version
     override val version: Long? = null
 ) : SolanaEntity<OrderId, OrderEvent, Order> {
 
