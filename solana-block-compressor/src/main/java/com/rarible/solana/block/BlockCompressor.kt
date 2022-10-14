@@ -35,6 +35,7 @@ class BlockCompressor(
             transactionDto.copy(
                 meta = SolanaTransactionDto.Meta(
                     err = transactionDto.meta?.err?.let { true },
+                    loadedAddresses = transactionDto.meta?.loadedAddresses,
                     innerInstructions = newInnerInstructions ?: emptyList()
                 ),
                 transaction = if (newInstructions.all { it == null }) {

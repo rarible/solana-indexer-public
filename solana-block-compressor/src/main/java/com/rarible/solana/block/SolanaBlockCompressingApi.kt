@@ -2,7 +2,6 @@ package com.rarible.solana.block
 
 import com.rarible.blockchain.scanner.solana.client.SolanaApi
 import com.rarible.blockchain.scanner.solana.client.SolanaHttpRpcApi
-import com.rarible.blockchain.scanner.solana.client.dto.AccountInfo
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
@@ -17,8 +16,6 @@ class SolanaBlockCompressingApi(
     private val httpApi: SolanaHttpRpcApi,
     private val blockCompressor: BlockCompressor
 ) : SolanaApi {
-
-    override suspend fun getAccountInfo(account: String): ApiResponse<AccountInfo> = httpApi.getAccountInfo(account)
 
     override suspend fun getBlock(
         slot: Long,
