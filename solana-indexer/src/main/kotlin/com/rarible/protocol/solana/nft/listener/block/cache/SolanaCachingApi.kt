@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rarible.blockchain.scanner.solana.client.SolanaApi
+import com.rarible.blockchain.scanner.solana.client.dto.AccountInfo
 import com.rarible.blockchain.scanner.solana.client.dto.ApiResponse
 import com.rarible.blockchain.scanner.solana.client.dto.GetBlockRequest
 import com.rarible.blockchain.scanner.solana.client.dto.SolanaBlockDto
@@ -37,6 +38,8 @@ class SolanaCachingApi(
 
     private var lastKnownBlock: Long = 0
     private var lastKnownBlockUpdated: Instant = Instant.EPOCH
+
+    override suspend fun getAccountInfo(account: String): ApiResponse<AccountInfo> = delegate.getAccountInfo(account)
 
     override suspend fun getBlock(
         slot: Long,

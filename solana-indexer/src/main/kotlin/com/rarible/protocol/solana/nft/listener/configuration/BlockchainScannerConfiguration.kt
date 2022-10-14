@@ -49,7 +49,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
-import org.springframework.core.env.Environment
 
 @Configuration
 @EnableSolanaScanner
@@ -81,11 +80,11 @@ class BlockchainScannerConfiguration(
     }
 
     @Bean
-    fun blockCompressor(environment: Environment): BlockCompressor {
+    fun blockCompressor(): BlockCompressor {
         val solanaProgramIdsToKeep = solanaIndexerProperties.featureFlags.blockCompressorProgramIdsToKeep
             .takeIf { it.isNotEmpty() } ?: BlockCompressor.DEFAULT_COMPRESSOR_PROGRAM_IDS
         logger.info("Solana blocks will be compressed by keeping only the following programs: $solanaProgramIdsToKeep")
-        return BlockCompressor(environment.activeProfiles.toList(), solanaProgramIdsToKeep)
+        return BlockCompressor(solanaProgramIdsToKeep)
     }
 
     @Bean
