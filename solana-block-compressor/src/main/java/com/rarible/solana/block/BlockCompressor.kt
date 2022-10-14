@@ -21,7 +21,8 @@ class BlockCompressor(
         val block = response.result!!
         val newTransactions = block.transactions.map { transactionDto ->
             val transaction = transactionDto.transaction ?: return@map transactionDto
-            val accountKeys = transaction.message.accountKeys
+            val accountKeys = transaction.message.accountKeys +
+                    (transactionDto.meta?.loadedAddresses?.let { it.writable + it.readonly } ?: emptyList())
             val newInstructions = transaction.message.instructions.map {
                 it?.isOk(accountKeys[it.programIdIndex])
             }
