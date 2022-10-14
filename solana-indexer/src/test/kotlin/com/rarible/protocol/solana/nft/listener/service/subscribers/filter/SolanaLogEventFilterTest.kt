@@ -199,7 +199,7 @@ class SolanaLogEventFilterTest {
                 collection = SubscriberGroup.TOKEN.collectionName
             ) {},
             logRecordsToInsert = records.toList(),
-            logRecordsToRemove = emptyList()
+            logRecordsToUpdate = emptyList()
         )
     }
 
