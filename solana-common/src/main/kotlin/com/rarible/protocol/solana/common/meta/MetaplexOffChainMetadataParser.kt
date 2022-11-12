@@ -9,6 +9,7 @@ import com.rarible.protocol.solana.common.model.MetaplexTokenCreator
 object MetaplexOffChainMetadataParser {
 
     private val jacksonMapper = jacksonObjectMapper()
+    private const val DAPE_CREATOR = "DC2mkgwhy56w3viNtHDjJQmc7SGu2QX785bS4aexojwX"
 
     fun parseMetaplexOffChainMetaFields(
         offChainMetadataJsonContent: String,
@@ -88,16 +89,28 @@ object MetaplexOffChainMetadataParser {
                 val collectionAttribute = attributes?.find { it.trait_type == "Collection" }?.value
 
                 if (collectionAttribute != null) {
-                    MetaplexOffChainMetaFields.Collection(
-                        name = collectionAttribute,
-                        family = null,
-                        hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                    if (metaplexMetaFields.symbol == "DAPE" && metaplexMetaFields.creators.none { it.address == DAPE_CREATOR }) {
+                        MetaplexOffChainMetaFields.Collection(
                             name = collectionAttribute,
                             family = null,
-                            // For such non-standard collections, the creators will probably diverge, too, so we don't count them.
-                            creators = emptyList()
+                            hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                                name = collectionAttribute,
+                                family = null,
+                                creators = metaplexMetaFields.creators.map { it.address }
+                            )
                         )
-                    )
+                    } else {
+                        MetaplexOffChainMetaFields.Collection(
+                            name = collectionAttribute,
+                            family = null,
+                            hash = MetaplexOffChainCollectionHash.calculateCollectionHash(
+                                name = collectionAttribute,
+                                family = null,
+                                // For such non-standard collections, the creators will probably diverge, too, so we don't count them.
+                                creators = emptyList()
+                            )
+                        )
+                    }
                 } else {
                     null
                 }
