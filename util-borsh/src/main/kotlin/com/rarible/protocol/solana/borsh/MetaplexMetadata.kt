@@ -2,7 +2,7 @@ package com.rarible.protocol.solana.borsh
 
 object MetaplexMetadata {
     enum class DataVersion {
-        V1, V2
+        V1, V2, V3
     }
 
     data class Creator(

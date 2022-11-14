@@ -49,7 +49,7 @@ private fun ByteBuffer.readData(
     }
 
     // If necessary, add Uses to the model here.
-    if (version == MetaplexMetadata.DataVersion.V2) {
+    if (version != MetaplexMetadata.DataVersion.V1) {
         // Skip the Uses struct (17 bytes).
         readNullable { repeat(17) { get() } }
     }
@@ -111,6 +111,7 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
         25 -> SetAndVerifyCollection
         26 -> null // FreezeDelegatedAccount,
         27 -> null // ThawDelegatedAccount
+        33 -> buffer.parseMetaplexCreateMetadataAccountInstruction(MetaplexMetadata.DataVersion.V3)
         else -> null
     }
 }
