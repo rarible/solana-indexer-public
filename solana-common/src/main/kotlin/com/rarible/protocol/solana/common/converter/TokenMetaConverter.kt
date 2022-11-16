@@ -17,7 +17,8 @@ object TokenMetaConverter {
             description = tokenMeta.description,
             attributes = tokenMeta.attributes.orEmpty().map { it.convert() },
             content = tokenMeta.contents.map { it.convert() },
-            creators = tokenMeta.creators.map { convert(it) }
+            creators = tokenMeta.creators.map { convert(it) },
+            status = TokenMetaDto.Status.OK
         )
 
     private fun TokenMeta.Content.convert(): TokenMetaContentDto =

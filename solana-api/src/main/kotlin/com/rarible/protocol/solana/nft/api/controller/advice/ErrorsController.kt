@@ -6,7 +6,7 @@ import com.rarible.protocol.solana.common.meta.MetaUnparseableJsonException
 import com.rarible.protocol.solana.common.meta.MetaUnparseableLinkException
 import com.rarible.protocol.solana.dto.SolanaApiErrorBadRequestDto
 import com.rarible.protocol.solana.dto.SolanaApiErrorServerErrorDto
-import com.rarible.protocol.solana.dto.SolanaApiMetaErrorDto
+import com.rarible.protocol.solana.dto.TokenMetaDto
 import com.rarible.protocol.solana.nft.api.controller.TokenController
 import com.rarible.protocol.solana.nft.api.exceptions.NftIndexerApiException
 import kotlinx.coroutines.reactor.mono
@@ -45,22 +45,22 @@ class ErrorsController {
     }
 
     @ExceptionHandler(MetaException::class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.OK)
     fun handlerMetaException(ex: MetaException) = mono {
         when (ex) {
-            is MetaUnparseableJsonException -> SolanaApiMetaErrorDto(
-                code = SolanaApiMetaErrorDto.Code.UNPARSEABLE_JSON,
-                message = ex.message
+            is MetaUnparseableJsonException -> TokenMetaDto(
+                name = "",
+                status = TokenMetaDto.Status.UNPARSEABLE_JSON
             )
 
-            is MetaTimeoutException -> SolanaApiMetaErrorDto(
-                code = SolanaApiMetaErrorDto.Code.TIMEOUT,
-                message = ex.message
+            is MetaTimeoutException -> TokenMetaDto(
+                name = "",
+                status = TokenMetaDto.Status.TIMEOUT
             )
 
-            is MetaUnparseableLinkException -> SolanaApiMetaErrorDto(
-                code = SolanaApiMetaErrorDto.Code.UNPARSEABLE_LINK,
-                message = ex.message
+            is MetaUnparseableLinkException -> TokenMetaDto(
+                name = "",
+                status = TokenMetaDto.Status.UNPARSEABLE_LINK
             )
         }
     }
