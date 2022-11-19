@@ -88,7 +88,7 @@ class MetaplexOffChainMetaLoader(
             if (e.statusCode.is4xxClientError) {
                 val message = "Metadata for token $tokenAddress by URL $metadataUrl not found"
 
-                logger.error(message, e)
+                logger.warn(message, e)
                 metaMetrics.onMetaLoadingError()
 
                 return null
