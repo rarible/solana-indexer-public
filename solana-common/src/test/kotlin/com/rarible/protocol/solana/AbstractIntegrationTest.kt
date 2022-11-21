@@ -22,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration
         "spring.cloud.consul.config.enabled = false",
         "spring.cloud.service-registry.auto-registration.enabled = false",
         "spring.cloud.discovery.enabled = false",
+        "logging.logjson.enabled = false",
         "logging.logstash.tcp-socket.enabled = false"
     ]
 )

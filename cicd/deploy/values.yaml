@@ -16,8 +16,6 @@ solana-indexer:
       max_direct_memory_megabytes: 512
   livenessProbe:
     initialDelaySeconds: 180
-  podAnnotations:
-    fluentbit.io/parser: logfmt
 
 solana-api:
   image:
@@ -37,8 +35,6 @@ solana-api:
       max_direct_memory_megabytes: 32
   livenessProbe:
     initialDelaySeconds: 180
-  podAnnotations:
-    fluentbit.io/parser: logfmt
 
 solana-migration:
   image:
@@ -57,5 +53,3 @@ solana-migration:
       max_direct_memory_megabytes: 32
   livenessProbe:
     initialDelaySeconds: 180
-  podAnnotations:
-    fluentbit.io/parser: logfmt
