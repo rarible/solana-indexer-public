@@ -11,7 +11,7 @@ private fun ByteBuffer.parseUpdateMetadataAccountInstruction(
     val data = readNullable { readData(version) }
     val updateAuthority = readNullable { readPubkey() }
     val primarySaleHappened = readNullable { readBoolean() }
-    val mutable = if (version == MetaplexMetadata.DataVersion.V2) {
+    val mutable = if (version > MetaplexMetadata.DataVersion.V1) {
         readNullable { readBoolean() }
     } else {
         null
@@ -42,14 +42,14 @@ private fun ByteBuffer.readData(
     val uri = readString()
     val sellerFeeBasisPoints = getShort()
     val creators = readNullable { List(getInt()) { readCreator() } }
-    val collection = if (version == MetaplexMetadata.DataVersion.V2) {
+    val collection = if (version > MetaplexMetadata.DataVersion.V1) {
         readNullable { readCollection() }
     } else {
         null
     }
 
     // If necessary, add Uses to the model here.
-    if (version != MetaplexMetadata.DataVersion.V1) {
+    if (version > MetaplexMetadata.DataVersion.V1) {
         // Skip the Uses struct (17 bytes).
         readNullable { repeat(17) { get() } }
     }
@@ -111,6 +111,9 @@ fun String.parseMetaplexMetadataInstruction(): MetaplexMetadataInstruction? {
         25 -> SetAndVerifyCollection
         26 -> null // FreezeDelegatedAccount,
         27 -> null // ThawDelegatedAccount
+        30 -> VerifySizedCollection
+        31 -> UnVerifySizedCollection
+        32 -> SetAndVerifySizedCollection
         33 -> buffer.parseMetaplexCreateMetadataAccountInstruction(MetaplexMetadata.DataVersion.V3)
         else -> null
     }
@@ -127,9 +130,9 @@ data class MetaplexUpdateMetadataAccount(
 ) : MetaplexMetadataInstruction()
 
 object SignMetadata : MetaplexMetadataInstruction()
-
 object SetAndVerifyCollection : MetaplexMetadataInstruction()
-
+object SetAndVerifySizedCollection : MetaplexMetadataInstruction()
 object VerifyCollection : MetaplexMetadataInstruction()
-
+object VerifySizedCollection : MetaplexMetadataInstruction()
 object UnVerifyCollection : MetaplexMetadataInstruction()
+object UnVerifySizedCollection : MetaplexMetadataInstruction()

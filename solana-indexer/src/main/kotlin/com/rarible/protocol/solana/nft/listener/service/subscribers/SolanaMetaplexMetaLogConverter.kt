@@ -61,6 +61,17 @@ object SolanaMetaplexMetaLogConverter {
     ): MetaplexUnVerifyCollectionRecord = MetaplexUnVerifyCollectionRecord(
         metaAccount = log.instruction.accounts[0],
         mint = "", // Will be set in the SolanaRecordsLogEventFilter.
+        unVerifyCollectionAccount = log.instruction.accounts[3],
+        log = log.log,
+        timestamp = Instant.ofEpochSecond(dateSeconds)
+    )
+
+    fun convertUnVerifySizedCollection(
+        log: SolanaBlockchainLog,
+        dateSeconds: Long
+    ): MetaplexUnVerifyCollectionRecord = MetaplexUnVerifyCollectionRecord(
+        metaAccount = log.instruction.accounts[0],
+        mint = "", // Will be set in the SolanaRecordsLogEventFilter.
         unVerifyCollectionAccount = log.instruction.accounts[4],
         log = log.log,
         timestamp = Instant.ofEpochSecond(dateSeconds)

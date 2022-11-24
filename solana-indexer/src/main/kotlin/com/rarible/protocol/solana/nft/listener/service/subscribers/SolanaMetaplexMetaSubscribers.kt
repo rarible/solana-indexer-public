@@ -7,9 +7,12 @@ import com.rarible.blockchain.scanner.solana.subscriber.SolanaLogEventSubscriber
 import com.rarible.protocol.solana.borsh.MetaplexCreateMetadataAccount
 import com.rarible.protocol.solana.borsh.MetaplexUpdateMetadataAccount
 import com.rarible.protocol.solana.borsh.SetAndVerifyCollection
+import com.rarible.protocol.solana.borsh.SetAndVerifySizedCollection
 import com.rarible.protocol.solana.borsh.SignMetadata
 import com.rarible.protocol.solana.borsh.UnVerifyCollection
+import com.rarible.protocol.solana.borsh.UnVerifySizedCollection
 import com.rarible.protocol.solana.borsh.VerifyCollection
+import com.rarible.protocol.solana.borsh.VerifySizedCollection
 import com.rarible.protocol.solana.borsh.parseMetaplexMetadataInstruction
 import com.rarible.protocol.solana.common.pubkey.SolanaProgramId
 import com.rarible.protocol.solana.common.records.SolanaMetaRecord.MetaplexCreateMetadataAccountRecord
@@ -89,13 +92,16 @@ class VerifyCollectionSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<MetaplexVerifyCollectionRecord> {
-        if (log.instruction.data.parseMetaplexMetadataInstruction() !is VerifyCollection) return emptyList()
+        return when (log.instruction.data.parseMetaplexMetadataInstruction()) {
+            VerifyCollection, VerifySizedCollection -> listOf(
+                SolanaMetaplexMetaLogConverter.convertVerifyCollection(
+                    log,
+                    block.timestamp
+                )
+            )
 
-        val record = SolanaMetaplexMetaLogConverter.convertVerifyCollection(
-            log,
-            block.timestamp
-        )
-        return listOf(record)
+            else -> emptyList()
+        }
     }
 }
 
@@ -113,13 +119,21 @@ class UnVerifyCollectionSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<MetaplexUnVerifyCollectionRecord> {
-        if (log.instruction.data.parseMetaplexMetadataInstruction() !is UnVerifyCollection) return emptyList()
-
-        val record = SolanaMetaplexMetaLogConverter.convertUnVerifyCollection(
-            log,
-            block.timestamp
-        )
-        return listOf(record)
+        return when (log.instruction.data.parseMetaplexMetadataInstruction()) {
+            UnVerifyCollection -> listOf(
+                SolanaMetaplexMetaLogConverter.convertUnVerifyCollection(
+                    log,
+                    block.timestamp
+                )
+            )
+            UnVerifySizedCollection -> listOf(
+                SolanaMetaplexMetaLogConverter.convertUnVerifySizedCollection(
+                    log,
+                    block.timestamp
+                )
+            )
+            else -> emptyList()
+        }
     }
 }
 
@@ -162,13 +176,14 @@ class SetAndVerifyMetadataSubscriber : SolanaLogEventSubscriber {
         block: SolanaBlockchainBlock,
         log: SolanaBlockchainLog
     ): List<SetAndVerifyMetadataRecord> {
-        if (log.instruction.data.parseMetaplexMetadataInstruction() !is SetAndVerifyCollection) return emptyList()
-
-        val record = SolanaMetaplexMetaLogConverter.convertSetAndVerifyMetadata(
-            log,
-            block.timestamp
-        )
-
-        return listOf(record)
+        return when (log.instruction.data.parseMetaplexMetadataInstruction()) {
+            SetAndVerifyCollection, SetAndVerifySizedCollection -> listOf(
+                SolanaMetaplexMetaLogConverter.convertSetAndVerifyMetadata(
+                    log,
+                    block.timestamp
+                )
+            )
+            else -> emptyList()
+        }
     }
 }
