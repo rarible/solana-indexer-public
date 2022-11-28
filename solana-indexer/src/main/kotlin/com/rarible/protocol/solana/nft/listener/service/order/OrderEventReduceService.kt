@@ -3,6 +3,7 @@ package com.rarible.protocol.solana.nft.listener.service.order
 import com.rarible.core.application.ApplicationEnvironmentInfo
 import com.rarible.core.entity.reducer.service.EventReduceService
 import com.rarible.protocol.solana.common.converter.SolanaAuctionHouseOrderActivityConverter
+import com.rarible.protocol.solana.common.filter.auctionHouse.SolanaAuctionHouseFilter
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord
 import com.rarible.protocol.solana.common.records.SolanaAuctionHouseOrderRecord.CancelRecord
 import com.rarible.protocol.solana.common.records.SubscriberGroup
@@ -23,7 +24,8 @@ class OrderEventReduceService(
     val converter: OrderEventConverter,
     private val orderActivityConverter: SolanaAuctionHouseOrderActivityConverter,
     private val activityEventListener: ActivityEventListener,
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val auctionHouseFilter: SolanaAuctionHouseFilter
 ) : LogRecordEventListener {
     private val delegate = EventReduceService(entityService, entityIdService, templateProvider, reducer)
 
@@ -63,10 +65,16 @@ class OrderEventReduceService(
             if (it.record is CancelRecord && orderRepository.findById(it.record.orderId) == null) {
                 null
             } else {
-                orderActivityConverter.convert(
-                    it.record as SolanaAuctionHouseOrderRecord,
-                    it.reversed
-                )
+                val auctionHouseOrderRecord = it.record as SolanaAuctionHouseOrderRecord
+
+                if (auctionHouseFilter.isAcceptableAuctionHouse(auctionHouseOrderRecord.auctionHouse)) {
+                    orderActivityConverter.convert(
+                        auctionHouseOrderRecord,
+                        it.reversed
+                    )
+                } else {
+                    null
+                }
             }
         }
         activityEventListener.onActivities(activitiesDto)
