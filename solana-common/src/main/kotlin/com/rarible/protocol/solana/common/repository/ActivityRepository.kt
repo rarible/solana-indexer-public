@@ -10,7 +10,8 @@ import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.dto.SyncTypeDto
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
@@ -122,10 +123,15 @@ class ActivityRepository(
         size: Int,
         sortAscending: Boolean
     ): Flow<ActivityDto> {
-        val startFlow = findAllActivitiesSync(start = true, type, continuation, size, sortAscending)
-        val subsequentFlow = findAllActivitiesSync(start = false, type, continuation, size, sortAscending)
+        return if (continuation != null) {
+            val startFlow = findAllActivitiesSync(start = true, type, continuation, size, sortAscending)
+            val subsequentFlow = findAllActivitiesSync(start = false, type, continuation, size, sortAscending)
 
-        return listOf(startFlow, subsequentFlow).merge().take(size)
+            flowOf(startFlow, subsequentFlow).flattenConcat().take(size)
+        } else {
+            findAllActivitiesSync(start = true, type, continuation = null, size, sortAscending)
+        }
+
     }
 
     fun findAllActivities(

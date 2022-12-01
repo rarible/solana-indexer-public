@@ -1,10 +1,13 @@
 package com.rarible.protocol.solana.repository
 
 import com.rarible.protocol.solana.AbstractIntegrationTest
+import com.rarible.protocol.solana.common.continuation.ActivityContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
 import com.rarible.protocol.solana.common.repository.ActivityRepository
+import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.dto.SolanaNftAssetTypeDto
+import com.rarible.protocol.solana.dto.SyncTypeDto
 import com.rarible.protocol.solana.test.randomAssetNft
 import com.rarible.protocol.solana.test.randomBid
 import com.rarible.protocol.solana.test.randomBurn
@@ -48,6 +51,40 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
             assertTrue(activityRepository.removeById(dto.id))
             assertNull(activityRepository.findById(dto.id))
         }
+    }
+
+    @Test
+    fun findAllActivitiesSync() = runBlocking<Unit> {
+        val orderComparator = compareBy<ActivityDto>({ it.dbUpdatedAt }, { it.id })
+        val data = eachActivitiesByOne()
+        data.values.forEach { activityRepository.save(it) }
+
+        val activitiesWithoutContinuation = activityRepository.findAllActivitiesSync(
+            type = SyncTypeDto.ORDER,
+            continuation = null,
+            Int.MAX_VALUE,
+            true
+        ).toList()
+
+        assertThat(activitiesWithoutContinuation.size).isEqualTo(5)
+        assertThat(activitiesWithoutContinuation).isSortedAccordingTo(orderComparator)
+
+        val firstPart = activityRepository.findAllActivitiesSync(
+            type = SyncTypeDto.ORDER,
+            continuation = null,
+            1,
+            true
+        ).toList()
+        val secondPart = activityRepository.findAllActivitiesSync(
+            type = SyncTypeDto.ORDER,
+            continuation = ActivityContinuation.ByDbUpdatedAndId(true).getContinuation(firstPart.last()),
+            Int.MAX_VALUE,
+            true
+        ).toList()
+        val allActivities = firstPart + secondPart
+
+        assertThat(allActivities.size).isEqualTo(5)
+        assertThat(allActivities).isSortedAccordingTo(orderComparator)
     }
 
     @Test
