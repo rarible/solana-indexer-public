@@ -10,6 +10,9 @@ import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
 import com.rarible.protocol.solana.dto.SyncTypeDto
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirst
@@ -95,7 +98,8 @@ class ActivityRepository(
             .map { it.toDto() }.asFlow()
     }
 
-    fun findAllActivitiesSync(
+    private fun findAllActivitiesSync(
+        start: Boolean,
         type: SyncTypeDto?,
         continuation: DateIdContinuation?,
         size: Int,
@@ -103,7 +107,7 @@ class ActivityRepository(
     ): Flow<ActivityDto> {
         val criteria = Criteria()
             .addSyncFilter(type)
-            .addSyncContinuation(continuation, sortAscending)
+            .addSyncContinuation(start, continuation, sortAscending)
 
         val query = Query(criteria)
             .with(Sort.by(ActivityRecord::dbUpdatedAt.name).direction(sortAscending))
@@ -111,6 +115,23 @@ class ActivityRepository(
 
         return mongo.find(query, ActivityRecord::class.java, COLLECTION)
             .map { it.toDto() }.asFlow()
+    }
+
+    fun findAllActivitiesSync(
+        type: SyncTypeDto?,
+        continuation: DateIdContinuation?,
+        size: Int,
+        sortAscending: Boolean
+    ): Flow<ActivityDto> {
+        return if (continuation != null) {
+            val startFlow = findAllActivitiesSync(start = true, type, continuation, size, sortAscending)
+            val subsequentFlow = findAllActivitiesSync(start = false, type, continuation, size, sortAscending)
+
+            flowOf(startFlow, subsequentFlow).flattenConcat().take(size)
+        } else {
+            findAllActivitiesSync(start = true, type, continuation = null, size, sortAscending)
+        }
+
     }
 
     fun findAllActivities(
@@ -179,19 +200,22 @@ class ActivityRepository(
     }
 
     private fun Criteria.addSyncContinuation(
+        start: Boolean,
         continuation: DateIdContinuation?,
         sortAscending: Boolean
     ) = continuation?.let {
         if (sortAscending) {
-            orOperator(
-                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").gt(continuation.id),
+            if (start) {
+                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").gt(continuation.id)
+            } else {
                 Criteria(ActivityRecord::dbUpdatedAt.name).gt(continuation.date)
-            )
+            }
         } else {
-            orOperator(
-                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id),
+            if (start) {
+                Criteria(ActivityRecord::dbUpdatedAt.name).isEqualTo(continuation.date).and("_id").lt(continuation.id)
+            } else {
                 Criteria(ActivityRecord::dbUpdatedAt.name).lt(continuation.date)
-            )
+            }
         }
     } ?: this
 
