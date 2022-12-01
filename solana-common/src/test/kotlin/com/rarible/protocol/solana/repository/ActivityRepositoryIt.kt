@@ -1,8 +1,13 @@
 package com.rarible.protocol.solana.repository
 
+import com.rarible.core.common.nowMillis
 import com.rarible.protocol.solana.AbstractIntegrationTest
 import com.rarible.protocol.solana.common.continuation.ActivityContinuation
 import com.rarible.protocol.solana.common.continuation.IdContinuation
+import com.rarible.protocol.solana.common.model.ActivityRecord
+import com.rarible.protocol.solana.common.model.BurnActivityRecord
+import com.rarible.protocol.solana.common.model.MintActivityRecord
+import com.rarible.protocol.solana.common.model.TransferActivityRecord
 import com.rarible.protocol.solana.common.repository.ActivityRepository
 import com.rarible.protocol.solana.dto.ActivityDto
 import com.rarible.protocol.solana.dto.ActivityTypeDto
@@ -19,6 +24,7 @@ import com.rarible.protocol.solana.test.randomMintActivity
 import com.rarible.protocol.solana.test.randomSell
 import com.rarible.protocol.solana.test.randomTransfer
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -56,35 +62,47 @@ class ActivityRepositoryIt : AbstractIntegrationTest() {
     @Test
     fun findAllActivitiesSync() = runBlocking<Unit> {
         val orderComparator = compareBy<ActivityDto>({ it.dbUpdatedAt }, { it.id })
-        val data = eachActivitiesByOne()
-        data.values.forEach { activityRepository.save(it) }
+        val now = nowMillis()
+        val data = listOf(
+            BurnActivityRecord(randomBurn().copy(id = "1")).copy(dbUpdatedAt = now),
+            TransferActivityRecord(randomTransfer().copy(id = "2")).copy(dbUpdatedAt = now),
+            MintActivityRecord(randomMintActivity()).copy(dbUpdatedAt = now.plusMillis(100))
+        )
+        data.forEach {
+            mongo.save(it, ActivityRepository.COLLECTION).awaitFirst()
+        }
 
         val activitiesWithoutContinuation = activityRepository.findAllActivitiesSync(
-            type = SyncTypeDto.ORDER,
+            type = SyncTypeDto.NFT,
             continuation = null,
             Int.MAX_VALUE,
             true
         ).toList()
 
-        assertThat(activitiesWithoutContinuation.size).isEqualTo(5)
+        assertThat(activitiesWithoutContinuation.size).isEqualTo(3)
         assertThat(activitiesWithoutContinuation).isSortedAccordingTo(orderComparator)
 
         val firstPart = activityRepository.findAllActivitiesSync(
-            type = SyncTypeDto.ORDER,
+            type = SyncTypeDto.NFT,
             continuation = null,
             1,
             true
         ).toList()
+        assertThat(firstPart.size).isEqualTo(1)
+        assertThat(firstPart).isEqualTo(data.dropLast(2).map(ActivityRecord::toDto))
+
         val secondPart = activityRepository.findAllActivitiesSync(
-            type = SyncTypeDto.ORDER,
+            type = SyncTypeDto.NFT,
             continuation = ActivityContinuation.ByDbUpdatedAndId(true).getContinuation(firstPart.last()),
             Int.MAX_VALUE,
             true
         ).toList()
+        assertThat(secondPart.size).isEqualTo(2)
+        assertThat(secondPart).isEqualTo(data.drop(1).map(ActivityRecord::toDto))
+
         val allActivities = firstPart + secondPart
 
-        assertThat(allActivities.size).isEqualTo(5)
-        assertThat(allActivities).isSortedAccordingTo(orderComparator)
+        assertThat(allActivities).isEqualTo(activitiesWithoutContinuation)
     }
 
     @Test
