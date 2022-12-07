@@ -13,5 +13,6 @@ dependencies {
 
     api("com.google.crypto.tink:tink:$tinkVersion")
 
+    implementation(enforcedPlatform("com.rarible.core:rarible-core-parent:$raribleCommonVersion"))
     testImplementation(project(":solana-test-common"))
 }

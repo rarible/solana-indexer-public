@@ -28,7 +28,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaTokenRecord.InitializeMintRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaTokenRecord.InitializeMintRecord::log.name,
                 SolanaTokenRecord.InitializeMintRecord::timestamp.name
             ).isEqualTo(
@@ -88,7 +88,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaTokenRecord.MintToRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaTokenRecord.MintToRecord::log.name,
                 SolanaTokenRecord.MintToRecord::timestamp.name
             ).isEqualTo(
@@ -120,7 +120,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaTokenRecord.BurnRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaTokenRecord.BurnRecord::log.name,
                 SolanaTokenRecord.BurnRecord::timestamp.name
             ).isEqualTo(
@@ -212,7 +212,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 type = SolanaBalanceRecord.TransferIncomeRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaBalanceRecord.TransferIncomeRecord::log.name,
                 SolanaBalanceRecord.TransferIncomeRecord::timestamp.name
             ).isEqualTo(
@@ -235,7 +235,7 @@ class SplProgramTest : AbstractBlockScannerTest() {
                 SolanaBalanceRecord.TransferOutcomeRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaBalanceRecord.TransferOutcomeRecord::log.name,
                 SolanaBalanceRecord.TransferOutcomeRecord::timestamp.name
             ).isEqualTo(

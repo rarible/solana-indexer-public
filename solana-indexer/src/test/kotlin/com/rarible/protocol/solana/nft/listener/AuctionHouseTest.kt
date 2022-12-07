@@ -231,6 +231,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
 
             assertThat(actionHouseRepository.findByAccount(house.id)).usingRecursiveComparison()
                 .ignoringFields(
+                    AuctionHouse::version.name,
                     AuctionHouse::createdAt.name,
                     AuctionHouse::updatedAt.name,
                     AuctionHouse::revertableEvents.name
@@ -315,7 +316,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 type = SolanaAuctionHouseOrderRecord.SellRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.SellRecord::log.name,
                 SolanaAuctionHouseOrderRecord.SellRecord::timestamp.name,
                 SolanaAuctionHouseOrderRecord.SellRecord::tokenAccount.name // TODO: do not ignore. We can calculate this field by [token] and [baseKeyPair]
@@ -360,11 +361,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -411,7 +413,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 direction = OrderDirection.SELL
             ).withUpdatedOrderId()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
                 SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
             ).containsExactlyInAnyOrder(
@@ -430,11 +432,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
-                    "revertableEvents",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -497,11 +500,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -548,7 +552,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 direction = OrderDirection.SELL
             ).withUpdatedOrderId()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
                 SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
             ).containsExactlyInAnyOrder(
@@ -567,11 +571,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -661,7 +666,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 type = SolanaAuctionHouseOrderRecord.BuyRecord::class.java
             ).toList()
 
-            assertThat(records).usingElementComparatorIgnoringFields(
+            assertThat(records).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
                 SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name,
                 SolanaAuctionHouseOrderRecord.BuyRecord::tokenAccount.name // TODO: do not ignore. We can calculate this field by [token] and [baseKeyPair]
@@ -713,11 +718,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -760,11 +766,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(order)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -805,7 +812,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
                 type = SolanaAuctionHouseOrderRecord.BuyRecord::class.java
             ).toList()
-            assertThat(buyRecords).usingElementComparatorIgnoringFields(
+            assertThat(buyRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.BuyRecord::log.name,
                 SolanaAuctionHouseOrderRecord.BuyRecord::timestamp.name
             ).isEqualTo(
@@ -829,7 +836,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.AUCTION_HOUSE_ORDER.collectionName,
                 type = SolanaAuctionHouseOrderRecord.SellRecord::class.java
             ).toList()
-            assertThat(sellRecords).usingElementComparatorIgnoringFields(
+            assertThat(sellRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.SellRecord::log.name,
                 SolanaAuctionHouseOrderRecord.SellRecord::timestamp.name
             ).isEqualTo(
@@ -868,7 +875,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 )
             }
 
-            assertThat(saleRecords).usingElementComparatorIgnoringFields(
+            assertThat(saleRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::log.name,
                 SolanaAuctionHouseOrderRecord.ExecuteSaleRecord::timestamp.name
             ).containsExactlyInAnyOrder(
@@ -880,7 +887,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.TransferIncomeRecord::class.java
             ).toList()
-            assertThat(incomeTransfersRecords).usingElementComparatorIgnoringFields(
+            assertThat(incomeTransfersRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaBalanceRecord.TransferIncomeRecord::log.name,
                 SolanaBalanceRecord.TransferIncomeRecord::timestamp.name
             ).isEqualTo(
@@ -900,7 +907,7 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
                 collection = SubscriberGroup.BALANCE.collectionName,
                 type = SolanaBalanceRecord.TransferOutcomeRecord::class.java
             ).toList()
-            assertThat(outcomeTransfersRecords).usingElementComparatorIgnoringFields(
+            assertThat(outcomeTransfersRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaBalanceRecord.TransferOutcomeRecord::log.name,
                 SolanaBalanceRecord.TransferOutcomeRecord::timestamp.name
             ).isEqualTo(
@@ -927,11 +934,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(buyOrder)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(
@@ -968,11 +976,12 @@ class AuctionHouseTest : AbstractBlockScannerTest() {
             assertThat(sellOrder)
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "createdAt",
-                    "updatedAt",
+                    Order::version.name,
+                    Order::createdAt.name,
+                    Order::updatedAt.name,
                     Order::dbUpdatedAt.name,
-                    "revertableEvents",
-                    "makerAccount"
+                    Order::revertableEvents.name,
+                    Order::makerAccount.name
                 )
                 .isEqualTo(
                     Order(

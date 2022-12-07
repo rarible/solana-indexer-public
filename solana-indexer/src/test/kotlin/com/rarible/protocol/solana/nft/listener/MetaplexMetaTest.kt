@@ -44,7 +44,7 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
                 SolanaMetaRecord.MetaplexUpdateMetadataRecord::class.java
             ).toList()
 
-            assertThat(updateRecords).usingElementComparatorIgnoringFields(
+            assertThat(updateRecords).usingRecursiveFieldByFieldElementComparatorIgnoringFields(
                 SolanaMetaRecord.MetaplexUpdateMetadataRecord::log.name,
                 SolanaMetaRecord.MetaplexUpdateMetadataRecord::timestamp.name
             ).isEqualTo(
@@ -96,10 +96,10 @@ class MetaplexMetaTest : EventAwareBlockScannerTest() {
             assertThat(metaplexMetaRepository.findByTokenAddress(tokenAddress))
                 .usingRecursiveComparison()
                 .ignoringFields(
-                    "metaAddress",
-                    "updatedAt",
-                    "createdAt",
-                    "revertableEvents"
+                    MetaplexMeta::metaAddress.name,
+                    MetaplexMeta::updatedAt.name,
+                    MetaplexMeta::createdAt.name,
+                    MetaplexMeta::revertableEvents.name
                 ).isEqualTo(
                     MetaplexMeta(
                         tokenAddress = tokenAddress,

@@ -186,7 +186,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
         val order1 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
         val order2 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset))
         val order3 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset).copy(maker = maker))
-        val order4 = orderRepository.save(randomBuyOrder(take = nftAsset, make = currencyAsset).copy(maker = maker))
+        orderRepository.save(randomBuyOrder(take = nftAsset, make = currencyAsset).copy(maker = maker))
 
         // Should not be found due to status filter
         orderRepository.save(
@@ -266,7 +266,7 @@ class OrderRepositoryIt : AbstractIntegrationTest() {
             randomBuyOrder(take = nftAsset, make = currencyAsset)
                 .copy(maker = maker, createdAt = old)
         )
-        val order5 = orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset).copy(maker = maker))
+        orderRepository.save(randomSellOrder(make = nftAsset, take = currencyAsset).copy(maker = maker))
 
         // Should not be found due to status filter
         orderRepository.save(
