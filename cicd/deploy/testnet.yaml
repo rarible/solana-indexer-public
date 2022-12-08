@@ -1,3 +1,6 @@
 solana-api:
   service:
     nodePort: 30428
+  resources:
+    jvm:
+      max_direct_memory_megabytes: 64
