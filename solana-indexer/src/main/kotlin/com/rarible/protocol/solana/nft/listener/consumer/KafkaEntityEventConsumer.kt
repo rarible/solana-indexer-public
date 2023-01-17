@@ -4,9 +4,10 @@ import com.rarible.blockchain.scanner.configuration.KafkaProperties
 import com.rarible.blockchain.scanner.solana.configuration.SolanaBlockchainScannerProperties
 import com.rarible.blockchain.scanner.util.getLogTopicPrefix
 import com.rarible.core.application.ApplicationEnvironmentInfo
+import com.rarible.core.daemon.DaemonWorkerProperties
 import com.rarible.core.daemon.RetryProperties
-import com.rarible.core.daemon.sequential.ConsumerEventHandler
-import com.rarible.core.daemon.sequential.ConsumerWorker
+import com.rarible.core.daemon.sequential.ConsumerBatchEventHandler
+import com.rarible.core.daemon.sequential.ConsumerBatchWorker
 import com.rarible.core.daemon.sequential.ConsumerWorkerHolder
 import com.rarible.core.kafka.RaribleKafkaConsumer
 import com.rarible.core.kafka.json.JsonDeserializer
@@ -61,8 +62,9 @@ class KafkaEntityEventConsumer(
                 autoCreateTopic = false
             )
 
-            ConsumerWorker(
+            ConsumerBatchWorker(
                 consumer = kafkaConsumer,
+                properties = DaemonWorkerProperties().copy(consumerBatchSize = 128),
                 // Block consumer should NOT skip events, so there is we're using endless retry
                 retryProperties = RetryProperties(attempts = Integer.MAX_VALUE, delay = Duration.ofMillis(1000)),
                 eventHandler = BlockEventHandler(listener),
@@ -75,9 +77,10 @@ class KafkaEntityEventConsumer(
 
     private class BlockEventHandler(
         private val logRecordEventListener: LogRecordEventListener
-    ) : ConsumerEventHandler<SolanaLogRecordEvent> {
-        override suspend fun handle(event: SolanaLogRecordEvent) {
-            logRecordEventListener.onEntityEvents(listOf(event))
+    ) : ConsumerBatchEventHandler<SolanaLogRecordEvent> {
+
+        override suspend fun handle(events: List<SolanaLogRecordEvent>) {
+            logRecordEventListener.onEntityEvents(events)
         }
     }
 }
