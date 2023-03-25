@@ -6,8 +6,6 @@ solana-indexer:
 
 solana-api:
   replicas: 3
-  service:
-    nodePort: 30128
   resources:
     jvm:
       xmx_megabytes: 1024
